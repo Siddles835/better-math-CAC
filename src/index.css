@@ -1,0 +1,229 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Calm, warm color palette for autism-friendly design */
+    --background: 230 25% 12%;
+    --foreground: 220 15% 90%;
+
+    --card: 230 20% 16%;
+    --card-foreground: 220 15% 90%;
+
+    --popover: 230 20% 16%;
+    --popover-foreground: 220 15% 90%;
+
+    --primary: 200 45% 55%;
+    --primary-foreground: 220 20% 98%;
+
+    --secondary: 280 30% 55%;
+    --secondary-foreground: 220 20% 98%;
+
+    --muted: 230 15% 22%;
+    --muted-foreground: 220 12% 65%;
+
+    --accent: 45 50% 55%;
+    --accent-foreground: 230 25% 12%;
+
+    --destructive: 0 50% 55%;
+    --destructive-foreground: 220 20% 98%;
+
+    --success: 150 40% 50%;
+    --success-foreground: 220 20% 98%;
+
+    --border: 230 15% 28%;
+    --input: 230 15% 28%;
+    --ring: 200 45% 55%;
+
+    --radius: 0.75rem;
+
+    /* Solar system planet colors - warm and inviting */
+    --sun: 40 60% 60%;
+    --mercury: 200 35% 60%;
+    --venus: 30 50% 60%;
+    --earth: 200 50% 55%;
+    --mars: 15 50% 50%;
+    --jupiter: 30 40% 55%;
+    --saturn: 45 45% 55%;
+    --uranus: 180 40% 55%;
+    --neptune: 220 45% 55%;
+    
+    /* Object colors - warm tones */
+    --apple: 0 55% 55%;
+    --basket: 25 45% 45%;
+    --pencil: 45 55% 55%;
+    
+    /* Space theme colors */
+    --star: 45 70% 75%;
+    --rocket: 200 40% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Quicksand', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+  }
+}
+
+@layer utilities {
+  .text-soft-glow {
+    text-shadow: 0 0 20px hsl(var(--foreground) / 0.2);
+  }
+}
+
+/* Rocket animation - smooth left-to-right travel with bigger rocket */
+@keyframes rocket-fly {
+  0% {
+    transform: translateX(-500px) translateY(-50%);
+  }
+  100% {
+    transform: translateX(calc(100vw + 500px)) translateY(-50%);
+  }
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-slow {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes count-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes star-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100px); }
+}
+
+.animate-rocket-fly {
+  animation: rocket-fly 5.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-gentle-float {
+  animation: gentle-float 5s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+.animate-fade-in-slow {
+  animation: fade-in-slow 1.2s ease-out forwards;
+}
+
+.animate-count-pop {
+  animation: count-pop 0.5s ease-out;
+}
+
+/* Space background with drifting stars */
+.space-bg {
+  background: linear-gradient(180deg, hsl(230 30% 8%) 0%, hsl(230 25% 12%) 50%, hsl(250 25% 15%) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle star field */
+.subtle-stars {
+  background-image: 
+    radial-gradient(2px 2px at 80px 60px, hsl(var(--star) / 0.4), transparent),
+    radial-gradient(1px 1px at 180px 120px, hsl(var(--star) / 0.3), transparent),
+    radial-gradient(2px 2px at 320px 80px, hsl(var(--star) / 0.35), transparent),
+    radial-gradient(1px 1px at 420px 200px, hsl(var(--star) / 0.25), transparent),
+    radial-gradient(1px 1px at 550px 150px, hsl(var(--star) / 0.3), transparent),
+    radial-gradient(2px 2px at 650px 90px, hsl(var(--star) / 0.4), transparent);
+  background-repeat: repeat;
+  background-size: 700px 300px;
+}
+
+/* Concept explanation animation */
+@keyframes slide-up-fade {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pencil-appear {
+  0% { opacity: 0; transform: translateY(-20px) scale(0.8); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pencil-disappear {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(20px) scale(0.8); }
+}
+
+.animate-pencil-appear {
+  animation: pencil-appear 1.2s ease-out forwards;
+}
+
+.animate-pencil-disappear {
+  animation: pencil-disappear 1.2s ease-out forwards;
+}
+
+.animate-concept {
+  animation: slide-up-fade 1.5s ease-out forwards;
+}
+
+.animate-concept-delay-1 {
+  opacity: 0;
+  animation: slide-up-fade 1.5s ease-out 1s forwards;
+}
+
+.animate-concept-delay-2 {
+  opacity: 0;
+  animation: slide-up-fade 1.5s ease-out 2s forwards;
+}
+
+.animate-concept-delay-3 {
+  opacity: 0;
+  animation: slide-up-fade 1.5s ease-out 3s forwards;
+}
+
+.animate-concept-delay-4 {
+  opacity: 0;
+  animation: slide-up-fade 1.5s ease-out 4s forwards;
+}
+
+.animate-concept-delay-5 {
+  opacity: 0;
+  animation: slide-up-fade 1.5s ease-out 5s forwards;
+}
+
+@keyframes rocket-launch-screen {
+  0% { transform: translateY(0); opacity: 1; }
+  30% { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(-120vh); opacity: 1; }
+}
+
+.animate-rocket-launch-screen {
+  animation: rocket-launch-screen 2.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
+}
