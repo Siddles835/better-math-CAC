@@ -1,6 +1,7 @@
 // Subtraction Lesson - Neptune (Quiz)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGame } from '@/context/GameContext';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
 import HomeButton from '@/components/HomeButton';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 
 const SubtractionNeptune: React.FC = () => {
   const navigate = useNavigate();
+  const { completePlanet } = useGame();
   const [step, setStep] = useState(0);
   
   // MCQ state
@@ -133,7 +135,10 @@ const SubtractionNeptune: React.FC = () => {
             areasToImprove={quizAreas}
             lessonType="subtraction"
             videoUrl="https://www.youtube.com/embed/pkuGr0Jcmoo"
-            onFinish={() => navigate('/planets')}
+            onFinish={() => {
+              completePlanet('neptune');
+              navigate('/solar-system');
+            }}
           />
         );
 

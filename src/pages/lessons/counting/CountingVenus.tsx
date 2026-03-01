@@ -1,6 +1,7 @@
 // Counting Lesson - Venus (Quiz)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGame } from '@/context/GameContext';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
 import HomeButton from '@/components/HomeButton';
@@ -9,6 +10,7 @@ import { Check, X } from 'lucide-react';
 
 const CountingVenus: React.FC = () => {
   const navigate = useNavigate();
+  const { completePlanet } = useGame();
   const [step, setStep] = useState(0);
   
   // MCQ state
@@ -135,7 +137,10 @@ const CountingVenus: React.FC = () => {
             areasToImprove={quizAreas}
             lessonType="counting"
             videoUrl="https://www.youtube.com/embed/D0Ajq682yrA"
-            onFinish={() => navigate('/planets')}
+            onFinish={() => {
+              completePlanet('venus');
+              navigate('/solar-system');
+            }}
           />
         );
 

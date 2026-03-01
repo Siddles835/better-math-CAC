@@ -13,7 +13,7 @@ import { Check, X } from 'lucide-react';
 
 const CountingMercury: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition } = useGame();
+  const { setShowRocketTransition, completePlanet } = useGame();
   const [step, setStep] = useState(0);
   const [showTransition, setShowTransition] = useState(false);
   
@@ -46,6 +46,7 @@ const CountingMercury: React.FC = () => {
   };
 
   const goToNextPlanet = () => {
+    completePlanet('mercury');
     setShowRocketTransition(true);
     setTimeout(() => {
       navigate('/lesson/counting/venus');

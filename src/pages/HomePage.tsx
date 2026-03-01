@@ -24,7 +24,7 @@ const HomePage: React.FC = () => {
       </div>
 
       <button
-        onClick={() => navigate('/planets')}
+        onClick={() => navigate('/solar-system')}
         className="mt-4 px-12 py-5 text-xl font-semibold rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105 animate-fade-in"
       >
         Start Journey 🚀

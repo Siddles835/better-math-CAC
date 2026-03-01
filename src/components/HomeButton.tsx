@@ -10,9 +10,9 @@ const HomeButton: React.FC = () => {
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => navigate('/planets')}
+      onClick={() => navigate('/solar-system')}
       className="fixed top-4 left-4 z-50 bg-card/80 backdrop-blur-sm border border-border hover:bg-card"
-      aria-label="Go to planet selection"
+      aria-label="Go to solar system"
     >
       <Home className="w-5 h-5" />
     </Button>

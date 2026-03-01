@@ -12,7 +12,7 @@ import { Check, X, Play, RotateCcw } from 'lucide-react';
 
 const AdditionEarth: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition } = useGame();
+  const { setShowRocketTransition, completePlanet } = useGame();
   const [step, setStep] = useState(0);
   const [showTransition, setShowTransition] = useState(false);
   
@@ -79,6 +79,7 @@ const AdditionEarth: React.FC = () => {
   };
 
   const goToNextPlanet = () => {
+    completePlanet('earth');
     setShowRocketTransition(true);
     setTimeout(() => {
       navigate('/lesson/addition/mars');
@@ -324,7 +325,7 @@ const AdditionEarth: React.FC = () => {
 
       {step < 3 && (
         <NavigationArrows
-          onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
+          onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
           onNext={() => setStep(step + 1)}
           showNext={true}
           backLabel="Back"

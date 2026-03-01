@@ -13,7 +13,7 @@ import { Check, X } from 'lucide-react';
 
 const AdditionMars: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition } = useGame();
+  const { setShowRocketTransition, completePlanet } = useGame();
   const [step, setStep] = useState(0);
   const [conceptStep, setConceptStep] = useState(1);
   const [showTransition, setShowTransition] = useState(false);
@@ -54,6 +54,7 @@ const AdditionMars: React.FC = () => {
   };
 
   const goToNextPlanet = () => {
+    completePlanet('mars');
     setShowRocketTransition(true);
     setTimeout(() => {
       navigate('/lesson/addition/jupiter');

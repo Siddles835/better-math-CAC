@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 
 const CountingSun: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition } = useGame();
+  const { setShowRocketTransition, completePlanet } = useGame();
   const [step, setStep] = useState(0);
   const [basketCount, setBasketCount] = useState(0);
   const [availableApples, setAvailableApples] = useState(7);
@@ -39,6 +39,7 @@ const CountingSun: React.FC = () => {
   };
 
   const goToNextPlanet = () => {
+    completePlanet('sun');
     setShowRocketTransition(true);
     setTimeout(() => {
       navigate('/lesson/counting/mercury');
@@ -185,7 +186,7 @@ const CountingSun: React.FC = () => {
 
       {step < 3 && (
         <NavigationArrows
-          onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
+          onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
           onNext={() => setStep(step + 1)}
           showNext={true}
           backLabel="Back"

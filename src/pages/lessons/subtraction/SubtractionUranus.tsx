@@ -13,7 +13,7 @@ import { Check, X } from 'lucide-react';
 
 const SubtractionUranus: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition } = useGame();
+  const { setShowRocketTransition, completePlanet } = useGame();
   const [step, setStep] = useState(0);
   const [conceptStep, setConceptStep] = useState(1);
   const [showTransition, setShowTransition] = useState(false);
@@ -53,6 +53,7 @@ const SubtractionUranus: React.FC = () => {
   };
 
   const goToNextPlanet = () => {
+    completePlanet('uranus');
     setShowRocketTransition(true);
     setTimeout(() => {
       navigate('/lesson/subtraction/neptune');
