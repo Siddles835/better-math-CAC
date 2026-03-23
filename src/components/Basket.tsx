@@ -10,7 +10,7 @@ const Basket: React.FC<BasketProps> = ({ children, className = '' }) => {
   return (
     <div className={`relative flex flex-col items-center ${className}`}>
       <div className="relative">
-        <svg width="400" height="280" viewBox="0 0 400 280" fill="none">
+        <svg width="500" height="350" viewBox="0 0 400 280" fill="none">
           {/* Basket body - much deeper */}
           <path
             d="M40 90 L80 250 L320 250 L360 90 Z"

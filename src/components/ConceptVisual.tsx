@@ -24,7 +24,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             <p className="text-muted-foreground mb-4 text-center">Let's count these apples together:</p>
             <div className="flex justify-center gap-4 mb-4">
               <div className="flex flex-col items-center">
-                <Apple size="md" className="pointer-events-none" />
+                <Apple size="lg" className="pointer-events-none" />
                 <span className="text-2xl font-bold text-primary mt-2">1</span>
               </div>
             </div>
@@ -38,7 +38,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             <div className="flex justify-center gap-4 mb-4">
               {[1, 2, 3].map(num => (
                 <div key={num} className="flex flex-col items-center">
-                  <Apple size="md" className="pointer-events-none" />
+                  <Apple size="lg" className="pointer-events-none" />
                   <span className="text-2xl font-bold text-primary mt-2">{num}</span>
                 </div>
               ))}
@@ -70,6 +70,30 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             <p className="text-lg text-foreground/90">
               The <span className="font-semibold text-accent">last number</span> we say is how many there are in total!
             </p>
+          </div>
+        )}
+
+        {step >= 6 && (
+          <div className="animate-concept-delay-5 bg-card rounded-xl p-6 border border-border">
+            <p className="text-muted-foreground mb-4 text-center">Circle diagrams help us visualize counting:</p>
+            <div className="flex justify-center gap-8">
+              <div className="flex flex-col items-center">
+                <div className="flex flex-wrap justify-center gap-2 max-w-[120px]">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="w-8 h-8 rounded-full bg-primary" />
+                  ))}
+                </div>
+                <span className="text-xl font-bold text-primary mt-2">3</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="flex flex-wrap justify-center gap-2 max-w-[120px]">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="w-8 h-8 rounded-full bg-accent" />
+                  ))}
+                </div>
+                <span className="text-xl font-bold text-accent mt-2">5</span>
+              </div>
+            </div>
           </div>
         )}
       </div>

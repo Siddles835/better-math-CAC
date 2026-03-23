@@ -23,7 +23,7 @@ const CountingSun: React.FC = () => {
   const totalSteps = 4;
 
   useEffect(() => {
-    if (step === 1 && conceptStep < 5) {
+    if (step === 1 && conceptStep < 6) {
       const timer = setTimeout(() => {
         setConceptStep(prev => prev + 1);
       }, 3000);
@@ -76,7 +76,7 @@ const CountingSun: React.FC = () => {
               
               <Basket>
                 {Array.from({ length: basketCount }).map((_, i) => (
-                  <Apple key={i} size="md" className="pointer-events-none" />
+                  <Apple key={i} size="lg" className="pointer-events-none" />
                 ))}
               </Basket>
               

@@ -91,7 +91,7 @@ const CountingMercury: React.FC = () => {
               
               <Basket>
                 {Array.from({ length: wordProblemCount }).map((_, i) => (
-                  <Apple key={i} size="md" className="pointer-events-none" />
+                  <Apple key={i} size="lg" className="pointer-events-none" />
                 ))}
               </Basket>
               

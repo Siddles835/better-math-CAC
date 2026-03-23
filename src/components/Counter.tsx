@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface CounterProps {
   count: number;
@@ -7,6 +7,15 @@ interface CounterProps {
 }
 
 const Counter: React.FC<CounterProps> = ({ count, label, className = '' }) => {
+  useEffect(() => {
+    if (count > 0 && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(count.toString());
+      utterance.rate = 0.8;
+      utterance.pitch = 1.2;
+      speechSynthesis.speak(utterance);
+    }
+  }, [count]);
+
   return (
     <div className={`flex flex-col items-center ${className}`}>
       {label && (
