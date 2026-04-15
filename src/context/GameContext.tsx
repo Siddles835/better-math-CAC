@@ -21,6 +21,9 @@ interface GameContextType {
   setShowRocketTransition: (show: boolean) => void;
   completedPlanets: Record<PlanetId, boolean>;
   completePlanet: (planetId: PlanetId) => void;
+  // helper: full ordered sequence of planet+lesson combos
+  getOrderedSequence: () => { planet: PlanetId; lesson: LessonType }[];
+  setPosition: (planet: PlanetId, lesson: LessonType) => void;
 }
 
 const initialProgress: Record<LessonType, LessonProgress> = {
@@ -63,6 +66,24 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
   };
 
+  const orderPlanets: PlanetId[] = ['mercury','venus','earth','mars','jupiter','saturn','uranus','neptune','sun'];
+
+  const getOrderedSequence = () => {
+    const lessons: LessonType[] = ['counting','addition','subtraction'];
+    const seq: {planet: PlanetId; lesson: LessonType}[] = [];
+    for (const l of lessons) {
+      for (const p of orderPlanets) {
+        seq.push({ planet: p as PlanetId, lesson: l });
+      }
+    }
+    return seq;
+  };
+
+  const setPosition = (planet: PlanetId, lesson: LessonType) => {
+    setCurrentLesson(lesson);
+    // if needed, update progress state or other markers here
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -74,6 +95,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setShowRocketTransition,
         completedPlanets,
         completePlanet,
+          getOrderedSequence,
+          setPosition,
       }}
     >
       {children}

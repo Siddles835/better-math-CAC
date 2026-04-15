@@ -6,7 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GameProvider } from "./context/GameContext";
 import RocketTransition from "./components/RocketTransition";
 import HomePage from "./pages/HomePage";
+import StudentLoginPage from "./pages/StudentLoginPage";
+import TeacherLoginPage from "./pages/TeacherLoginPage";
+import TeacherDashboard from "./pages/TeacherDashboard";
 import SolarSystemPage from "./pages/SolarSystemPage";
+import PlanetSelectPage from "./pages/PlanetSelectPage";
 // Counting planets
 import CountingSun from "./pages/lessons/counting/CountingSun";
 import CountingMercury from "./pages/lessons/counting/CountingMercury";
@@ -34,6 +38,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/solar-system" element={<SolarSystemPage />} />
+            <Route path="/planet-select" element={<PlanetSelectPage />} />
+            <Route path="/student-login" element={<StudentLoginPage />} />
+            <Route path="/teacher-login" element={<TeacherLoginPage />} />
+            <Route path="/teacher/*" element={<TeacherDashboard />} />
             {/* Counting */}
             <Route path="/lesson/counting/sun" element={<CountingSun />} />
             <Route path="/lesson/counting/mercury" element={<CountingMercury />} />

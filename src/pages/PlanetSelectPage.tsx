@@ -1,44 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import CircleDiagram from '@/components/CircleDiagram';
 import NavigationArrows from '@/components/NavigationArrows';
 
-const planetGroups = [
-  {
-    topic: 'Counting',
-    planets: [
-      { id: 'counting-sun', name: 'Sun', color: 'bg-sun', route: '/lesson/counting/sun' },
-      { id: 'counting-mercury', name: 'Mercury', color: 'bg-mercury', route: '/lesson/counting/mercury' },
-      { id: 'counting-venus', name: 'Venus', color: 'bg-venus', route: '/lesson/counting/venus' },
-    ],
-  },
-  {
-    topic: 'Addition',
-    planets: [
-      { id: 'addition-earth', name: 'Earth', color: 'bg-earth', route: '/lesson/addition/earth' },
-      { id: 'addition-mars', name: 'Mars', color: 'bg-mars', route: '/lesson/addition/mars' },
-      { id: 'addition-jupiter', name: 'Jupiter', color: 'bg-jupiter', route: '/lesson/addition/jupiter' },
-    ],
-  },
-  {
-    topic: 'Subtraction',
-    planets: [
-      { id: 'subtraction-saturn', name: 'Saturn', color: 'bg-saturn', route: '/lesson/subtraction/saturn' },
-      { id: 'subtraction-uranus', name: 'Uranus', color: 'bg-uranus', route: '/lesson/subtraction/uranus' },
-      { id: 'subtraction-neptune', name: 'Neptune', color: 'bg-neptune', route: '/lesson/subtraction/neptune' },
-    ],
-  },
+const planets = [
+  { id: 'mercury', name: 'Mercury', color: '#c7b89a', route: '/lesson/counting/mercury' },
+  { id: 'venus', name: 'Venus', color: '#f3d1b3', route: '/lesson/counting/venus' },
+  { id: 'earth', name: 'Earth', color: '#8ecae6', route: '/lesson/counting/earth' },
+  { id: 'mars', name: 'Mars', color: '#f28b6b', route: '/lesson/counting/mars' },
+  { id: 'jupiter', name: 'Jupiter', color: '#d9c5a6', route: '/lesson/counting/jupiter' },
+  { id: 'saturn', name: 'Saturn', color: '#e9d6b2', route: '/lesson/counting/saturn' },
+  { id: 'uranus', name: 'Uranus', color: '#bde0fe', route: '/lesson/counting/uranus' },
+  { id: 'neptune', name: 'Neptune', color: '#7aa2f7', route: '/lesson/counting/neptune' },
+  { id: 'sun', name: 'Sun', color: '#ffd166', route: '/lesson/counting/sun' },
 ];
 
 const PlanetSelectPage: React.FC = () => {
   const navigate = useNavigate();
   const { setShowRocketTransition } = useGame();
+  const [selected, setSelected] = useState<string | null>(null);
 
   const handlePlanetClick = (route: string) => {
     setShowRocketTransition(true);
     setTimeout(() => {
       navigate(route);
-    }, 2500);
+    }, 1200);
+  };
+
+  const validMap: Record<string, string[]> = {
+    counting: ['sun','mercury','venus'],
+    addition: ['earth','mars','jupiter'],
+    subtraction: ['saturn','uranus','neptune'],
+  };
+
+  const startIfValid = (lesson: 'counting'|'addition'|'subtraction', planetId: string) => {
+    if (validMap[lesson].includes(planetId)) {
+      handlePlanetClick(`/lesson/${lesson}/${planetId}`);
+    } else {
+      alert('Lesson not available for this planet yet.');
+    }
+  };
+
+  const handleSelect = (p: any) => {
+    setSelected(p.id);
   };
 
   return (
@@ -46,43 +51,25 @@ const PlanetSelectPage: React.FC = () => {
       <h1 className="text-3xl font-semibold text-foreground mb-2 animate-fade-in">
         Choose Your Destination
       </h1>
-      <p className="text-muted-foreground mb-10 animate-fade-in">
-        Pick a planet to start learning
+      <p className="text-muted-foreground mb-6 animate-fade-in">
+        Click a planet to begin. Use the diagram to explore.
       </p>
 
-      <div className="flex flex-col gap-10 w-full max-w-4xl">
-        {planetGroups.map((group, groupIndex) => (
-          <div 
-            key={group.topic} 
-            className="animate-fade-in"
-            style={{ animationDelay: `${groupIndex * 0.15}s` }}
-          >
-            <h2 className="text-xl font-medium text-foreground mb-4 text-center">
-              {group.topic}
-            </h2>
-            <div className="flex justify-center gap-6 md:gap-10">
-              {group.planets.map((planet, planetIndex) => (
-                <button
-                  key={planet.id}
-                  onClick={() => handlePlanetClick(planet.route)}
-                  className="group flex flex-col items-center"
-                  style={{ animationDelay: `${(groupIndex * 3 + planetIndex) * 0.1}s` }}
-                >
-                  <div
-                    className={`w-16 h-16 md:w-20 md:h-20 rounded-full ${planet.color} 
-                      transition-all duration-300 group-hover:scale-110 
-                      flex items-center justify-center mb-3`}
-                  >
-                    <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full ${planet.color} opacity-70`} />
-                  </div>
-                  <span className="text-base font-medium text-foreground">
-                    {planet.name}
-                  </span>
-                </button>
-              ))}
-            </div>
+      <div className="w-full max-w-2xl mx-auto mb-8">
+        <CircleDiagram planets={planets} size={420} onSelect={handleSelect} selectedId={selected || undefined} />
+      </div>
+
+      <div className="mb-8">
+        {selected ? (
+          <div className="flex gap-4">
+            <button className="btn" onClick={() => setSelected(null)}>Clear</button>
+            <button className="btn btn-primary" onClick={() => startIfValid('counting', selected)}>Start Counting</button>
+            <button className="btn btn-secondary" onClick={() => startIfValid('addition', selected)}>Start Addition</button>
+            <button className="btn btn-warning" onClick={() => startIfValid('subtraction', selected)}>Start Subtraction</button>
           </div>
-        ))}
+        ) : (
+          <div className="text-sm text-muted-foreground">Select a planet from the circle above.</div>
+        )}
       </div>
 
       <NavigationArrows
