@@ -134,7 +134,7 @@ const AdditionJupiter: React.FC = () => {
             totalQuestions={8}
             areasToImprove={quizAreas}
             lessonType="addition"
-            videoUrl="https://www.youtube.com/embed/75NQK-Sm1YY"
+            videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
             onFinish={() => {
               completePlanet('jupiter');
               navigate('/solar-system');
