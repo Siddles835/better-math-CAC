@@ -1,73 +1,84 @@
-export type LessonType = 'counting' | 'addition' | 'subtraction';
-
-export interface StudentState {
+export interface Student {
   nickname: string;
-  planet: string; // e.g. mercury
-  lesson: LessonType;
-  lastUpdated: number;
+  planet: string;
+  lesson: string;
 }
 
 export interface Classroom {
   classCode: string;
-  teacherCode: string;
-  defaultStart?: { planet: string; lesson: LessonType };
-  students: Record<string, StudentState>; // key: nickname
+  defaultPlanet: string;
+  defaultLesson: string;
+  students: Record<string, Student>;
 }
 
-const CLASS_PREFIX = 'better-math:class:';
+const DB_KEY = 'better_math_db';
 
-export const createOrGetClass = (classCode: string, teacherCode?: string): Classroom => {
-  const key = CLASS_PREFIX + classCode;
-  const raw = localStorage.getItem(key);
-  if (raw) return JSON.parse(raw) as Classroom;
-  const cls: Classroom = {
+// Helper to get all data
+const getDB = (): Record<string, Classroom> => {
+  try {
+    return JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+  } catch {
+    return {};
+  }
+};
+
+// Helper to save data and trigger real-time updates across the app
+const saveDB = (db: Record<string, Classroom>) => {
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  window.dispatchEvent(new Event('storage')); // Notifies TeacherDashboard of changes
+};
+
+// --- API FUNCTIONS ---
+
+export const checkClassExists = (classCode: string): boolean => {
+  return !!getDB()[classCode];
+};
+
+export const createClass = (classCode: string) => {
+  const db = getDB();
+  db[classCode] = {
     classCode,
-    teacherCode: teacherCode || Math.random().toString(36).slice(2, 8),
-    students: {},
+    defaultPlanet: 'mercury',
+    defaultLesson: 'counting',
+    students: {}
   };
-  localStorage.setItem(key, JSON.stringify(cls));
-  return cls;
-};
-
-export const saveClass = (cls: Classroom) => {
-  const key = CLASS_PREFIX + cls.classCode;
-  localStorage.setItem(key, JSON.stringify(cls));
-  // trigger storage event in same tab for simplicity
-  window.dispatchEvent(new StorageEvent('storage', { key, newValue: JSON.stringify(cls) }));
-};
-
-export const joinAsStudent = (classCode: string, nickname: string): StudentState => {
-  const cls = createOrGetClass(classCode);
-  const existing = cls.students[nickname];
-  if (existing) return existing;
-  const start = cls.defaultStart || { planet: 'mercury', lesson: 'counting' as LessonType };
-  const student: StudentState = {
-    nickname,
-    planet: start.planet,
-    lesson: start.lesson,
-    lastUpdated: Date.now(),
-  };
-  cls.students[nickname] = student;
-  saveClass(cls);
-  return student;
-};
-
-export const updateStudentState = (classCode: string, student: StudentState) => {
-  const key = CLASS_PREFIX + classCode;
-  const cls = createOrGetClass(classCode);
-  student.lastUpdated = Date.now();
-  cls.students[student.nickname] = student;
-  saveClass(cls);
+  saveDB(db);
 };
 
 export const getClass = (classCode: string): Classroom | null => {
-  const key = CLASS_PREFIX + classCode;
-  const raw = localStorage.getItem(key);
-  return raw ? (JSON.parse(raw) as Classroom) : null;
+  return getDB()[classCode] || null;
 };
 
-export const setClassDefaultStart = (classCode: string, planet: string, lesson: LessonType) => {
-  const cls = createOrGetClass(classCode);
-  cls.defaultStart = { planet, lesson };
-  saveClass(cls);
+export const checkStudentExists = (classCode: string, nickname: string): boolean => {
+  const db = getDB();
+  return !!(db[classCode] && db[classCode].students[nickname]);
+};
+
+export const registerStudent = (classCode: string, nickname: string) => {
+  const db = getDB();
+  if (db[classCode] && !db[classCode].students[nickname]) {
+    db[classCode].students[nickname] = {
+      nickname,
+      planet: db[classCode].defaultPlanet || 'mercury',
+      lesson: db[classCode].defaultLesson || 'counting'
+    };
+    saveDB(db);
+  }
+};
+
+export const updateStudentState = (classCode: string, student: Student) => {
+  const db = getDB();
+  if (db[classCode] && db[classCode].students[student.nickname]) {
+    db[classCode].students[student.nickname] = student;
+    saveDB(db);
+  }
+};
+
+export const setClassDefaultStart = (classCode: string, planet: string, lesson: string) => {
+  const db = getDB();
+  if (db[classCode]) {
+    db[classCode].defaultPlanet = planet;
+    db[classCode].defaultLesson = lesson;
+    saveDB(db);
+  }
 };
