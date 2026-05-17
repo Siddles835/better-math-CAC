@@ -8,23 +8,25 @@ const StudentRegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     const code = classCode.trim();
     const name = nickname.trim();
     if (!code || !name) return;
 
-    if (!checkClassExists(code)) {
+    const classExists = await checkClassExists(code);
+    if (!classExists) {
       setError(`Class code "${code}" does not exist. Please ask your teacher for the correct code.`);
       return;
     }
 
-    if (checkStudentExists(code, name)) {
+    const studentExists = await checkStudentExists(code, name);
+    if (studentExists) {
       setError(`The name "${name}" is already taken in this class. Please choose a different nickname.`);
       return;
     }
 
-    registerStudent(code, name);
+    await registerStudent(code, name);
     localStorage.setItem('better-math:active', JSON.stringify({ classCode: code, nickname: name }));
     navigate('/planet-select');
   };
