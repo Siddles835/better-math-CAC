@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getClass, Classroom, setClassDefaultStart, updateStudentState } from '@/lib/classroom';
+import { Classroom, setClassDefaultStart, updateStudentState, subscribeToClass } from '@/lib/classroom';
 import { getDescription } from '@/lib/planetDescriptions';
 
 const TeacherDashboard: React.FC = () => {
@@ -14,39 +14,32 @@ const TeacherDashboard: React.FC = () => {
   useEffect(() => {
     if (!classCode) return;
     
-    const load = () => {
-      const data = getClass(classCode);
+    // Subscribe to real-time updates from Firebase
+    const unsubscribe = subscribeToClass(classCode, (data) => {
       setCls(data);
       if (data) {
         setDefaultPlanet(data.defaultPlanet);
         setDefaultLesson(data.defaultLesson as any);
       }
-    };
+    });
     
-    load();
-    
-    // This allows the teacher dashboard to update in real-time 
-    // when a student on the SAME computer/browser saves progress.
-    const onStorage = () => load();
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    // Cleanup the listener when the teacher leaves the dashboard
+    return () => unsubscribe();
   }, [classCode]);
 
   if (!classCode) return <div className="p-8 text-center text-xl">No class code provided</div>;
 
-  const handleSetDefault = () => {
-    setClassDefaultStart(classCode, defaultPlanet, defaultLesson);
-    setCls(getClass(classCode));
+  const handleSetDefault = async () => {
+    await setClassDefaultStart(classCode, defaultPlanet, defaultLesson);
   };
 
-  const handleOverride = (nickname: string) => {
+  const handleOverride = async (nickname: string) => {
     if (!cls) return;
     const student = cls.students[nickname];
     if (!student) return;
     
     const updated = { ...student, planet: defaultPlanet, lesson: defaultLesson };
-    updateStudentState(classCode, updated);
-    setCls(getClass(classCode)); // refresh UI
+    await updateStudentState(classCode, updated);
   };
 
   return (
@@ -59,7 +52,6 @@ const TeacherDashboard: React.FC = () => {
 
         <section className="mb-8 bg-card p-6 rounded-lg shadow border border-gray-100">
           <h2 className="text-xl font-semibold mb-4">Class Default Start Point</h2>
-          <p className="text-sm text-muted-foreground mb-4">New students will start here. You can also override existing students to this location.</p>
           <div className="flex flex-wrap gap-4 items-center">
             <select value={defaultPlanet} onChange={e => setDefaultPlanet(e.target.value)} className="input border rounded px-3 py-2 text-black">
               <option value="mercury">Mercury</option>
@@ -94,10 +86,6 @@ const TeacherDashboard: React.FC = () => {
                     <div className="text-lg font-bold text-gray-800">{s.nickname}</div>
                     <div className="text-sm font-medium text-sky-600 uppercase tracking-wide mt-1">
                       {s.planet} — {s.lesson}
-                    </div>
-                    {/* Failsafe if getDescription is missing or undefined */}
-                    <div className="text-xs text-gray-500 mt-2 italic">
-                      {getDescription ? getDescription(s.planet as any, s.lesson as any) : "Currently exploring..."}
                     </div>
                   </div>
                   <button 
