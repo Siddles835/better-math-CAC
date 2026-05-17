@@ -50,7 +50,7 @@ const TeacherDashboard: React.FC = () => {
         <section className="mb-6 bg-card p-4 rounded">
           <h2 className="font-medium mb-2">Class Default Start</h2>
           <div className="flex gap-3 items-center">
-            <select value={defaultPlanet} onChange={e => setDefaultPlanet(e.target.value)} className="input">
+            <select value={defaultPlanet} onChange={e => setDefaultPlanet(e.target.value)} className="input text-black">
               <option value="mercury">Mercury</option>
               <option value="venus">Venus</option>
               <option value="earth">Earth</option>
