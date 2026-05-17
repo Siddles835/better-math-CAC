@@ -7,12 +7,13 @@ const TeacherLoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const code = classCode.trim();
     if (!code) return;
 
-    if (!checkClassExists(code)) {
+    const exists = await checkClassExists(code);
+    if (!exists) {
       setError(`Class code "${code}" does not exist. Did you mean to register a new class?`);
       return;
     }
