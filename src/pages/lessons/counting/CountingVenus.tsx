@@ -136,7 +136,7 @@ const CountingVenus: React.FC = () => {
             totalQuestions={8}
             areasToImprove={quizAreas}
             lessonType="counting"
-            videoUrl="https://www.youtube.com/embed/D0Ajq682yrA"
+            videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
             onFinish={() => {
               completePlanet('venus');
               navigate('/solar-system');
