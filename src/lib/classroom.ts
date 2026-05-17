@@ -1,20 +1,23 @@
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 
-export interface Student {
+export type LessonType = 'counting' | 'addition' | 'subtraction';
+
+export interface StudentState {
   nickname: string;
-  planet: string;
-  lesson: string;
+  planet: string; 
+  lesson: LessonType;
+  lastUpdated: number;
 }
 
 export interface Classroom {
   classCode: string;
-  defaultPlanet: string;
-  defaultLesson: string;
-  students: Record<string, Student>;
+  teacherCode: string;
+  defaultStart?: { planet: string; lesson: LessonType };
+  students: Record<string, StudentState>; // key: nickname
 }
 
-// --- API FUNCTIONS ---
+// --- CLOUD EXISTENCE CHECKS ---
 
 export const checkClassExists = async (classCode: string): Promise<boolean> => {
   const docRef = doc(db, 'classrooms', classCode);
@@ -22,13 +25,19 @@ export const checkClassExists = async (classCode: string): Promise<boolean> => {
   return docSnap.exists();
 };
 
-export const createClass = async (classCode: string) => {
+export const checkStudentExists = async (classCode: string, nickname: string): Promise<boolean> => {
+  const cls = await getClass(classCode);
+  return !!(cls && cls.students && cls.students[nickname]);
+};
+
+// --- DATABASE OPERATIONS ---
+
+export const createClass = async (classCode: string, teacherCode?: string) => {
   const docRef = doc(db, 'classrooms', classCode);
   await setDoc(docRef, {
     classCode,
-    defaultPlanet: 'mercury',
-    defaultLesson: 'counting',
-    students: {}
+    teacherCode: teacherCode || Math.random().toString(36).slice(2, 8),
+    students: {},
   });
 };
 
@@ -38,29 +47,33 @@ export const getClass = async (classCode: string): Promise<Classroom | null> => 
   return docSnap.exists() ? (docSnap.data() as Classroom) : null;
 };
 
-export const checkStudentExists = async (classCode: string, nickname: string): Promise<boolean> => {
+export const registerStudent = async (classCode: string, nickname: string): Promise<StudentState | null> => {
   const cls = await getClass(classCode);
-  return !!(cls && cls.students && cls.students[nickname]);
+  if (!cls) return null;
+
+  // Use teacher's default preset or fall back to the Sun & Counting
+  const start = cls.defaultStart || { planet: 'sun', lesson: 'counting' as LessonType };
+  
+  const newStudent: StudentState = {
+    nickname,
+    planet: start.planet,
+    lesson: start.lesson,
+    lastUpdated: Date.now(),
+  };
+
+  const updatedStudents = {
+    ...cls.students,
+    [nickname]: newStudent
+  };
+
+  await updateDoc(doc(db, 'classrooms', classCode), { students: updatedStudents });
+  return newStudent;
 };
 
-export const registerStudent = async (classCode: string, nickname: string) => {
+export const updateStudentState = async (classCode: string, student: StudentState) => {
   const cls = await getClass(classCode);
-  if (cls && !cls.students[nickname]) {
-    const updatedStudents = {
-      ...cls.students,
-      [nickname]: {
-        nickname,
-        planet: cls.defaultPlanet || 'mercury',
-        lesson: cls.defaultLesson || 'counting'
-      }
-    };
-    await updateDoc(doc(db, 'classrooms', classCode), { students: updatedStudents });
-  }
-};
-
-export const updateStudentState = async (classCode: string, student: Student) => {
-  const cls = await getClass(classCode);
-  if (cls && cls.students[student.nickname]) {
+  if (cls) {
+    student.lastUpdated = Date.now();
     const updatedStudents = {
       ...cls.students,
       [student.nickname]: student
@@ -69,15 +82,14 @@ export const updateStudentState = async (classCode: string, student: Student) =>
   }
 };
 
-export const setClassDefaultStart = async (classCode: string, planet: string, lesson: string) => {
+export const setClassDefaultStart = async (classCode: string, planet: string, lesson: LessonType) => {
   await updateDoc(doc(db, 'classrooms', classCode), {
-    defaultPlanet: planet,
-    defaultLesson: lesson
+    defaultStart: { planet, lesson }
   });
 };
 
-// --- REAL-TIME MAGIC ---
-// This listens to the database and fires the callback instantly when data changes
+// --- REAL-TIME STREAMING ---
+// Teachers read from this to watch the iPads update automatically
 export const subscribeToClass = (classCode: string, callback: (data: Classroom | null) => void) => {
   const docRef = doc(db, 'classrooms', classCode);
   return onSnapshot(docRef, (docSnap) => {
