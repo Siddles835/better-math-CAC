@@ -42,7 +42,6 @@ const HomePage: React.FC = () => {
 
       <div className="flex flex-col items-center gap-8 mt-6 w-full max-w-md">
         
-        {}
         <button
           onClick={() => navigate('/student-login')}
           className="w-full px-8 py-4 text-lg font-semibold rounded-2xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-md hover:shadow-lg"
@@ -52,7 +51,6 @@ const HomePage: React.FC = () => {
 
         <div className="w-full h-px bg-gray-300 my-2"></div>
 
-        {}
         <form onSubmit={handleTeacherSubmit} className="w-full flex flex-col gap-4">
           <h2 className="text-xl font-semibold text-foreground text-center">
             Teachers: Set your Class ID
@@ -63,11 +61,10 @@ const HomePage: React.FC = () => {
             value={classId}
             onChange={(e) => setClassId(e.target.value)}
             placeholder="Enter Class ID (e.g., 123456)"
-            className="px-4 py-3 border-2 border-gray-200 rounded-xl text-lg focus:outline-none focus:border-sky-500 transition-colors"
+            className="px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-black focus:outline-none focus:border-sky-500 transition-colors"
             required
           />
           
-          {}
           {errorMessage && (
             <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm font-medium animate-fade-in text-center">
               {errorMessage}
