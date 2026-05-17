@@ -1,27 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const [classId, setClassId] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const handleTeacherSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage('');
-
-    const storedClasses = JSON.parse(localStorage.getItem('math_classes') || '[]');
-
-    if (storedClasses.includes(classId)) {
-      setErrorMessage(`Error: Class ID "${classId}" is already taken!`);
-      return;
-    }
-
-    storedClasses.push(classId);
-    localStorage.setItem('math_classes', JSON.stringify(storedClasses));
-
-    navigate('/teacher-login');
-  };
 
   return (
     <div className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-center p-8">
@@ -36,49 +17,44 @@ const HomePage: React.FC = () => {
           Welcome to Better Math
         </h1>
         <p className="text-lg text-muted-foreground max-w-md mx-auto mb-8">
-          Choose your role to continue: Student or Teacher.
+          Choose your role to get started or resume your progress.
         </p>
       </div>
 
-      <div className="flex flex-col items-center gap-8 mt-6 w-full max-w-md">
-        
-        <button
-          onClick={() => navigate('/student-login')}
-          className="w-full px-8 py-4 text-lg font-semibold rounded-2xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-md hover:shadow-lg"
-        >
-          Student Login
-        </button>
-
-        <div className="w-full h-px bg-gray-300 my-2"></div>
-
-        <form onSubmit={handleTeacherSubmit} className="w-full flex flex-col gap-4">
-          <h2 className="text-xl font-semibold text-foreground text-center">
-            Teachers: Set your Class ID
-          </h2>
-          
-          <input
-            type="text"
-            value={classId}
-            onChange={(e) => setClassId(e.target.value)}
-            placeholder="Enter Class ID (e.g., 123456)"
-            className="px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-black focus:outline-none focus:border-sky-500 transition-colors"
-            required
-          />
-          
-          {errorMessage && (
-            <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm font-medium animate-fade-in text-center">
-              {errorMessage}
-            </div>
-          )}
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 w-full max-w-2xl">
+        {/* Student Section */}
+        <div className="flex flex-col gap-4 p-6 bg-card rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-2xl font-semibold text-center mb-2">Students</h2>
           <button
-            type="submit"
-            className="w-full px-8 py-4 text-lg font-semibold rounded-2xl bg-sky-600 text-white hover:bg-sky-500 transition-all shadow-md hover:shadow-lg"
+            onClick={() => navigate('/student-register')}
+            className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-sm"
           >
-            Teacher Login
+            New Student (Register)
           </button>
-        </form>
+          <button
+            onClick={() => navigate('/student-login')}
+            className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-all shadow-sm"
+          >
+            Returning Student (Login)
+          </button>
+        </div>
 
+        {/* Teacher Section */}
+        <div className="flex flex-col gap-4 p-6 bg-card rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-2xl font-semibold text-center mb-2">Teachers</h2>
+          <button
+            onClick={() => navigate('/teacher-register')}
+            className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-sky-600 text-white hover:bg-sky-500 transition-all shadow-sm"
+          >
+            Create Class (Register)
+          </button>
+          <button
+            onClick={() => navigate('/teacher-login')}
+            className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-sky-100 text-sky-800 hover:bg-sky-200 transition-all shadow-sm"
+          >
+            Manage Class (Login)
+          </button>
+        </div>
       </div>
     </div>
   );
