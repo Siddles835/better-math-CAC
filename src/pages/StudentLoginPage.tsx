@@ -8,18 +8,20 @@ const StudentLoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const code = classCode.trim();
     const name = nickname.trim();
     if (!code || !name) return;
 
-    if (!checkClassExists(code)) {
+    const classExists = await checkClassExists(code);
+    if (!classExists) {
       setError(`Class code "${code}" does not exist.`);
       return;
     }
 
-    if (!checkStudentExists(code, name)) {
+    const studentExists = await checkStudentExists(code, name);
+    if (!studentExists) {
       setError(`We couldn't find the name "${name}" in this class. Check your spelling or go back to Register.`);
       return;
     }
