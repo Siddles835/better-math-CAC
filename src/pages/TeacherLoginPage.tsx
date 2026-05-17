@@ -20,9 +20,9 @@ const TeacherLoginPage: React.FC = () => {
       <div className="w-full max-w-md bg-card p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Teacher Login</h2>
         <label className="block mb-2">Class Code</label>
-        <input value={classCode} onChange={e => setClassCode(e.target.value)} className="input w-full mb-4" />
+        <input value={classCode} onChange={e => setClassCode(e.target.value)} className="input w-full mb-4 text-black" />
         <label className="block mb-2">(Optional) Teacher Join Code</label>
-        <input value={teacherCode} onChange={e => setTeacherCode(e.target.value)} className="input w-full mb-4" />
+        <input value={teacherCode} onChange={e => setTeacherCode(e.target.value)} className="input w-full mb-4 text-black" />
         <div className="flex gap-3 justify-end">
           <button onClick={() => navigate('/')} className="btn">Back</button>
           <button onClick={handleJoin} className="btn btn-primary">Enter Dashboard</button>
