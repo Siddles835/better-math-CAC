@@ -134,7 +134,7 @@ const SubtractionNeptune: React.FC = () => {
             totalQuestions={8}
             areasToImprove={quizAreas}
             lessonType="subtraction"
-            videoUrl="https://www.youtube.com/embed/pkuGr0Jcmoo"
+            videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
             onFinish={() => {
               completePlanet('neptune');
               navigate('/solar-system');
