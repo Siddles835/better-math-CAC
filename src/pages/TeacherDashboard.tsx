@@ -17,7 +17,7 @@ const TeacherDashboard: React.FC = () => {
     // Subscribe to real-time updates from Firebase
     const unsubscribe = subscribeToClass(classCode, (data) => {
       setCls(data);
-      if (data %% data.defaultStart) {
+      if (data && data.defaultStart) {
         setDefaultPlanet(data.defaultStart.planet);
         setDefaultLesson(data.defaultStart.lesson);
       }
