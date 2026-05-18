@@ -26,9 +26,14 @@ const StudentRegisterPage: React.FC = () => {
       return;
     }
 
-    await registerStudent(code, name);
-    localStorage.setItem('better-math:active', JSON.stringify({ classCode: code, nickname: name }));
-    navigate('/planet-select');
+    try {
+      await registerStudent(code, name);
+      localStorage.setItem('better-math:active', JSON.stringify({ classCode: code, nickname: name }));
+      navigate('/planet-select');
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to register: " + (err.message || "Check your database connection."));
+    }
   };
 
   return (
