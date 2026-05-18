@@ -1,10 +1,18 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { updateStudentState, subscribeToClass, LessonType, StudentState } from '@/lib/classroom';
-
-export type PlanetId = 
-  | 'sun' | 'mercury' | 'venus'
-  | 'earth' | 'mars' | 'jupiter'
-  | 'saturn' | 'uranus' | 'neptune';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import {
+  updateStudentState,
+  subscribeToClass,
+  getClass,
+  LessonType,
+  StudentState,
+} from '@/lib/classroom';
+import {
+  PlanetId,
+  PLANET_ORDER,
+  getLessonForPlanet,
+  getPlanetIndex,
+  buildCompletedMap,
+} from '@/lib/planets';
 
 interface LessonProgress {
   completed: boolean;
@@ -19,9 +27,12 @@ interface GameContextType {
   showRocketTransition: boolean;
   setShowRocketTransition: (show: boolean) => void;
   completedPlanets: Record<PlanetId, boolean>;
+  progressPlanetId: PlanetId;
+  classMaxPlanetId: PlanetId;
   completePlanet: (planetId: PlanetId) => Promise<void>;
   getOrderedSequence: () => { planet: PlanetId; lesson: LessonType }[];
   setPosition: (planet: PlanetId, lesson: LessonType) => Promise<void>;
+  hydrateFromStudent: (student: StudentState, classMaxPlanetId?: string) => void;
 }
 
 const initialProgress: Record<LessonType, LessonProgress> = {
@@ -30,24 +41,14 @@ const initialProgress: Record<LessonType, LessonProgress> = {
   subtraction: { completed: false, currentStep: 0 },
 };
 
-const initialPlanets: Record<PlanetId, boolean> = {
-  sun: false,
-  mercury: false,
-  venus: false,
-  earth: false,
-  mars: false,
-  jupiter: false,
-  saturn: false,
-  uranus: false,
-  neptune: false,
-};
-
-// The strict progression order defined by your curriculum setup
-const orderPlanets: PlanetId[] = [
-  'sun', 'mercury', 'venus', 
-  'earth', 'mars', 'jupiter', 
-  'saturn', 'uranus', 'neptune'
-];
+const emptyCompleted = (): Record<PlanetId, boolean> =>
+  PLANET_ORDER.reduce(
+    (acc, id) => {
+      acc[id] = false;
+      return acc;
+    },
+    {} as Record<PlanetId, boolean>
+  );
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -55,9 +56,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentLesson, setCurrentLesson] = useState<LessonType | null>(null);
   const [lessonProgress, setLessonProgress] = useState(initialProgress);
   const [showRocketTransition, setShowRocketTransition] = useState(false);
-  const [completedPlanets, setCompletedPlanets] = useState(initialPlanets);
+  const [completedPlanets, setCompletedPlanets] = useState<Record<PlanetId, boolean>>(emptyCompleted);
+  const [progressPlanetId, setProgressPlanetId] = useState<PlanetId>('sun');
+  const [classMaxPlanetId, setClassMaxPlanetId] = useState<PlanetId>('sun');
 
-  // Helper to grab current login session details from the physical device
   const getActiveStudent = () => {
     try {
       const raw = localStorage.getItem('better-math:active');
@@ -67,71 +69,74 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // REAL-TIME SYNC LOOP:
-  // Listens to the cloud database. If a teacher overrides progress on another device,
-  // this active listener intercepts the change and updates the student's iPad view instantly.
+  const hydrateFromStudent = useCallback((student: StudentState, maxPlanetId?: string) => {
+    const planet = (PLANET_ORDER.includes(student.planet as PlanetId)
+      ? student.planet
+      : 'sun') as PlanetId;
+    setCurrentLesson(student.lesson);
+    setProgressPlanetId(planet);
+    setClassMaxPlanetId(
+      (maxPlanetId && PLANET_ORDER.includes(maxPlanetId as PlanetId)
+        ? maxPlanetId
+        : planet) as PlanetId
+    );
+    setCompletedPlanets(
+      buildCompletedMap(planet, student.completedPlanets ?? [])
+    );
+  }, []);
+
   useEffect(() => {
     const active = getActiveStudent();
     if (!active) return;
 
     const unsubscribe = subscribeToClass(active.classCode, (cls) => {
-      if (cls && cls.students && cls.students[active.nickname]) {
-        const student: StudentState = cls.students[active.nickname];
-        
-        setCurrentLesson(student.lesson);
-        
-        // Compute which planets are completed based on current location
-        const targetIndex = orderPlanets.indexOf(student.planet as PlanetId);
-        setCompletedPlanets(() => {
-          const updated = { ...initialPlanets };
-          for (let i = 0; i < targetIndex; i++) {
-            if (orderPlanets[i]) {
-              updated[orderPlanets[i]] = true;
-            }
-          }
-          return updated;
-        });
+      if (cls?.students?.[active.nickname]) {
+        const student = cls.students[active.nickname];
+        const maxPlanet = cls.defaultStart?.planet ?? 'sun';
+        hydrateFromStudent(student, maxPlanet);
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [hydrateFromStudent]);
 
   const updateLessonProgress = (lesson: LessonType, step: number, completed = false) => {
-    setLessonProgress(prev => ({
+    setLessonProgress((prev) => ({
       ...prev,
       [lesson]: { currentStep: step, completed },
     }));
   };
 
-  // Automatically calculates the next planet and its lesson types when completing a step
   const completePlanet = async (planetId: PlanetId) => {
     const active = getActiveStudent();
     if (!active) return;
 
-    // Optimistically check off the planet visually
-    setCompletedPlanets(prev => ({ ...prev, [planetId]: true }));
+    const clsSnap = await getClass(active.classCode);
+    const existing = clsSnap?.students?.[active.nickname];
+    const completedList = [...(existing?.completedPlanets ?? [])];
+    if (!completedList.includes(planetId)) {
+      completedList.push(planetId);
+    }
 
-    const currentIndex = orderPlanets.indexOf(planetId);
-    let nextIndex = currentIndex + 1;
-    if (nextIndex >= orderPlanets.length) {
-      nextIndex = orderPlanets.length - 1; // Cap at Neptune
+    const currentIndex = getPlanetIndex(planetId);
+    const maxIndex = getPlanetIndex(clsSnap?.defaultStart?.planet ?? 'sun');
+    let nextIndex = Math.min(currentIndex + 1, PLANET_ORDER.length - 1);
+    if (nextIndex > maxIndex) {
+      nextIndex = maxIndex;
     }
-    
-    const nextPlanet = orderPlanets[nextIndex];
-    
-    // Core structural mapping logic
-    let nextLesson: LessonType = 'counting';
-    if (['earth', 'mars', 'jupiter'].includes(nextPlanet)) {
-      nextLesson = 'addition';
-    } else if (['saturn', 'uranus', 'neptune'].includes(nextPlanet)) {
-      nextLesson = 'subtraction';
-    }
+
+    const nextPlanet = PLANET_ORDER[nextIndex];
+    const nextLesson = getLessonForPlanet(nextPlanet);
+
+    setCompletedPlanets((prev) => ({ ...prev, [planetId]: true }));
+    setProgressPlanetId(nextPlanet);
+    setCurrentLesson(nextLesson);
 
     await updateStudentState(active.classCode, {
       nickname: active.nickname,
       planet: nextPlanet,
       lesson: nextLesson,
+      completedPlanets: completedList,
       lastUpdated: Date.now(),
     });
   };
@@ -140,7 +145,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const lessons: LessonType[] = ['counting', 'addition', 'subtraction'];
     const seq: { planet: PlanetId; lesson: LessonType }[] = [];
     for (const l of lessons) {
-      for (const p of orderPlanets) {
+      for (const p of PLANET_ORDER) {
         seq.push({ planet: p, lesson: l });
       }
     }
@@ -152,10 +157,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const active = getActiveStudent();
     if (!active) return;
 
+    const clsSnap = await getClass(active.classCode);
+    const existing = clsSnap?.students?.[active.nickname];
+
     await updateStudentState(active.classCode, {
       nickname: active.nickname,
       planet,
       lesson,
+      completedPlanets: existing?.completedPlanets ?? [],
       lastUpdated: Date.now(),
     });
   };
@@ -170,9 +179,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         showRocketTransition,
         setShowRocketTransition,
         completedPlanets,
+        progressPlanetId,
+        classMaxPlanetId,
         completePlanet,
         getOrderedSequence,
         setPosition,
+        hydrateFromStudent,
       }}
     >
       {children}
@@ -187,3 +199,5 @@ export const useGame = () => {
   }
   return context;
 };
+
+export type { PlanetId };

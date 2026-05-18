@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Classroom, setClassDefaultStart, updateStudentState, subscribeToClass } from '@/lib/classroom';
-import { getDescription } from '@/lib/planetDescriptions';
+import { getLessonForPlanet, PLANET_META, PlanetId } from '@/lib/planets';
 
 const TeacherDashboard: React.FC = () => {
   const params = useParams();
   const classCode = params['*'] || (params as any).classCode || '';
   const navigate = useNavigate();
   const [cls, setCls] = useState<Classroom | null>(null);
-  const [defaultPlanet, setDefaultPlanet] = useState('mercury');
-  const [defaultLesson, setDefaultLesson] = useState<'counting' | 'addition' | 'subtraction'>('counting');
+  const [defaultPlanet, setDefaultPlanet] = useState('sun');
 
   useEffect(() => {
     if (!classCode) return;
@@ -17,9 +16,8 @@ const TeacherDashboard: React.FC = () => {
     // Subscribe to real-time updates from Firebase
     const unsubscribe = subscribeToClass(classCode, (data) => {
       setCls(data);
-      if (data && data.defaultStart) {
+      if (data?.defaultStart?.planet) {
         setDefaultPlanet(data.defaultStart.planet);
-        setDefaultLesson(data.defaultStart.lesson);
       }
     });
     
@@ -29,17 +27,22 @@ const TeacherDashboard: React.FC = () => {
 
   if (!classCode) return <div className="p-8 text-center text-xl">No class code provided</div>;
 
+  const derivedLesson = getLessonForPlanet(defaultPlanet);
+
   const handleSetDefault = async () => {
-    await setClassDefaultStart(classCode, defaultPlanet, defaultLesson);
+    await setClassDefaultStart(classCode, defaultPlanet);
   };
 
   const handleOverride = async (nickname: string) => {
     if (!cls) return;
     const student = cls.students[nickname];
     if (!student) return;
-    
-    const updated = { ...student, planet: defaultPlanet, lesson: defaultLesson };
-    await updateStudentState(classCode, updated);
+
+    await updateStudentState(classCode, {
+      ...student,
+      planet: defaultPlanet,
+      lesson: derivedLesson,
+    });
   };
 
   return (
@@ -51,7 +54,10 @@ const TeacherDashboard: React.FC = () => {
         </div>
 
         <section className="mb-8 bg-card p-6 rounded-lg shadow border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4">Class Default Start Point</h2>
+          <h2 className="text-xl font-semibold mb-2">Class Default Start Point</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Students can pick any planet from the Sun through your selection. Lesson type is automatic.
+          </p>
           <div className="flex flex-wrap gap-4 items-center">
             <select value={defaultPlanet} onChange={e => setDefaultPlanet(e.target.value)} className="input border rounded px-3 py-2 text-black">
               <option value="sun">Sun</option>
@@ -64,12 +70,10 @@ const TeacherDashboard: React.FC = () => {
               <option value="uranus">Uranus</option>
               <option value="neptune">Neptune</option>
             </select>
-            <select value={defaultLesson} onChange={e => setDefaultLesson(e.target.value as any)} className="input border rounded px-3 py-2 text-black">
-              <option value="counting">Counting</option>
-              <option value="addition">Addition</option>
-              <option value="subtraction">Subtraction</option>
-            </select>
-            <button onClick={handleSetDefault} className="btn btn-primary bg-sky-600 text-white px-4 py-2 rounded">Update Default</button>
+            <span className="text-sm font-medium text-sky-700 capitalize px-2">
+              Lesson: {derivedLesson}
+            </span>
+            <button type="button" onClick={handleSetDefault} className="btn btn-primary bg-sky-600 text-white px-4 py-2 rounded">Update Default</button>
           </div>
         </section>
 

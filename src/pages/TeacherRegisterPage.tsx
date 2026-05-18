@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { checkClassExists, createClass } from '@/lib/classroom';
+import AuthNavButton from '@/components/AuthNavButton';
 
 const TeacherRegisterPage: React.FC = () => {
   const [classCode, setClassCode] = useState('');
@@ -47,7 +48,7 @@ const TeacherRegisterPage: React.FC = () => {
           {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
           
           <div className="flex gap-3 justify-end mt-4">
-            <button type="button" onClick={() => navigate('/')} className="btn bg-gray-200 px-4 py-2 rounded">Cancel</button>
+            <AuthNavButton onClick={() => navigate('/')} label="Cancel" />
             <button type="submit" className="btn btn-primary bg-sky-600 text-white px-4 py-2 rounded">Create Class</button>
           </div>
         </form>

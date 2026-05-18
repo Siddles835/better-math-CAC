@@ -10,11 +10,11 @@ const HomeButton: React.FC = () => {
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => navigate('/solar-system')}
-      className="fixed top-4 left-4 z-50 bg-card/80 backdrop-blur-sm border border-border hover:bg-card"
-      aria-label="Go to solar system"
+      onClick={() => navigate('/planet-select')}
+      className="fixed top-4 left-4 z-50 bg-card/90 backdrop-blur-sm border border-border text-foreground hover:bg-muted shadow-md"
+      aria-label="Return to planet selection"
     >
-      <Home className="w-5 h-5" />
+      <Home className="h-5 w-5 text-foreground" strokeWidth={2.25} aria-hidden />
     </Button>
   );
 };

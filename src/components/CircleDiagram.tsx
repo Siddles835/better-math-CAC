@@ -1,6 +1,12 @@
 import React from 'react';
 
-type Planet = { id: string; name: string; color?: string; route?: string };
+type Planet = {
+  id: string;
+  name: string;
+  color?: string;
+  route?: string;
+  disabled?: boolean;
+};
 
 interface Props {
   planets: Planet[];
@@ -14,19 +20,52 @@ const CircleDiagram: React.FC<Props> = ({ planets, size = 360, onSelect, selecte
   const cx = r;
   const cy = r;
   const angleStep = (Math.PI * 2) / planets.length;
+  const labelOffset = 34;
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="mx-auto block"
+      role="img"
+      aria-label="Planet selection diagram"
+    >
       <g>
         {planets.map((p, i) => {
           const angle = i * angleStep - Math.PI / 2;
-          const px = cx + Math.cos(angle) * (r - 48);
-          const py = cy + Math.sin(angle) * (r - 48);
+          const px = cx + Math.cos(angle) * (r - 52);
+          const py = cy + Math.sin(angle) * (r - 52);
+          const labelY = py + labelOffset;
           const isSelected = p.id === selectedId;
+          const isDisabled = p.disabled;
+
           return (
-            <g key={p.id} onClick={() => onSelect?.(p)} style={{ cursor: 'pointer' }}>
-              <circle cx={px} cy={py} r={isSelected ? 22 : 18} fill={p.color || '#f3f4f6'} stroke={isSelected ? '#fff' : '#0000'} strokeWidth={isSelected ? 2 : 0} />
-              <text x={px} y={py + 36} fontSize={12} textAnchor="middle" fill="#111" style={{ pointerEvents: 'none' }}>{p.name}</text>
+            <g
+              key={p.id}
+              onClick={() => !isDisabled && onSelect?.(p)}
+              style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+              opacity={isDisabled ? 0.35 : 1}
+            >
+              <circle
+                cx={px}
+                cy={py}
+                r={isSelected ? 22 : 18}
+                fill={p.color || '#f3f4f6'}
+                stroke={isSelected ? '#fff' : isDisabled ? '#666' : '#e2e8f0'}
+                strokeWidth={isSelected ? 2.5 : 1}
+              />
+              <text
+                x={px}
+                y={labelY}
+                fontSize={13}
+                fontWeight={600}
+                textAnchor="middle"
+                fill="hsl(220 15% 90%)"
+                style={{ pointerEvents: 'none', userSelect: 'none' }}
+              >
+                {p.name}
+              </text>
             </g>
           );
         })}

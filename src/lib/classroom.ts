@@ -1,12 +1,15 @@
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
+import { getLessonForPlanet } from './planets';
 
 export type LessonType = 'counting' | 'addition' | 'subtraction';
 
 export interface StudentState {
   nickname: string;
-  planet: string; 
+  planet: string;
   lesson: LessonType;
+  /** Planets the student has fully completed (persisted across sessions). */
+  completedPlanets?: string[];
   lastUpdated: number;
 }
 
@@ -51,13 +54,12 @@ export const registerStudent = async (classCode: string, nickname: string): Prom
   const cls = await getClass(classCode);
   if (!cls) return null;
 
-  // Use teacher's default preset or fall back to the Sun & Counting
-  const start = cls.defaultStart || { planet: 'sun', lesson: 'counting' as LessonType };
-  
+  // Progress always starts at Sun; teacher default only caps planet choice on the ring.
   const newStudent: StudentState = {
     nickname,
-    planet: start.planet,
-    lesson: start.lesson,
+    planet: 'sun',
+    lesson: 'counting',
+    completedPlanets: [],
     lastUpdated: Date.now(),
   };
 
@@ -82,9 +84,10 @@ export const updateStudentState = async (classCode: string, student: StudentStat
   }
 };
 
-export const setClassDefaultStart = async (classCode: string, planet: string, lesson: LessonType) => {
+export const setClassDefaultStart = async (classCode: string, planet: string) => {
+  const lesson = getLessonForPlanet(planet);
   await updateDoc(doc(db, 'classrooms', classCode), {
-    defaultStart: { planet, lesson }
+    defaultStart: { planet, lesson },
   });
 };
 

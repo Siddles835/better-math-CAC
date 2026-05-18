@@ -1,82 +1,107 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import CircleDiagram from '@/components/CircleDiagram';
 import NavigationArrows from '@/components/NavigationArrows';
-
-const planets = [
-  { id: 'mercury', name: 'Mercury', color: '#c7b89a', route: '/lesson/counting/mercury' },
-  { id: 'venus', name: 'Venus', color: '#f3d1b3', route: '/lesson/counting/venus' },
-  { id: 'earth', name: 'Earth', color: '#8ecae6', route: '/lesson/counting/earth' },
-  { id: 'mars', name: 'Mars', color: '#f28b6b', route: '/lesson/counting/mars' },
-  { id: 'jupiter', name: 'Jupiter', color: '#d9c5a6', route: '/lesson/counting/jupiter' },
-  { id: 'saturn', name: 'Saturn', color: '#e9d6b2', route: '/lesson/counting/saturn' },
-  { id: 'uranus', name: 'Uranus', color: '#bde0fe', route: '/lesson/counting/uranus' },
-  { id: 'neptune', name: 'Neptune', color: '#7aa2f7', route: '/lesson/counting/neptune' },
-  { id: 'sun', name: 'Sun', color: '#ffd166', route: '/lesson/counting/sun' },
-];
+import { subscribeToClass, Classroom } from '@/lib/classroom';
+import {
+  PLANET_ORDER,
+  PLANET_META,
+  PlanetId,
+  canSelectPlanet,
+  getLessonForPlanet,
+  getLessonRoute,
+} from '@/lib/planets';
 
 const PlanetSelectPage: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition } = useGame();
-  const [selected, setSelected] = useState<string | null>(null);
+  const {
+    setShowRocketTransition,
+    progressPlanetId,
+    completedPlanets,
+    setPosition,
+    hydrateFromStudent,
+  } = useGame();
+  const [classroom, setClassroom] = useState<Classroom | null>(null);
 
-  const handlePlanetClick = (route: string) => {
+  useEffect(() => {
+    const raw = localStorage.getItem('better-math:active');
+    if (!raw) {
+      navigate('/');
+      return;
+    }
+    const { classCode, nickname } = JSON.parse(raw);
+    const unsub = subscribeToClass(classCode, (data) => {
+      setClassroom(data);
+      if (data?.students?.[nickname]) {
+        hydrateFromStudent(data.students[nickname], data.defaultStart?.planet ?? 'sun');
+      }
+    });
+    return () => unsub();
+  }, [navigate, hydrateFromStudent]);
+
+  const classMax = classroom?.defaultStart?.planet ?? 'sun';
+  const completedList = useMemo(
+    () => PLANET_ORDER.filter((id) => completedPlanets[id]),
+    [completedPlanets]
+  );
+
+  const diagramPlanets = useMemo(
+    () =>
+      PLANET_ORDER.map((id) => {
+        const selectable = canSelectPlanet(id, {
+          classMaxPlanetId: classMax,
+          progressPlanetId,
+          completedPlanets: completedList,
+        });
+        return {
+          id,
+          name: PLANET_META[id].name,
+          color: PLANET_META[id].color,
+          route: getLessonRoute(id),
+          disabled: !selectable,
+        };
+      }),
+    [classMax, progressPlanetId, completedList]
+  );
+
+  const handlePlanetSelect = async (planetId: string) => {
+    const lesson = getLessonForPlanet(planetId);
+    await setPosition(planetId as PlanetId, lesson);
     setShowRocketTransition(true);
     setTimeout(() => {
-      navigate(route);
+      navigate(getLessonRoute(planetId));
     }, 1200);
   };
 
-  const validMap: Record<string, string[]> = {
-    counting: ['sun','mercury','venus'],
-    addition: ['earth','mars','jupiter'],
-    subtraction: ['saturn','uranus','neptune'],
-  };
-
-  const startIfValid = (lesson: 'counting'|'addition'|'subtraction', planetId: string) => {
-    if (validMap[lesson].includes(planetId)) {
-      handlePlanetClick(`/lesson/${lesson}/${planetId}`);
-    } else {
-      alert('Lesson not available for this planet yet.');
-    }
-  };
-
-  const handleSelect = (p: any) => {
-    setSelected(p.id);
-  };
+  const maxPlanetName = PLANET_META[classMax as PlanetId]?.name ?? 'Sun';
 
   return (
-    <div className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-start p-8 pt-12">
-      <h1 className="text-3xl font-semibold text-foreground mb-2 animate-fade-in">
+    <div className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-center p-8">
+      <h1 className="text-3xl font-semibold text-foreground mb-2 text-center">
         Choose Your Destination
       </h1>
-      <p className="text-muted-foreground mb-6 animate-fade-in">
-        Click a planet to begin. Use the diagram to explore.
+      <p className="text-muted-foreground mb-8 text-center max-w-lg">
+        Your teacher has unlocked planets through{' '}
+        <strong className="text-foreground">{maxPlanetName}</strong>. Tap a planet to start its
+        lesson.
       </p>
 
-      <div className="w-full max-w-2xl mx-auto mb-8">
-        <CircleDiagram planets={planets} size={420} onSelect={handleSelect} selectedId={selected || undefined} />
+      <div className="flex w-full justify-center items-center mb-10">
+        <CircleDiagram
+          planets={diagramPlanets}
+          size={440}
+          onSelect={(p) => !p.disabled && handlePlanetSelect(p.id)}
+        />
       </div>
 
-      <div className="mb-8">
-        {selected ? (
-          <div className="flex gap-4">
-            <button className="btn" onClick={() => setSelected(null)}>Clear</button>
-            <button className="btn btn-primary" onClick={() => startIfValid('counting', selected)}>Start Counting</button>
-            <button className="btn btn-secondary" onClick={() => startIfValid('addition', selected)}>Start Addition</button>
-            <button className="btn btn-warning" onClick={() => startIfValid('subtraction', selected)}>Start Subtraction</button>
-          </div>
-        ) : (
-          <div className="text-sm text-muted-foreground">Select a planet from the circle above.</div>
-        )}
-      </div>
+      <p className="text-sm text-muted-foreground mb-20 text-center max-w-md">
+        {completedList.length === 0
+          ? 'Pick any unlocked planet to begin. After you progress, use Home to replay earlier planets.'
+          : 'Select a planet you have already passed to practice again.'}
+      </p>
 
-      <NavigationArrows
-        onBack={() => navigate('/')}
-        showNext={false}
-        backLabel="Back"
-      />
+      <NavigationArrows onBack={() => navigate('/')} showNext={false} backLabel="Back" />
     </div>
   );
 };
