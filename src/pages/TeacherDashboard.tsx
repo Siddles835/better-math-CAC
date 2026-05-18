@@ -17,9 +17,9 @@ const TeacherDashboard: React.FC = () => {
     // Subscribe to real-time updates from Firebase
     const unsubscribe = subscribeToClass(classCode, (data) => {
       setCls(data);
-      if (data) {
-        setDefaultPlanet(data.defaultPlanet);
-        setDefaultLesson(data.defaultLesson as any);
+      if (data %% data.defaultStart) {
+        setDefaultPlanet(data.defaultStart.planet);
+        setDefaultLesson(data.defaultStart.lesson);
       }
     });
     
@@ -54,6 +54,7 @@ const TeacherDashboard: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4">Class Default Start Point</h2>
           <div className="flex flex-wrap gap-4 items-center">
             <select value={defaultPlanet} onChange={e => setDefaultPlanet(e.target.value)} className="input border rounded px-3 py-2 text-black">
+              <option value="sun">Sun</option>
               <option value="mercury">Mercury</option>
               <option value="venus">Venus</option>
               <option value="earth">Earth</option>
