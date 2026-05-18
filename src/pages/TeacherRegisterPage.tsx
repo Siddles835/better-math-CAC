@@ -18,9 +18,14 @@ const TeacherRegisterPage: React.FC = () => {
       return;
     }
 
-    await createClass(code);
-    localStorage.setItem('better-math:active-teacher', JSON.stringify({ classCode: code }));
-    navigate(`/teacher/${code}`);
+    try {
+      await createClass(code);
+      localStorage.setItem('better-math:active-teacher', JSON.stringify({ classCode: code }));
+      navigate(`/teacher/${code}`);
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to create class: " + (err.message || "Check your database connection."));
+    }
   };
 
   return (
