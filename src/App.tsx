@@ -7,7 +7,9 @@ import { GameProvider } from "./context/GameContext";
 import RocketTransition from "./components/RocketTransition";
 import HomePage from "./pages/HomePage";
 import StudentLoginPage from "./pages/StudentLoginPage";
+import StudentRegisterPage from "./pages/StudentRegisterPage";
 import TeacherLoginPage from "./pages/TeacherLoginPage";
+import TeacherRegisterPage from "./pages/TeacherRegisterPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import SolarSystemPage from "./pages/SolarSystemPage";
 import PlanetSelectPage from "./pages/PlanetSelectPage";
@@ -39,7 +41,9 @@ const App = () => (
             <Route path="/" element={<HomePage />} />
             <Route path="/solar-system" element={<SolarSystemPage />} />
             <Route path="/planet-select" element={<PlanetSelectPage />} />
+            <Route path="/student-register" element={<StudentRegisterPage />} />
             <Route path="/student-login" element={<StudentLoginPage />} />
+            <Route path="/teacher-register" element={<TeacherRegisterPage />} />
             <Route path="/teacher-login" element={<TeacherLoginPage />} />
             <Route path="/teacher/*" element={<TeacherDashboard />} />
             {/* Counting */}
