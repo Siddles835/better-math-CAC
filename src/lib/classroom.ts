@@ -10,6 +10,8 @@ export interface StudentState {
   lesson: LessonType;
   /** Planets the student has fully completed (persisted across sessions). */
   completedPlanets?: string[];
+  /** Last reached step index (0-based) for each planet lesson. */
+  planetSteps?: Record<string, number>;
   lastUpdated: number;
 }
 
@@ -60,6 +62,7 @@ export const registerStudent = async (classCode: string, nickname: string): Prom
     planet: 'sun',
     lesson: 'counting',
     completedPlanets: [],
+    planetSteps: {},
     lastUpdated: Date.now(),
   };
 

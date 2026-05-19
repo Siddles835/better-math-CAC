@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkClassExists, checkStudentExists, registerStudent } from '@/lib/classroom';
+import { checkClassExists, checkStudentExists, registerStudent, getClass } from '@/lib/classroom';
+import { setActiveStudent } from '@/lib/session';
+import { useGame } from '@/context/GameContext';
 import AuthNavButton from '@/components/AuthNavButton';
 
 const StudentRegisterPage: React.FC = () => {
@@ -8,6 +10,7 @@ const StudentRegisterPage: React.FC = () => {
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { hydrateFromStudent, hydrateClassMax } = useGame();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,8 +31,15 @@ const StudentRegisterPage: React.FC = () => {
     }
 
     try {
-      await registerStudent(code, name);
-      localStorage.setItem('better-math:active', JSON.stringify({ classCode: code, nickname: name }));
+      const student = await registerStudent(code, name);
+      if (!student) {
+        setError('Failed to register. Please try again.');
+        return;
+      }
+      const cls = await getClass(code);
+      hydrateClassMax(cls?.defaultStart?.planet);
+      hydrateFromStudent(student);
+      setActiveStudent({ classCode: code, nickname: name });
       navigate('/planet-select');
     } catch (err: any) {
       console.error(err);

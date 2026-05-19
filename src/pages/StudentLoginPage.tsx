@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkClassExists, checkStudentExists } from '@/lib/classroom';
+import { checkClassExists, checkStudentExists, getClass } from '@/lib/classroom';
+import { setActiveStudent } from '@/lib/session';
+import { useGame } from '@/context/GameContext';
 import AuthNavButton from '@/components/AuthNavButton';
 
 const StudentLoginPage: React.FC = () => {
@@ -8,6 +10,7 @@ const StudentLoginPage: React.FC = () => {
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { hydrateFromStudent, hydrateClassMax } = useGame();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +30,18 @@ const StudentLoginPage: React.FC = () => {
       return;
     }
 
-    localStorage.setItem('better-math:active', JSON.stringify({ classCode: code, nickname: name }));
+    const cls = await getClass(code);
+    const student = cls?.students?.[name];
+    if (!student) {
+      setError(`We couldn't find the name "${name}" in this class. Check your spelling or go back to Register.`);
+      return;
+    }
+
+    hydrateClassMax(cls?.defaultStart?.planet);
+    hydrateFromStudent(student);
+    setActiveStudent({ classCode: code, nickname: name });
+
+    // Always show planet select; tapping a planet resumes its saved step
     navigate('/planet-select');
   };
 

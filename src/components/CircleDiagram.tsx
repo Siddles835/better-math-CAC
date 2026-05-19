@@ -22,15 +22,27 @@ const CircleDiagram: React.FC<Props> = ({ planets, size = 360, onSelect, selecte
   const angleStep = (Math.PI * 2) / planets.length;
   const labelOffset = 34;
 
+  const pad = 36;
+  const viewSize = size + pad * 2;
+
   return (
     <svg
       width={size}
       height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      className="mx-auto block"
+      viewBox={`${-pad} ${-pad} ${viewSize} ${viewSize}`}
+      overflow="visible"
+      className="mx-auto block overflow-visible"
       role="img"
       aria-label="Planet selection diagram"
     >
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r - 52}
+        fill="none"
+        stroke="hsl(var(--muted-foreground) / 0.35)"
+        strokeWidth={1.5}
+      />
       <g>
         {planets.map((p, i) => {
           const angle = i * angleStep - Math.PI / 2;
@@ -61,7 +73,7 @@ const CircleDiagram: React.FC<Props> = ({ planets, size = 360, onSelect, selecte
                 fontSize={13}
                 fontWeight={600}
                 textAnchor="middle"
-                fill="hsl(220 15% 90%)"
+                fill="hsl(var(--foreground))"
                 style={{ pointerEvents: 'none', userSelect: 'none' }}
               >
                 {p.name}

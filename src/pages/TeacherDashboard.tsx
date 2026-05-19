@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Classroom, setClassDefaultStart, updateStudentState, subscribeToClass } from '@/lib/classroom';
-import { getLessonForPlanet, PLANET_META, PlanetId } from '@/lib/planets';
+import { Classroom, setClassDefaultStart, subscribeToClass } from '@/lib/classroom';
+import { getLessonForPlanet } from '@/lib/planets';
 
 const TeacherDashboard: React.FC = () => {
   const params = useParams();
@@ -9,6 +9,8 @@ const TeacherDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [cls, setCls] = useState<Classroom | null>(null);
   const [defaultPlanet, setDefaultPlanet] = useState('sun');
+  const [savingDefault, setSavingDefault] = useState(false);
+  const [defaultSaved, setDefaultSaved] = useState(false);
 
   useEffect(() => {
     if (!classCode) return;
@@ -29,20 +31,16 @@ const TeacherDashboard: React.FC = () => {
 
   const derivedLesson = getLessonForPlanet(defaultPlanet);
 
-  const handleSetDefault = async () => {
-    await setClassDefaultStart(classCode, defaultPlanet);
-  };
-
-  const handleOverride = async (nickname: string) => {
-    if (!cls) return;
-    const student = cls.students[nickname];
-    if (!student) return;
-
-    await updateStudentState(classCode, {
-      ...student,
-      planet: defaultPlanet,
-      lesson: derivedLesson,
-    });
+  const handleDefaultChange = async (planet: string) => {
+    setDefaultPlanet(planet);
+    setDefaultSaved(false);
+    setSavingDefault(true);
+    try {
+      await setClassDefaultStart(classCode, planet);
+      setDefaultSaved(true);
+    } finally {
+      setSavingDefault(false);
+    }
   };
 
   return (
@@ -56,10 +54,16 @@ const TeacherDashboard: React.FC = () => {
         <section className="mb-8 bg-card p-6 rounded-lg shadow border border-gray-100">
           <h2 className="text-xl font-semibold mb-2">Class Default Start Point</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Students can pick any planet from the Sun through your selection. Lesson type is automatic.
+            Students can pick any planet from the Sun through your selection. Saving happens as soon
+            as you change the dropdown — students on the planet screen will update live.
           </p>
           <div className="flex flex-wrap gap-4 items-center">
-            <select value={defaultPlanet} onChange={e => setDefaultPlanet(e.target.value)} className="input border rounded px-3 py-2 text-black">
+            <select
+              value={defaultPlanet}
+              onChange={(e) => handleDefaultChange(e.target.value)}
+              disabled={savingDefault}
+              className="input border rounded px-3 py-2 text-black"
+            >
               <option value="sun">Sun</option>
               <option value="mercury">Mercury</option>
               <option value="venus">Venus</option>
@@ -73,7 +77,12 @@ const TeacherDashboard: React.FC = () => {
             <span className="text-sm font-medium text-sky-700 capitalize px-2">
               Lesson: {derivedLesson}
             </span>
-            <button type="button" onClick={handleSetDefault} className="btn btn-primary bg-sky-600 text-white px-4 py-2 rounded">Update Default</button>
+            {savingDefault && (
+              <span className="text-sm text-muted-foreground">Saving…</span>
+            )}
+            {defaultSaved && !savingDefault && (
+              <span className="text-sm text-emerald-600 font-medium">Saved</span>
+            )}
           </div>
         </section>
 
@@ -86,19 +95,11 @@ const TeacherDashboard: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.values(cls.students).map(s => (
-                <div key={s.nickname} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col justify-between">
-                  <div className="mb-4">
+                <div key={s.nickname} className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm">
                     <div className="text-lg font-bold text-gray-800">{s.nickname}</div>
                     <div className="text-sm font-medium text-sky-600 uppercase tracking-wide mt-1">
                       {s.planet} — {s.lesson}
                     </div>
-                  </div>
-                  <button 
-                    onClick={() => handleOverride(s.nickname)} 
-                    className="w-full btn btn-secondary bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded text-sm font-medium transition-colors"
-                  >
-                    Move to Default
-                  </button>
                 </div>
               ))}
             </div>
