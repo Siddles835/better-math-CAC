@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import { useLessonStep } from '@/hooks/useLessonStep';
 import NavigationArrows from '@/components/NavigationArrows';
 import ConceptVisual from '@/components/ConceptVisual';
 import Pencil from '@/components/Pencil';
@@ -14,7 +15,7 @@ import { Check, X } from 'lucide-react';
 const SubtractionUranus: React.FC = () => {
   const navigate = useNavigate();
   const { setShowRocketTransition, completePlanet } = useGame();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useLessonStep('uranus');
   const [conceptStep, setConceptStep] = useState(1);
   const [showTransition, setShowTransition] = useState(false);
   

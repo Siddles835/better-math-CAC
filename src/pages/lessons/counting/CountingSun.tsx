@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import { useLessonStep } from '@/hooks/useLessonStep';
 import NavigationArrows from '@/components/NavigationArrows';
 import Apple from '@/components/Apple';
 import Basket from '@/components/Basket';
@@ -14,7 +15,7 @@ import { Button } from '@/components/ui/button';
 const CountingSun: React.FC = () => {
   const navigate = useNavigate();
   const { setShowRocketTransition, completePlanet } = useGame();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useLessonStep('sun');
   const [basketCount, setBasketCount] = useState(0);
   const [availableApples, setAvailableApples] = useState(7);
   const [showTransition, setShowTransition] = useState(false);

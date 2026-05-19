@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import { useLessonStep } from '@/hooks/useLessonStep';
 import NavigationArrows from '@/components/NavigationArrows';
 import Pencil from '@/components/Pencil';
 import Counter from '@/components/Counter';
@@ -13,7 +14,7 @@ import { Check, X, Play, RotateCcw } from 'lucide-react';
 const AdditionEarth: React.FC = () => {
   const navigate = useNavigate();
   const { setShowRocketTransition, completePlanet } = useGame();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useLessonStep('earth');
   const [showTransition, setShowTransition] = useState(false);
   
   // Animation state

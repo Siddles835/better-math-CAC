@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import { useLessonStep } from '@/hooks/useLessonStep';
 import NavigationArrows from '@/components/NavigationArrows';
 import Apple from '@/components/Apple';
 import Basket from '@/components/Basket';
@@ -14,7 +15,7 @@ import { Check, X } from 'lucide-react';
 const CountingMercury: React.FC = () => {
   const navigate = useNavigate();
   const { setShowRocketTransition, completePlanet } = useGame();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useLessonStep('mercury');
   const [showTransition, setShowTransition] = useState(false);
   
   // Word problem state
