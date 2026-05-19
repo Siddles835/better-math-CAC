@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 import { Classroom, setClassDefaultStart, subscribeToClass } from '@/lib/classroom';
 import { getLessonForPlanet } from '@/lib/planets';
+import { Button } from '@/components/ui/button';
 
 const TeacherDashboard: React.FC = () => {
   const params = useParams();
@@ -31,6 +33,11 @@ const TeacherDashboard: React.FC = () => {
 
   const derivedLesson = getLessonForPlanet(defaultPlanet);
 
+  const handleSignOut = () => {
+    localStorage.removeItem('better-math:active-teacher');
+    navigate('/');
+  };
+
   const handleDefaultChange = async (planet: string) => {
     setDefaultPlanet(planet);
     setDefaultSaved(false);
@@ -48,7 +55,15 @@ const TeacherDashboard: React.FC = () => {
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Teacher Dashboard — {classCode}</h1>
-          <button onClick={() => navigate('/')} className="btn bg-gray-200 px-4 py-2 rounded">Sign Out</button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleSignOut}
+            className="inline-flex items-center gap-2 border-border bg-card text-foreground hover:bg-muted shadow-sm"
+          >
+            <LogOut className="h-5 w-5 shrink-0 text-foreground" strokeWidth={2.25} aria-hidden />
+            <span>Sign Out</span>
+          </Button>
         </div>
 
         <section className="mb-8 bg-card p-6 rounded-lg shadow border border-gray-100">
