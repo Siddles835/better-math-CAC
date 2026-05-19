@@ -4,6 +4,7 @@ import { useGame } from '@/context/GameContext';
 import CircleDiagram from '@/components/CircleDiagram';
 import NavigationArrows from '@/components/NavigationArrows';
 import { subscribeToClass, Classroom } from '@/lib/classroom';
+import { getActiveStudent } from '@/lib/session';
 import {
   PLANET_ORDER,
   PLANET_META,
@@ -11,6 +12,7 @@ import {
   canSelectPlanet,
   getLessonForPlanet,
   getLessonRoute,
+  getInProgressPlanet,
 } from '@/lib/planets';
 
 const PlanetSelectPage: React.FC = () => {
@@ -19,28 +21,34 @@ const PlanetSelectPage: React.FC = () => {
     setShowRocketTransition,
     progressPlanetId,
     completedPlanets,
+    classMaxPlanetId,
     setPosition,
+    getPlanetStep,
+    planetSteps,
     hydrateFromStudent,
+    hydrateClassMax,
   } = useGame();
   const [classroom, setClassroom] = useState<Classroom | null>(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem('better-math:active');
-    if (!raw) {
+    const active = getActiveStudent();
+    if (!active) {
       navigate('/');
       return;
     }
-    const { classCode, nickname } = JSON.parse(raw);
+    const { classCode, nickname } = active;
     const unsub = subscribeToClass(classCode, (data) => {
       setClassroom(data);
-      if (data?.students?.[nickname]) {
-        hydrateFromStudent(data.students[nickname], data.defaultStart?.planet ?? 'sun');
+      if (!data) return;
+      hydrateClassMax(data.defaultStart?.planet);
+      if (data.students?.[nickname]) {
+        hydrateFromStudent(data.students[nickname]);
       }
     });
     return () => unsub();
-  }, [navigate, hydrateFromStudent]);
+  }, [navigate, hydrateFromStudent, hydrateClassMax]);
 
-  const classMax = classroom?.defaultStart?.planet ?? 'sun';
+  const classMax = classroom?.defaultStart?.planet ?? classMaxPlanetId ?? 'sun';
   const completedList = useMemo(
     () => PLANET_ORDER.filter((id) => completedPlanets[id]),
     [completedPlanets]
@@ -49,11 +57,7 @@ const PlanetSelectPage: React.FC = () => {
   const diagramPlanets = useMemo(
     () =>
       PLANET_ORDER.map((id) => {
-        const selectable = canSelectPlanet(id, {
-          classMaxPlanetId: classMax,
-          progressPlanetId,
-          completedPlanets: completedList,
-        });
+        const selectable = canSelectPlanet(id, classMax);
         return {
           id,
           name: PLANET_META[id].name,
@@ -62,19 +66,22 @@ const PlanetSelectPage: React.FC = () => {
           disabled: !selectable,
         };
       }),
-    [classMax, progressPlanetId, completedList]
+    [classMax]
   );
 
-  const handlePlanetSelect = async (planetId: string) => {
+  const handlePlanetSelect = (planetId: string) => {
+    const pid = planetId as PlanetId;
     const lesson = getLessonForPlanet(planetId);
-    await setPosition(planetId as PlanetId, lesson);
+    const savedStep = getPlanetStep(pid);
+    setPosition(pid, lesson);
     setShowRocketTransition(true);
     setTimeout(() => {
-      navigate(getLessonRoute(planetId));
+      navigate(getLessonRoute(planetId), { state: { initialStep: savedStep } });
     }, 1200);
   };
 
   const maxPlanetName = PLANET_META[classMax as PlanetId]?.name ?? 'Sun';
+  const continuePlanet = getInProgressPlanet(planetSteps);
 
   return (
     <div className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-center p-8">
@@ -85,6 +92,13 @@ const PlanetSelectPage: React.FC = () => {
         Your teacher has unlocked planets through{' '}
         <strong className="text-foreground">{maxPlanetName}</strong>. Tap a planet to start its
         lesson.
+        {continuePlanet && (
+          <>
+            {' '}
+            Tap <strong className="text-foreground">{PLANET_META[continuePlanet].name}</strong> to
+            continue where you left off.
+          </>
+        )}
       </p>
 
       <div className="flex w-full justify-center items-center mb-10">
@@ -97,8 +111,8 @@ const PlanetSelectPage: React.FC = () => {
 
       <p className="text-sm text-muted-foreground mb-20 text-center max-w-md">
         {completedList.length === 0
-          ? 'Pick any unlocked planet to begin. After you progress, use Home to replay earlier planets.'
-          : 'Select a planet you have already passed to practice again.'}
+          ? 'Pick any unlocked planet to begin. Your teacher can open more planets anytime.'
+          : 'Replay earlier planets or jump ahead to any planet your teacher has unlocked.'}
       </p>
 
       <NavigationArrows onBack={() => navigate('/')} showNext={false} backLabel="Back" />

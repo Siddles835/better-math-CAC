@@ -7,23 +7,25 @@ import {
   StudentState,
 } from '@/lib/classroom';
 import {
+  getActiveStudent,
+  SESSION_CHANGED,
+  type ActiveStudent,
+} from '@/lib/session';
+import {
   PlanetId,
   PLANET_ORDER,
   getLessonForPlanet,
   getPlanetIndex,
   buildCompletedMap,
+  getFurthestProgressPlanet,
 } from '@/lib/planets';
-
-interface LessonProgress {
-  completed: boolean;
-  currentStep: number;
-}
 
 interface GameContextType {
   currentLesson: LessonType | null;
   setCurrentLesson: (lesson: LessonType | null) => void;
-  lessonProgress: Record<LessonType, LessonProgress>;
-  updateLessonProgress: (lesson: LessonType, step: number, completed?: boolean) => void;
+  planetSteps: Record<string, number>;
+  getPlanetStep: (planetId: PlanetId) => number;
+  savePlanetStep: (planetId: PlanetId, step: number) => Promise<void>;
   showRocketTransition: boolean;
   setShowRocketTransition: (show: boolean) => void;
   completedPlanets: Record<PlanetId, boolean>;
@@ -31,15 +33,10 @@ interface GameContextType {
   classMaxPlanetId: PlanetId;
   completePlanet: (planetId: PlanetId) => Promise<void>;
   getOrderedSequence: () => { planet: PlanetId; lesson: LessonType }[];
-  setPosition: (planet: PlanetId, lesson: LessonType) => Promise<void>;
-  hydrateFromStudent: (student: StudentState, classMaxPlanetId?: string) => void;
+  setPosition: (planet: PlanetId, lesson: LessonType) => void;
+  hydrateFromStudent: (student: StudentState) => void;
+  hydrateClassMax: (classMaxPlanetId?: string) => void;
 }
-
-const initialProgress: Record<LessonType, LessonProgress> = {
-  counting: { completed: false, currentStep: 0 },
-  addition: { completed: false, currentStep: 0 },
-  subtraction: { completed: false, currentStep: 0 },
-};
 
 const emptyCompleted = (): Record<PlanetId, boolean> =>
   PLANET_ORDER.reduce(
@@ -54,61 +51,79 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentLesson, setCurrentLesson] = useState<LessonType | null>(null);
-  const [lessonProgress, setLessonProgress] = useState(initialProgress);
+  const [planetSteps, setPlanetSteps] = useState<Record<string, number>>({});
   const [showRocketTransition, setShowRocketTransition] = useState(false);
   const [completedPlanets, setCompletedPlanets] = useState<Record<PlanetId, boolean>>(emptyCompleted);
   const [progressPlanetId, setProgressPlanetId] = useState<PlanetId>('sun');
   const [classMaxPlanetId, setClassMaxPlanetId] = useState<PlanetId>('sun');
+  const [activeSession, setActiveSession] = useState<ActiveStudent | null>(() =>
+    getActiveStudent()
+  );
 
-  const getActiveStudent = () => {
-    try {
-      const raw = localStorage.getItem('better-math:active');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  };
+  useEffect(() => {
+    const syncSession = () => setActiveSession(getActiveStudent());
+    window.addEventListener(SESSION_CHANGED, syncSession);
+    return () => window.removeEventListener(SESSION_CHANGED, syncSession);
+  }, []);
 
-  const hydrateFromStudent = useCallback((student: StudentState, maxPlanetId?: string) => {
-    const planet = (PLANET_ORDER.includes(student.planet as PlanetId)
-      ? student.planet
-      : 'sun') as PlanetId;
+  const hydrateFromStudent = useCallback((student: StudentState) => {
+    const progressPlanet = getFurthestProgressPlanet(student);
     setCurrentLesson(student.lesson);
-    setProgressPlanetId(planet);
+    setProgressPlanetId(progressPlanet);
+    setCompletedPlanets(
+      buildCompletedMap(progressPlanet, student.completedPlanets ?? [])
+    );
+    setPlanetSteps(student.planetSteps ?? {});
+  }, []);
+
+  const hydrateClassMax = useCallback((maxPlanetId?: string) => {
     setClassMaxPlanetId(
       (maxPlanetId && PLANET_ORDER.includes(maxPlanetId as PlanetId)
         ? maxPlanetId
-        : planet) as PlanetId
-    );
-    setCompletedPlanets(
-      buildCompletedMap(planet, student.completedPlanets ?? [])
+        : 'sun') as PlanetId
     );
   }, []);
 
-  useEffect(() => {
-    const active = getActiveStudent();
-    if (!active) return;
+  const getPlanetStep = useCallback(
+    (planetId: PlanetId) => planetSteps[planetId] ?? 0,
+    [planetSteps]
+  );
 
-    const unsubscribe = subscribeToClass(active.classCode, (cls) => {
-      if (cls?.students?.[active.nickname]) {
-        const student = cls.students[active.nickname];
-        const maxPlanet = cls.defaultStart?.planet ?? 'sun';
-        hydrateFromStudent(student, maxPlanet);
-      }
+  const savePlanetStep = useCallback(
+    async (planetId: PlanetId, step: number) => {
+      setPlanetSteps((prev) => ({ ...prev, [planetId]: step }));
+
+      const active = activeSession ?? getActiveStudent();
+      if (!active) return;
+
+      const clsSnap = await getClass(active.classCode);
+      const existing = clsSnap?.students?.[active.nickname];
+      if (!existing) return;
+
+      await updateStudentState(active.classCode, {
+        ...existing,
+        planetSteps: { ...(existing.planetSteps ?? {}), [planetId]: step },
+        lastUpdated: Date.now(),
+      });
+    },
+    [activeSession]
+  );
+
+  useEffect(() => {
+    if (!activeSession) return;
+
+    const unsubscribe = subscribeToClass(activeSession.classCode, (cls) => {
+      if (!cls) return;
+      hydrateClassMax(cls.defaultStart?.planet);
+      const student = cls.students?.[activeSession.nickname];
+      if (student) hydrateFromStudent(student);
     });
 
     return () => unsubscribe();
-  }, [hydrateFromStudent]);
-
-  const updateLessonProgress = (lesson: LessonType, step: number, completed = false) => {
-    setLessonProgress((prev) => ({
-      ...prev,
-      [lesson]: { currentStep: step, completed },
-    }));
-  };
+  }, [activeSession, hydrateFromStudent, hydrateClassMax]);
 
   const completePlanet = async (planetId: PlanetId) => {
-    const active = getActiveStudent();
+    const active = activeSession ?? getActiveStudent();
     if (!active) return;
 
     const clsSnap = await getClass(active.classCode);
@@ -132,11 +147,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setProgressPlanetId(nextPlanet);
     setCurrentLesson(nextLesson);
 
+    if (!existing) return;
+
     await updateStudentState(active.classCode, {
-      nickname: active.nickname,
+      ...existing,
       planet: nextPlanet,
       lesson: nextLesson,
       completedPlanets: completedList,
+      planetSteps: { ...(existing.planetSteps ?? {}) },
       lastUpdated: Date.now(),
     });
   };
@@ -152,21 +170,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return seq;
   };
 
-  const setPosition = async (planet: PlanetId, lesson: LessonType) => {
+  const setPosition = (planet: PlanetId, lesson: LessonType) => {
     setCurrentLesson(lesson);
-    const active = getActiveStudent();
-    if (!active) return;
-
-    const clsSnap = await getClass(active.classCode);
-    const existing = clsSnap?.students?.[active.nickname];
-
-    await updateStudentState(active.classCode, {
-      nickname: active.nickname,
-      planet,
-      lesson,
-      completedPlanets: existing?.completedPlanets ?? [],
-      lastUpdated: Date.now(),
-    });
+    // Do not write planet to Firebase here — that regressed progress when replaying.
   };
 
   return (
@@ -174,8 +180,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         currentLesson,
         setCurrentLesson,
-        lessonProgress,
-        updateLessonProgress,
+        planetSteps,
+        getPlanetStep,
+        savePlanetStep,
         showRocketTransition,
         setShowRocketTransition,
         completedPlanets,
@@ -185,6 +192,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         getOrderedSequence,
         setPosition,
         hydrateFromStudent,
+        hydrateClassMax,
       }}
     >
       {children}

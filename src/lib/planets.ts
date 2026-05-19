@@ -1,4 +1,4 @@
-import type { LessonType } from '@/lib/classroom';
+import type { LessonType, StudentState } from '@/lib/classroom';
 
 export type PlanetId =
   | 'sun'
@@ -54,6 +54,40 @@ export const getLessonRoute = (planetId: string): string => {
   return `/lesson/${lesson}/${planetId}`;
 };
 
+/** Furthest checkpoint from saved progress (not replay-only UI state). */
+export const getFurthestProgressPlanet = (
+  student: Pick<StudentState, 'planet' | 'completedPlanets' | 'planetSteps'>
+): PlanetId => {
+  let maxIndex = getPlanetIndex(student.planet);
+  for (const id of student.completedPlanets ?? []) {
+    maxIndex = Math.max(maxIndex, getPlanetIndex(id));
+  }
+  for (const [planet, step] of Object.entries(student.planetSteps ?? {})) {
+    if (step > 0 && PLANET_ORDER.includes(planet as PlanetId)) {
+      maxIndex = Math.max(maxIndex, getPlanetIndex(planet));
+    }
+  }
+  return PLANET_ORDER[maxIndex];
+};
+
+/** Planet with the highest saved in-lesson step, if any. */
+export const getInProgressPlanet = (
+  planetSteps: Record<string, number> | undefined
+): PlanetId | null => {
+  let best: PlanetId | null = null;
+  let bestIndex = -1;
+  for (const [planet, step] of Object.entries(planetSteps ?? {})) {
+    if (step > 0 && PLANET_ORDER.includes(planet as PlanetId)) {
+      const idx = getPlanetIndex(planet);
+      if (idx > bestIndex) {
+        bestIndex = idx;
+        best = planet as PlanetId;
+      }
+    }
+  }
+  return best;
+};
+
 /** Teacher default caps how far along the solar system students may choose. */
 export const getClassMaxPlanetIndex = (maxPlanetId?: string): number => {
   if (!maxPlanetId) return 0;
@@ -62,30 +96,16 @@ export const getClassMaxPlanetIndex = (maxPlanetId?: string): number => {
 
 /**
  * Whether a planet appears on the ring and can be launched.
- * - New students: any planet from Sun through class max (inclusive).
- * - Returning students: replay planets strictly before current progress, within class max.
+ * Only the teacher's class max gates visibility — progress never hides planets
+ * (so students can always continue the planet they are on, e.g. Mars).
  */
 export const canSelectPlanet = (
   planetId: string,
-  options: {
-    classMaxPlanetId?: string;
-    progressPlanetId: string;
-    completedPlanets: string[];
-  }
+  classMaxPlanetId?: string
 ): boolean => {
   const index = getPlanetIndex(planetId);
-  const maxIndex = getClassMaxPlanetIndex(options.classMaxPlanetId ?? 'sun');
-  if (index > maxIndex) return false;
-
-  const hasProgress =
-    options.completedPlanets.length > 0 ||
-    getPlanetIndex(options.progressPlanetId) > 0;
-
-  if (!hasProgress) {
-    return index <= maxIndex;
-  }
-
-  return index < getPlanetIndex(options.progressPlanetId);
+  const maxIndex = getClassMaxPlanetIndex(classMaxPlanetId ?? 'sun');
+  return index <= maxIndex;
 };
 
 export const buildCompletedMap = (
