@@ -96,16 +96,22 @@ export const getClassMaxPlanetIndex = (maxPlanetId?: string): number => {
 
 /**
  * Whether a planet appears on the ring and can be launched.
- * Only the teacher's class max gates visibility — progress never hides planets
- * (so students can always continue the planet they are on, e.g. Mars).
+ * - Teacher max: students cannot skip ahead of the class default on first access.
+ * - Student progress: completing planets unlocks the next world on the ring too
+ *   (e.g. teacher default Mars, but Jupiter shows after Mars is finished).
  */
 export const canSelectPlanet = (
   planetId: string,
-  classMaxPlanetId?: string
+  options: {
+    classMaxPlanetId?: string;
+    progressPlanetId: string;
+  }
 ): boolean => {
   const index = getPlanetIndex(planetId);
-  const maxIndex = getClassMaxPlanetIndex(classMaxPlanetId ?? 'sun');
-  return index <= maxIndex;
+  const teacherMax = getClassMaxPlanetIndex(options.classMaxPlanetId ?? 'sun');
+  const progressIndex = getPlanetIndex(options.progressPlanetId);
+  const visibleMax = Math.max(teacherMax, progressIndex);
+  return index <= visibleMax;
 };
 
 export const buildCompletedMap = (

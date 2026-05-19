@@ -57,7 +57,10 @@ const PlanetSelectPage: React.FC = () => {
   const diagramPlanets = useMemo(
     () =>
       PLANET_ORDER.map((id) => {
-        const selectable = canSelectPlanet(id, classMax);
+        const selectable = canSelectPlanet(id, {
+          classMaxPlanetId: classMax,
+          progressPlanetId,
+        });
         return {
           id,
           name: PLANET_META[id].name,
@@ -66,7 +69,7 @@ const PlanetSelectPage: React.FC = () => {
           disabled: !selectable,
         };
       }),
-    [classMax]
+    [classMax, progressPlanetId]
   );
 
   const handlePlanetSelect = (planetId: string) => {
@@ -92,7 +95,7 @@ const PlanetSelectPage: React.FC = () => {
         Your teacher has unlocked planets through{' '}
         <strong className="text-foreground">{maxPlanetName}</strong>. Tap a planet to start its
         lesson.
-        {continuePlanet && (
+        {continuePlanet && PLANET_META[continuePlanet] && (
           <>
             {' '}
             Tap <strong className="text-foreground">{PLANET_META[continuePlanet].name}</strong> to

@@ -134,12 +134,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     const currentIndex = getPlanetIndex(planetId);
-    const maxIndex = getPlanetIndex(clsSnap?.defaultStart?.planet ?? 'sun');
-    let nextIndex = Math.min(currentIndex + 1, PLANET_ORDER.length - 1);
-    if (nextIndex > maxIndex) {
-      nextIndex = maxIndex;
-    }
-
+    const nextIndex = Math.min(currentIndex + 1, PLANET_ORDER.length - 1);
     const nextPlanet = PLANET_ORDER[nextIndex];
     const nextLesson = getLessonForPlanet(nextPlanet);
 
