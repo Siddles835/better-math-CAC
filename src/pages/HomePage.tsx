@@ -14,7 +14,7 @@ const HomePage: React.FC = () => {
         </div>
 
         <h1 className="text-4xl md:text-5xl font-semibold text-foreground mb-4">
-          Welcome to Better Math
+          Welcome to MathLift
         </h1>
         <p className="text-lg text-muted-foreground max-w-md mx-auto mb-8">
           Choose your role to get started or resume your progress.
