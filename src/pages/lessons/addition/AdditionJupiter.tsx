@@ -6,12 +6,23 @@ import { useLessonStep } from '@/hooks/useLessonStep';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
 import HomeButton from '@/components/HomeButton';
+import NavigationArrows from '@/components/NavigationArrows';
+import PlanetTransition from '@/components/PlanetTransition';
 import { Button } from '@/components/ui/button';
+import {
+  getNextPlanet,
+  getLessonRoute,
+  PLANET_META,
+  PLANET_BG_CLASS,
+  getTopicDisplayName,
+} from '@/lib/planets';
 
 const AdditionJupiter: React.FC = () => {
   const navigate = useNavigate();
-  const { completePlanet } = useGame();
+  const { setShowRocketTransition, completePlanet } = useGame();
   const [step, setStep] = useLessonStep('jupiter');
+  const [showTransition, setShowTransition] = useState(false);
+  const nextPlanet = getNextPlanet('jupiter');
   
   // MCQ state
   const [mcqA] = useState(Math.floor(Math.random() * 4) + 1);
@@ -44,6 +55,28 @@ const AdditionJupiter: React.FC = () => {
     setQuizAreas(areas);
     setStep(2);
   };
+
+  const goToNextPlanet = () => {
+    if (!nextPlanet) return;
+    completePlanet('jupiter');
+    setShowRocketTransition(true);
+    setTimeout(() => {
+      navigate(getLessonRoute(nextPlanet), { state: { initialStep: 0 } });
+    }, 2500);
+  };
+
+  if (showTransition && nextPlanet) {
+    return (
+      <PlanetTransition
+        currentPlanet={PLANET_META.jupiter.name}
+        nextPlanet={PLANET_META[nextPlanet].name}
+        currentPlanetColor={PLANET_BG_CLASS.jupiter}
+        nextPlanetColor={PLANET_BG_CLASS[nextPlanet]}
+        topic={getTopicDisplayName('jupiter')}
+        onContinue={goToNextPlanet}
+      />
+    );
+  }
 
   const renderStep = () => {
     switch (step) {
@@ -136,10 +169,9 @@ const AdditionJupiter: React.FC = () => {
             areasToImprove={quizAreas}
             lessonType="addition"
             videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
-            onFinish={() => {
-              completePlanet('jupiter');
-              navigate('/solar-system');
-            }}
+            onFinish={() => setShowTransition(true)}
+            onBack={() => navigate('/solar-system')}
+            finishLabel={nextPlanet ? `Go to ${PLANET_META[nextPlanet].name}` : 'Continue'}
           />
         );
 
@@ -166,6 +198,12 @@ const AdditionJupiter: React.FC = () => {
       <div className="flex-1 flex flex-col w-full max-w-4xl mx-auto">
         {renderStep()}
       </div>
+
+      <NavigationArrows
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        showNext={false}
+        backLabel="Back"
+      />
     </div>
   );
 };

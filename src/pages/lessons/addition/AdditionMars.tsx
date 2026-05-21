@@ -196,15 +196,13 @@ const AdditionMars: React.FC = () => {
         {renderStep()}
       </div>
 
-      {step < 1 && (
-        <NavigationArrows
-          onBack={() => navigate('/lesson/addition/earth')}
-          onNext={() => setStep(step + 1)}
-          showNext={true}
-          backLabel="Back"
-          nextLabel="Next"
-        />
-      )}
+      <NavigationArrows
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        onNext={step < totalSteps - 1 ? () => setStep(step + 1) : undefined}
+        showNext={step < totalSteps - 1}
+        backLabel="Back"
+        nextLabel="Next"
+      />
     </div>
   );
 };

@@ -42,7 +42,7 @@ const StudentLoginPage: React.FC = () => {
     setActiveStudent({ classCode: code, nickname: name });
 
     // Always show planet select; tapping a planet resumes its saved step
-    navigate('/planet-select');
+    navigate('/solar-system');
   };
 
   return (

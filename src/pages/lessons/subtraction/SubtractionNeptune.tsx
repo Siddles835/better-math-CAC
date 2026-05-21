@@ -6,6 +6,7 @@ import { useLessonStep } from '@/hooks/useLessonStep';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
 import HomeButton from '@/components/HomeButton';
+import NavigationArrows from '@/components/NavigationArrows';
 import { Button } from '@/components/ui/button';
 
 const SubtractionNeptune: React.FC = () => {
@@ -140,6 +141,8 @@ const SubtractionNeptune: React.FC = () => {
               completePlanet('neptune');
               navigate('/solar-system');
             }}
+            onBack={() => navigate('/solar-system')}
+            finishLabel="Return to Solar System"
           />
         );
 
@@ -166,6 +169,12 @@ const SubtractionNeptune: React.FC = () => {
       <div className="flex-1 flex flex-col w-full max-w-4xl mx-auto">
         {renderStep()}
       </div>
+
+      <NavigationArrows
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        showNext={false}
+        backLabel="Back"
+      />
     </div>
   );
 };

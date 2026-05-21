@@ -6,13 +6,24 @@ import { useLessonStep } from '@/hooks/useLessonStep';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
 import HomeButton from '@/components/HomeButton';
+import NavigationArrows from '@/components/NavigationArrows';
+import PlanetTransition from '@/components/PlanetTransition';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
+import {
+  getNextPlanet,
+  getLessonRoute,
+  PLANET_META,
+  PLANET_BG_CLASS,
+  getTopicDisplayName,
+} from '@/lib/planets';
 
 const CountingVenus: React.FC = () => {
   const navigate = useNavigate();
-  const { completePlanet } = useGame();
+  const { setShowRocketTransition, completePlanet } = useGame();
   const [step, setStep] = useLessonStep('venus');
+  const [showTransition, setShowTransition] = useState(false);
+  const nextPlanet = getNextPlanet('venus');
   
   // MCQ state
   const [mcqQuestion] = useState(() => {
@@ -48,6 +59,28 @@ const CountingVenus: React.FC = () => {
     setQuizAreas(areas);
     setStep(2);
   };
+
+  const goToNextPlanet = () => {
+    if (!nextPlanet) return;
+    completePlanet('venus');
+    setShowRocketTransition(true);
+    setTimeout(() => {
+      navigate(getLessonRoute(nextPlanet), { state: { initialStep: 0 } });
+    }, 2500);
+  };
+
+  if (showTransition && nextPlanet) {
+    return (
+      <PlanetTransition
+        currentPlanet={PLANET_META.venus.name}
+        nextPlanet={PLANET_META[nextPlanet].name}
+        currentPlanetColor={PLANET_BG_CLASS.venus}
+        nextPlanetColor={PLANET_BG_CLASS[nextPlanet]}
+        topic={getTopicDisplayName('venus')}
+        onContinue={goToNextPlanet}
+      />
+    );
+  }
 
   const renderStep = () => {
     switch (step) {
@@ -138,10 +171,9 @@ const CountingVenus: React.FC = () => {
             areasToImprove={quizAreas}
             lessonType="counting"
             videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
-            onFinish={() => {
-              completePlanet('venus');
-              navigate('/solar-system');
-            }}
+            onFinish={() => setShowTransition(true)}
+            onBack={() => navigate('/solar-system')}
+            finishLabel={nextPlanet ? `Go to ${PLANET_META[nextPlanet].name}` : 'Continue'}
           />
         );
 
@@ -168,6 +200,12 @@ const CountingVenus: React.FC = () => {
       <div className="flex-1 flex flex-col w-full max-w-4xl mx-auto">
         {renderStep()}
       </div>
+
+      <NavigationArrows
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        showNext={false}
+        backLabel="Back"
+      />
     </div>
   );
 };
