@@ -9,6 +9,10 @@ interface QuizResultsProps {
   lessonType: 'counting' | 'addition' | 'subtraction';
   videoUrl: string;
   onFinish: () => void;
+  /** Primary button label (e.g. "Go to Earth") */
+  finishLabel?: string;
+  /** Optional back to solar system without finishing */
+  onBack?: () => void;
 }
 
 const QuizResults: React.FC<QuizResultsProps> = ({
@@ -17,7 +21,9 @@ const QuizResults: React.FC<QuizResultsProps> = ({
   areasToImprove,
   lessonType,
   videoUrl,
-  onFinish
+  onFinish,
+  finishLabel = 'Continue',
+  onBack,
 }) => {
   const [showResults, setShowResults] = useState(false);
   
@@ -154,9 +160,16 @@ const QuizResults: React.FC<QuizResultsProps> = ({
         </div>
       )}
 
-      <Button onClick={onFinish} size="lg">
-        Return to Planets
-      </Button>
+      <div className="flex flex-wrap gap-3 justify-center">
+        {onBack && (
+          <Button onClick={onBack} size="lg" variant="outline">
+            Back to Solar System
+          </Button>
+        )}
+        <Button onClick={onFinish} size="lg">
+          {finishLabel}
+        </Button>
+      </div>
     </div>
   );
 };

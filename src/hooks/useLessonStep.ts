@@ -5,14 +5,17 @@ import { getClass } from '@/lib/classroom';
 import { getActiveStudent } from '@/lib/session';
 import type { PlanetId } from '@/lib/planets';
 
-type LessonLocationState = { initialStep?: number };
+type LessonLocationState = { initialStep?: number; replay?: boolean };
 
 /** Lesson step index persisted to Firebase per planet. */
 export function useLessonStep(planetId: PlanetId) {
   const { getPlanetStep, savePlanetStep, planetSteps } = useGame();
   const location = useLocation();
-  const navStep = (location.state as LessonLocationState | null)?.initialStep;
+  const navState = location.state as LessonLocationState | null;
+  const navStep = navState?.initialStep;
+  const isReplay = navState?.replay === true;
   const [step, setStepState] = useState(() => {
+    if (isReplay) return 0;
     if (navStep != null && navStep >= 0) return navStep;
     return 0;
   });
@@ -22,14 +25,19 @@ export function useLessonStep(planetId: PlanetId) {
 
   // Apply saved steps from context once Firebase hydration lands
   useEffect(() => {
+    if (isReplay) return;
     const fromContext = getPlanetStep(planetId);
     if (fromContext > 0 || Object.keys(planetSteps).length > 0) {
       setStepState((prev) => Math.max(prev, fromContext));
     }
-  }, [planetId, getPlanetStep, planetSteps]);
+  }, [planetId, getPlanetStep, planetSteps, isReplay]);
 
   // Fresh read when the lesson opens (logout / new device / slow listener)
   useEffect(() => {
+    if (isReplay) {
+      setReady(true);
+      return;
+    }
     let cancelled = false;
     const active = getActiveStudent();
     if (!active) {
@@ -49,7 +57,7 @@ export function useLessonStep(planetId: PlanetId) {
     return () => {
       cancelled = true;
     };
-  }, [planetId]);
+  }, [planetId, isReplay]);
 
   // Persist when leaving the lesson (home, logout, back to planet ring)
   useEffect(() => {

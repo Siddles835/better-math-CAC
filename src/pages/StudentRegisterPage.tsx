@@ -40,7 +40,7 @@ const StudentRegisterPage: React.FC = () => {
       hydrateClassMax(cls?.defaultStart?.planet);
       hydrateFromStudent(student);
       setActiveStudent({ classCode: code, nickname: name });
-      navigate('/planet-select');
+      navigate('/solar-system');
     } catch (err: any) {
       console.error(err);
       setError("Failed to register: " + (err.message || "Check your database connection."));

@@ -114,6 +114,41 @@ export const canSelectPlanet = (
   return index <= visibleMax;
 };
 
+export const getNextPlanet = (planetId: PlanetId): PlanetId | null => {
+  const index = getPlanetIndex(planetId);
+  if (index >= PLANET_ORDER.length - 1) return null;
+  return PLANET_ORDER[index + 1];
+};
+
+export const PLANET_BG_CLASS: Record<PlanetId, string> = {
+  sun: 'bg-sun',
+  mercury: 'bg-mercury',
+  venus: 'bg-venus',
+  earth: 'bg-earth',
+  mars: 'bg-mars',
+  jupiter: 'bg-jupiter',
+  saturn: 'bg-saturn',
+  uranus: 'bg-uranus',
+  neptune: 'bg-neptune',
+};
+
+export const getTopicDisplayName = (planetId: PlanetId): string => {
+  const lesson = getLessonForPlanet(planetId);
+  return lesson.charAt(0).toUpperCase() + lesson.slice(1);
+};
+
+export const SOLAR_ORBIT: Record<PlanetId, { orbitRadius: number }> = {
+  sun: { orbitRadius: 0 },
+  mercury: { orbitRadius: 80 },
+  venus: { orbitRadius: 140 },
+  earth: { orbitRadius: 200 },
+  mars: { orbitRadius: 260 },
+  jupiter: { orbitRadius: 340 },
+  saturn: { orbitRadius: 420 },
+  uranus: { orbitRadius: 500 },
+  neptune: { orbitRadius: 580 },
+};
+
 export const buildCompletedMap = (
   progressPlanetId: string,
   completedList: string[] = []

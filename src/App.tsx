@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GameProvider } from "./context/GameContext";
 import RocketTransition from "./components/RocketTransition";
 import HomePage from "./pages/HomePage";
@@ -12,7 +12,6 @@ import TeacherLoginPage from "./pages/TeacherLoginPage";
 import TeacherRegisterPage from "./pages/TeacherRegisterPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import SolarSystemPage from "./pages/SolarSystemPage";
-import PlanetSelectPage from "./pages/PlanetSelectPage";
 // Counting planets
 import CountingSun from "./pages/lessons/counting/CountingSun";
 import CountingMercury from "./pages/lessons/counting/CountingMercury";
@@ -40,7 +39,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/solar-system" element={<SolarSystemPage />} />
-            <Route path="/planet-select" element={<PlanetSelectPage />} />
+            <Route path="/planet-select" element={<Navigate to="/solar-system" replace />} />
             <Route path="/student-register" element={<StudentRegisterPage />} />
             <Route path="/student-login" element={<StudentLoginPage />} />
             <Route path="/teacher-register" element={<TeacherRegisterPage />} />

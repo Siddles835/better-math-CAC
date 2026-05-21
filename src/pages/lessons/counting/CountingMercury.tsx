@@ -186,15 +186,13 @@ const CountingMercury: React.FC = () => {
         {renderStep()}
       </div>
 
-      {step < 1 && (
-        <NavigationArrows
-          onBack={() => navigate('/lesson/counting/sun')}
-          onNext={() => setStep(step + 1)}
-          showNext={wordProblemCorrect}
-          backLabel="Back"
-          nextLabel="Next"
-        />
-      )}
+      <NavigationArrows
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        onNext={step < totalSteps - 1 && wordProblemCorrect ? () => setStep(step + 1) : undefined}
+        showNext={step < totalSteps - 1 && wordProblemCorrect}
+        backLabel="Back"
+        nextLabel="Next"
+      />
     </div>
   );
 };

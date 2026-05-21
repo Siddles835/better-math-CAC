@@ -324,15 +324,13 @@ const AdditionEarth: React.FC = () => {
         {renderStep()}
       </div>
 
-      {step < 3 && (
-        <NavigationArrows
-          onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
-          onNext={() => setStep(step + 1)}
-          showNext={true}
-          backLabel="Back"
-          nextLabel="Next"
-        />
-      )}
+      <NavigationArrows
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        onNext={step < 3 ? () => setStep(step + 1) : undefined}
+        showNext={step < 3}
+        backLabel="Back"
+        nextLabel="Next"
+      />
     </div>
   );
 };
