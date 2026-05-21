@@ -4,6 +4,7 @@ import { checkClassExists, checkStudentExists, registerStudent, getClass } from 
 import { setActiveStudent } from '@/lib/session';
 import { useGame } from '@/context/GameContext';
 import AuthNavButton from '@/components/AuthNavButton';
+import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 
 const StudentRegisterPage: React.FC = () => {
   const [classCode, setClassCode] = useState('');
@@ -40,7 +41,7 @@ const StudentRegisterPage: React.FC = () => {
       hydrateClassMax(cls?.defaultStart?.planet);
       hydrateFromStudent(student);
       setActiveStudent({ classCode: code, nickname: name });
-      navigate('/solar-system');
+      navigate(STUDENT_HUB_PATH);
     } catch (err: any) {
       console.error(err);
       setError("Failed to register: " + (err.message || "Check your database connection."));

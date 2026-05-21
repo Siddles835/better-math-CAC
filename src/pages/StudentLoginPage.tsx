@@ -4,6 +4,7 @@ import { checkClassExists, checkStudentExists, getClass } from '@/lib/classroom'
 import { setActiveStudent } from '@/lib/session';
 import { useGame } from '@/context/GameContext';
 import AuthNavButton from '@/components/AuthNavButton';
+import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 
 const StudentLoginPage: React.FC = () => {
   const [classCode, setClassCode] = useState('');
@@ -41,8 +42,7 @@ const StudentLoginPage: React.FC = () => {
     hydrateFromStudent(student);
     setActiveStudent({ classCode: code, nickname: name });
 
-    // Always show planet select; tapping a planet resumes its saved step
-    navigate('/solar-system');
+    navigate(STUDENT_HUB_PATH);
   };
 
   return (

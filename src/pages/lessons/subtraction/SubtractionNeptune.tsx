@@ -139,9 +139,9 @@ const SubtractionNeptune: React.FC = () => {
             videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
             onFinish={() => {
               completePlanet('neptune');
-              navigate('/solar-system');
+              navigate('/planets');
             }}
-            onBack={() => navigate('/solar-system')}
+            onBack={() => navigate('/planets')}
             finishLabel="Return to Solar System"
           />
         );
@@ -171,7 +171,7 @@ const SubtractionNeptune: React.FC = () => {
       </div>
 
       <NavigationArrows
-        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
         showNext={false}
         backLabel="Back"
       />
