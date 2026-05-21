@@ -11,7 +11,7 @@ import StudentRegisterPage from "./pages/StudentRegisterPage";
 import TeacherLoginPage from "./pages/TeacherLoginPage";
 import TeacherRegisterPage from "./pages/TeacherRegisterPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
-import SolarSystemPage from "./pages/SolarSystemPage";
+import StudentHubPage from "./pages/StudentHubPage";
 // Counting planets
 import CountingSun from "./pages/lessons/counting/CountingSun";
 import CountingMercury from "./pages/lessons/counting/CountingMercury";
@@ -38,8 +38,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/solar-system" element={<SolarSystemPage />} />
-            <Route path="/planet-select" element={<Navigate to="/solar-system" replace />} />
+            <Route path="/planets" element={<StudentHubPage />} />
+            <Route path="/solar-system" element={<Navigate to="/planets" replace />} />
+            <Route path="/planet-select" element={<Navigate to="/planets" replace />} />
             <Route path="/student-register" element={<StudentRegisterPage />} />
             <Route path="/student-login" element={<StudentLoginPage />} />
             <Route path="/teacher-register" element={<TeacherRegisterPage />} />

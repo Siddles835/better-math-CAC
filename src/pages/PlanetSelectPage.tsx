@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useGame } from '@/context/GameContext';
 import CircleDiagram from '@/components/CircleDiagram';
 import NavigationArrows from '@/components/NavigationArrows';
@@ -17,6 +18,7 @@ import {
 
 const PlanetSelectPage: React.FC = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const {
     setShowRocketTransition,
     progressPlanetId,
@@ -75,11 +77,14 @@ const PlanetSelectPage: React.FC = () => {
   const handlePlanetSelect = (planetId: string) => {
     const pid = planetId as PlanetId;
     const lesson = getLessonForPlanet(planetId);
-    const savedStep = getPlanetStep(pid);
+    const isCompleted = completedPlanets[pid];
+    const savedStep = isCompleted ? 0 : getPlanetStep(pid);
     setPosition(pid, lesson);
     setShowRocketTransition(true);
     setTimeout(() => {
-      navigate(getLessonRoute(planetId), { state: { initialStep: savedStep } });
+      navigate(getLessonRoute(planetId), {
+        state: { initialStep: savedStep, replay: isCompleted },
+      });
     }, 1200);
   };
 
@@ -107,7 +112,7 @@ const PlanetSelectPage: React.FC = () => {
       <div className="flex w-full justify-center items-center mb-10">
         <CircleDiagram
           planets={diagramPlanets}
-          size={440}
+          size={isMobile ? 300 : 440}
           onSelect={(p) => !p.disabled && handlePlanetSelect(p.id)}
         />
       </div>

@@ -193,7 +193,7 @@ const SubtractionUranus: React.FC = () => {
       </div>
 
       <NavigationArrows
-        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
         onNext={step < totalSteps - 1 ? () => setStep(step + 1) : undefined}
         showNext={step < totalSteps - 1}
         backLabel="Back"

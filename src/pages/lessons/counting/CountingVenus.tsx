@@ -172,7 +172,7 @@ const CountingVenus: React.FC = () => {
             lessonType="counting"
             videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
             onFinish={() => setShowTransition(true)}
-            onBack={() => navigate('/solar-system')}
+            onBack={() => navigate('/planets')}
             finishLabel={nextPlanet ? `Go to ${PLANET_META[nextPlanet].name}` : 'Continue'}
           />
         );
@@ -202,7 +202,7 @@ const CountingVenus: React.FC = () => {
       </div>
 
       <NavigationArrows
-        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/solar-system')}
+        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
         showNext={false}
         backLabel="Back"
       />
