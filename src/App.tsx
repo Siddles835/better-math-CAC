@@ -27,6 +27,7 @@ import SubtractionNeptune from "./pages/lessons/subtraction/SubtractionNeptune";
 import NotFound from "./pages/NotFound";
 import CookiePolicyPage from "./pages/CookiePolicyPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import SupportPage from "./pages/SupportPage";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/" element={<HomePage />} />
             <Route path="/cookie-policy" element={<CookiePolicyPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/support" element={<SupportPage />} />
             <Route path="/planets" element={<StudentHubPage />} />
             <Route path="/solar-system" element={<Navigate to="/planets" replace />} />
             <Route path="/planet-select" element={<Navigate to="/planets" replace />} />
