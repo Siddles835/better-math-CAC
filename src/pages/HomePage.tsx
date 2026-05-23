@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -56,6 +56,15 @@ const HomePage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <footer className="mt-12 text-center text-sm text-muted-foreground flex flex-wrap justify-center gap-x-4 gap-y-2">
+        <Link to="/privacy-policy" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
+          Privacy Policy
+        </Link>
+        <Link to="/cookie-policy" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
+          Cookie Policy
+        </Link>
+      </footer>
     </div>
   );
 };

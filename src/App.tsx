@@ -25,6 +25,8 @@ import SubtractionSaturn from "./pages/lessons/subtraction/SubtractionSaturn";
 import SubtractionUranus from "./pages/lessons/subtraction/SubtractionUranus";
 import SubtractionNeptune from "./pages/lessons/subtraction/SubtractionNeptune";
 import NotFound from "./pages/NotFound";
+import CookiePolicyPage from "./pages/CookiePolicyPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/planets" element={<StudentHubPage />} />
             <Route path="/solar-system" element={<Navigate to="/planets" replace />} />
             <Route path="/planet-select" element={<Navigate to="/planets" replace />} />
