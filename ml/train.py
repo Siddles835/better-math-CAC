@@ -1,160 +1,293 @@
-import pandas as pd
 import json
 
-from sklearn.tree import DecisionTreeClassifier, export_text
-from sklearn.model_selection import train_test_split
+import pandas as pd
+
 from sklearn.metrics import (
     accuracy_score,
-    classification_report
+    classification_report,
+    confusion_matrix,
+)
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.tree import (
+    DecisionTreeClassifier,
+    export_text,
 )
 
 
-# =========================
+# ============================================================
 # Load Dataset
-# =========================
+# ============================================================
 
 df = pd.read_csv("student_data.csv")
 
-print("Dataset loaded!")
-print(df.head())
+print("\n==============================")
+print("Dataset loaded")
+print("==============================")
+
+print(f"\nNumber of students: {len(df)}")
+
+print("\nColumns:")
+print(list(df.columns))
 
 
-# =========================
+# ============================================================
 # Prepare Features
-# =========================
+# ============================================================
+#
+# These are the things the real app could eventually know
+# about a student.
+#
+# IMPORTANT:
+# We intentionally DO NOT include:
+#
+#   profile
+#   mastery
+#
+# Those are synthetic information used only when generating
+# our training dataset.
+# ============================================================
 
-# Remove the thing we are trying to predict
-X = df.drop(columns=["recommendation"])
+FEATURE_COLUMNS = [
+    "planet",
+    "lesson_difficulty",
+    "accuracy",
+    "avg_time",
+    "hints",
+    "retries",
+    "improvement",
+    "consistency",
+    "streak",
+]
 
-# What the model learns to predict
+
+X = df[FEATURE_COLUMNS]
+
 y = df["recommendation"]
 
 
-# =========================
-# Split Data
-# =========================
+print("\nFeatures used by the model:")
+for feature in FEATURE_COLUMNS:
+    print(f"  - {feature}")
+
+
+print("\nRecommendations:")
+print(y.value_counts())
+
+
+# ============================================================
+# Train/Test Split
+# ============================================================
+#
+# 80% → training
+# 20% → testing
+#
+# stratify=y keeps the recommendation categories reasonably
+# balanced between the two sets.
+# ============================================================
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
-    test_size=0.2,
-    random_state=42
+    test_size=0.20,
+    random_state=42,
+    stratify=y,
 )
 
 
-# =========================
-# Train Model
-# =========================
+print("\n==============================")
+print("Train/Test Split")
+print("==============================")
+
+print(f"\nTraining examples: {len(X_train)}")
+print(f"Testing examples:  {len(X_test)}")
+
+
+# ============================================================
+# Train Decision Tree
+# ============================================================
 
 model = DecisionTreeClassifier(
     max_depth=5,
-    random_state=42
+    random_state=42,
 )
 
-print("\nTraining model...")
+
+print("\n==============================")
+print("Training model...")
+print("==============================")
+
 
 model.fit(
     X_train,
-    y_train
+    y_train,
 )
 
 
-# =========================
-# Test Model
-# =========================
+print("Training complete!")
+
+
+# ============================================================
+# Evaluate Model
+# ============================================================
 
 predictions = model.predict(X_test)
 
-print("\nAccuracy:")
-print(accuracy_score(y_test, predictions))
+
+accuracy = accuracy_score(
+    y_test,
+    predictions,
+)
+
+
+print("\n==============================")
+print("Model Evaluation")
+print("==============================")
+
+
+print(f"\nAccuracy: {accuracy:.3f}")
 
 
 print("\nClassification Report:\n")
+
 print(
     classification_report(
         y_test,
-        predictions
+        predictions,
+        zero_division=0,
     )
 )
 
 
-# =========================
-# Feature Importance
-# =========================
+# ============================================================
+# Confusion Matrix
+# ============================================================
 
-importance = pd.DataFrame({
-    "Feature": X.columns,
-    "Importance": model.feature_importances_
-})
+labels = model.classes_
 
-
-importance = importance.sort_values(
-    by="Importance",
-    ascending=False
+matrix = confusion_matrix(
+    y_test,
+    predictions,
+    labels=labels,
 )
 
 
-print("\nFeature Importance:\n")
-print(importance)
+print("Confusion Matrix:")
+
+print(
+    pd.DataFrame(
+        matrix,
+        index=[f"Actual: {label}" for label in labels],
+        columns=[f"Predicted: {label}" for label in labels],
+    )
+)
 
 
-# =========================
-# Print Human Readable Tree
-# =========================
+# ============================================================
+# Feature Importance
+# ============================================================
+#
+# This tells us which student behaviors the model found
+# most useful for making recommendations.
+# ============================================================
+
+importance = pd.DataFrame(
+    {
+        "feature": FEATURE_COLUMNS,
+        "importance": model.feature_importances_,
+    }
+)
+
+importance = importance.sort_values(
+    by="importance",
+    ascending=False,
+)
+
+
+print("\n==============================")
+print("Feature Importance")
+print("==============================")
+
+for _, row in importance.iterrows():
+
+    print(
+        f"{row['feature']:20s}"
+        f"{row['importance']:.3f}"
+    )
+
+
+# ============================================================
+# Human-Readable Tree
+# ============================================================
+
+print("\n==============================")
+print("Decision Tree")
+print("==============================")
+
 
 tree_rules = export_text(
     model,
-    feature_names=list(X.columns)
+    feature_names=FEATURE_COLUMNS,
 )
 
 
-print("\nDecision Tree:\n")
 print(tree_rules)
 
 
-# =========================
-# Export Tree For React
-# =========================
+# ============================================================
+# Export Model
+# ============================================================
+#
+# We don't export the entire sklearn object because React
+# cannot directly use a Python sklearn model.
+#
+# Instead, we export the tree's structure:
+#
+#   children_left
+#   children_right
+#   feature
+#   threshold
+#   classes
+#   values
+#
+# TypeScript can use this information later to reproduce
+# exactly the same predictions.
+# ============================================================
 
 tree = model.tree_
 
+
 tree_data = {
-
-    # Which node to go left/right
-    "children_left":
-        tree.children_left.tolist(),
-
-    "children_right":
-        tree.children_right.tolist(),
-
-    # Which feature is checked at each node
-    "feature":
-        tree.feature.tolist(),
-
-    # The cutoff value
-    "threshold":
-        tree.threshold.tolist(),
-
-    # Possible predictions
-    "classes":
-        model.classes_.tolist(),
-
-    # Prediction counts at leaves
-    "values":
-        tree.value.tolist()
+    "children_left": [int(x) for x in tree.children_left],
+    "children_right": [int(x) for x in tree.children_right],
+    "feature": [int(x) for x in tree.feature],
+    "threshold": [float(x) for x in tree.threshold],
+    "classes": [str(x) for x in model.classes_],
+    "values": tree.value.tolist(),
+    "feature_names": FEATURE_COLUMNS,
+    "max_depth": int(model.get_depth()),
+    "n_classes": int(model.n_classes_),
 }
 
 
 with open(
     "decision_tree.json",
-    "w"
+    "w",
 ) as file:
 
     json.dump(
         tree_data,
         file,
-        indent=2
+        indent=2,
     )
 
 
-print("\nSaved decision_tree.json 🚀")
+print("\n==============================")
+print("Model exported!")
+print("==============================")
+
+print("\nSaved:")
+print("decision_tree.json")
+
+print("\n🎉 Milestone 1 + initial model training complete!")
