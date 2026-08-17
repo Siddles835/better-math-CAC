@@ -33,7 +33,7 @@ const NavigationArrows: React.FC<NavigationArrowsProps> = ({
       ) : (
         <div />
       )}
-      
+
       {showNext && onNext ? (
         <Button
           onClick={onNext}

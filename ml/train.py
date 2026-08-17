@@ -272,7 +272,7 @@ tree_data = {
 
 
 with open(
-    "decision_tree.json",
+        "../src/lib/recommendation/decision_tree.json",
     "w",
 ) as file:
 
