@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-lg font-bold font-display ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 active:scale-95",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-lg font-bold font-display ring-offset-background transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 active:scale-95 hover:brightness-110 cursor-pointer touch-manipulation",
   {
     variants: {
       variant: {
@@ -15,9 +15,9 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        space: "bg-gradient-to-r from-primary to-nebula-purple text-foreground shadow-lg hover:shadow-primary/50 hover:scale-105 transition-transform",
+        space: "bg-gradient-to-r from-primary to-secondary text-foreground shadow-lg hover:shadow-primary/50 hover:scale-105 transition-transform",
         planet: "bg-card border-2 border-primary/30 text-foreground hover:border-primary hover:shadow-lg hover:shadow-primary/30 transition-all",
-        gold: "bg-gradient-to-r from-star-gold to-amber-400 text-background shadow-lg hover:shadow-star-gold/50 hover:scale-105 transition-transform",
+        gold: "bg-gradient-to-r from-accent to-amber-400 text-background shadow-lg hover:shadow-accent/50 hover:scale-105 transition-transform",
         correct: "bg-green-500 text-foreground shadow-lg hover:bg-green-600",
         wrong: "bg-destructive text-foreground shadow-lg hover:bg-destructive/90",
       },

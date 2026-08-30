@@ -1,0 +1,23 @@
+{
+  "name": "MathLift",
+  "short_name": "MathLift",
+  "description": "Solar-system math lessons for counting, addition, and subtraction.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#181b2e",
+  "theme_color": "#181b2e",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

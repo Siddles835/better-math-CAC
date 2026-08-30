@@ -67,9 +67,24 @@
     @apply border-border;
   }
 
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    min-height: 100dvh;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Quicksand', sans-serif;
+  }
+
+  button,
+  [role="button"],
+  a {
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -82,6 +97,24 @@
   .text-soft-glow {
     text-shadow: 0 0 20px hsl(var(--foreground) / 0.2);
   }
+}
+
+.lesson-shell {
+  height: 100vh;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.lesson-shell-main {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* pan-y alone blocks pinch-zoom on iOS, which is why only short
+     "Great job" pages (no inner scroller capturing the gesture) zoomed. */
+  touch-action: pan-x pan-y pinch-zoom;
+  overflow: auto;
 }
 
 /* Rocket animation - smooth left-to-right travel with bigger rocket */
@@ -100,8 +133,8 @@
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes fade-in-slow {
@@ -126,7 +159,7 @@
 }
 
 .animate-rocket-fly {
-  animation: rocket-fly 5.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: rocket-fly 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .animate-gentle-float {

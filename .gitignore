@@ -1,22 +1,23 @@
 node_modules
-
 dist
-
-# Python virtual environments
-.venv/
-venv/
-
-# Python cache
+.DS_Store
+*.log
+.vercel
+.env
+.env.*
 __pycache__/
 *.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+ios/App/Pods
+ios/App/build
+ios/DerivedData
+*.xcuserstate
+xcuserdata/
+.idea
+.vscode
 
 # ML generated files
 student_data.csv
 *.pkl
-
-# Optional: Python tooling
-.ipynb_checkpoints/
-
-# PyCharm
-.idea/
-

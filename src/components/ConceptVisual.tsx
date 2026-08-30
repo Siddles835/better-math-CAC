@@ -1,16 +1,57 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Apple from './Apple';
 import Pencil from './Pencil';
+import ReadAloudButton from './ReadAloudButton';
 
 interface ConceptVisualProps {
   type: 'counting' | 'addition' | 'subtraction';
   step: number;
 }
 
+const countingStepNarration = (step: number) => {
+  const parts: string[] = [];
+  if (step >= 1) parts.push('Counting means finding out how many things there are.');
+  if (step >= 2) parts.push('We say one for the first apple.');
+  if (step >= 3) parts.push('We count: one, two, three. That is 3 apples!');
+  if (step >= 4) parts.push('Numbers tell us how many.');
+  if (step >= 5) parts.push('The last number we say is how many there are in total!');
+  return parts.join(' ') || 'Counting means finding out how many things there are.';
+};
+
+const additionStepNarration = (step: number) => {
+  const parts: string[] = [];
+  if (step >= 1) parts.push('Addition means putting things together.');
+  if (step >= 2) parts.push('If you have 2 pencils and get 1 more, count them all together.');
+  if (step >= 3) parts.push('2 plus 1 equals 3. The plus sign means add.');
+  if (step >= 4) parts.push('The answer is called the sum.');
+  return parts.join(' ') || 'Addition means putting things together.';
+};
+
+const subtractionStepNarration = (step: number) => {
+  const parts: string[] = [];
+  if (step >= 1) parts.push('Subtraction means taking things away.');
+  if (step >= 2) parts.push('If you have 4 pencils and give 1 away, count how many are left.');
+  if (step >= 3) parts.push('4 minus 1 equals 3. The minus sign means subtract.');
+  if (step >= 4) parts.push('The answer is called the difference.');
+  return parts.join(' ') || 'Subtraction means taking things away.';
+};
+
+const HearLessonPrompt: React.FC<{ text: string }> = ({ text }) => {
+  const [heard, setHeard] = useState(false);
+  return (
+    <div className="flex flex-col items-center gap-1 animate-fade-in pt-2">
+      <ReadAloudButton text={text} autoPlay onPlayed={() => setHeard(true)} />
+      <span className="text-xs sm:text-sm text-muted-foreground">
+        {heard ? 'Tap to hear this again' : 'Tap to hear this'}
+      </span>
+    </div>
+  );
+};
+
 const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
   if (type === 'counting') {
     return (
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-4 sm:gap-8 w-full px-1">
         {step >= 1 && (
           <div className="animate-concept text-center">
             <p className="text-xl text-foreground/90 mb-4">
@@ -74,7 +115,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         )}
 
         {step >= 6 && (
-          <div className="animate-concept-delay-5 bg-card rounded-xl p-6 border border-border">
+          <div className="animate-concept-delay-5 bg-card rounded-xl p-3 sm:p-6 border border-border w-full max-w-md">
             <p className="text-muted-foreground mb-4 text-center">Circle diagrams help us visualize counting:</p>
             <div className="flex justify-center gap-8">
               <div className="flex flex-col items-center">
@@ -96,13 +137,14 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             </div>
           </div>
         )}
+        {step >= 7 && <HearLessonPrompt text={countingStepNarration(6)} />}
       </div>
     );
   }
   
   if (type === 'addition') {
     return (
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-4 sm:gap-8 w-full px-1">
         {step >= 1 && (
           <div className="animate-concept text-center">
             <p className="text-xl text-foreground/90">
@@ -162,13 +204,14 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             </p>
           </div>
         )}
+        {step >= 6 && <HearLessonPrompt text={additionStepNarration(5)} />}
       </div>
     );
   }
   
   if (type === 'subtraction') {
     return (
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-4 sm:gap-8 w-full px-1">
         {step >= 1 && (
           <div className="animate-concept text-center">
             <p className="text-xl text-foreground/90">
@@ -235,6 +278,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             </p>
           </div>
         )}
+        {step >= 6 && <HearLessonPrompt text={subtractionStepNarration(5)} />}
       </div>
     );
   }

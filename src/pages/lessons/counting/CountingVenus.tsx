@@ -5,11 +5,11 @@ import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
-import HomeButton from '@/components/HomeButton';
-import NavigationArrows from '@/components/NavigationArrows';
+import LessonShell from '@/components/LessonShell';
 import PlanetTransition from '@/components/PlanetTransition';
+import ReadAloudButton from '@/components/ReadAloudButton';
+import GuidedPractice from '@/components/GuidedPractice';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
 import {
   getNextPlanet,
   getLessonRoute,
@@ -20,7 +20,7 @@ import {
 
 const CountingVenus: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet } = useGame();
+  const { setShowRocketTransition, completePlanet, saveLastQuiz } = useGame();
   const [step, setStep] = useLessonStep('venus');
   const [showTransition, setShowTransition] = useState(false);
   const nextPlanet = getNextPlanet('venus');
@@ -37,26 +37,42 @@ const CountingVenus: React.FC = () => {
   });
   const [mcqAnswer, setMcqAnswer] = useState<number | null>(null);
   const [mcqChecked, setMcqChecked] = useState(false);
+  const [showGuided, setShowGuided] = useState(false);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   
   // Quiz results state
   const [quizScore, setQuizScore] = useState(0);
   const [quizAreas, setQuizAreas] = useState<string[]>([]);
+  const [quizTries, setQuizTries] = useState<number[]>([]);
 
   const totalSteps = 3;
 
   const checkMcq = (answer: number) => {
     setMcqAnswer(answer);
     setMcqChecked(true);
+    if (answer !== mcqQuestion.count) {
+      setWrongAttempts((prev) => prev + 1);
+      setShowGuided(true);
+    }
   };
   
   const resetMcq = () => {
     setMcqAnswer(null);
     setMcqChecked(false);
+    setShowGuided(false);
   };
   
-  const handleQuizComplete = (score: number, areas: string[]) => {
+  const handleQuizComplete = (score: number, areas: string[], tries: number[]) => {
     setQuizScore(score);
     setQuizAreas(areas);
+    setQuizTries(tries);
+    void saveLastQuiz({
+      planet: 'venus',
+      lesson: 'counting',
+      score,
+      total: 8,
+      tries,
+    });
     setStep(2);
   };
 
@@ -66,7 +82,8 @@ const CountingVenus: React.FC = () => {
     setShowRocketTransition(true);
     setTimeout(() => {
       navigate(getLessonRoute(nextPlanet), { state: { initialStep: 0 } });
-    }, 2500);
+      setShowRocketTransition(false);
+    }, 1600);
   };
 
   if (showTransition && nextPlanet) {
@@ -90,9 +107,12 @@ const CountingVenus: React.FC = () => {
             <h2 className="text-3xl font-semibold text-foreground mb-4">
               Quick Quiz!
             </h2>
-            <p className="text-xl text-muted-foreground mb-10">
-              How many circles?
-            </p>
+            <div className="flex items-center justify-center gap-3 mb-10">
+              <p className="text-xl text-muted-foreground">
+                How many circles?
+              </p>
+              <ReadAloudButton text="How many circles?" />
+            </div>
             
             <div className="flex justify-center gap-4 mb-10 flex-wrap max-w-sm mx-auto">
               {Array.from({ length: mcqQuestion.count }).map((_, i) => (
@@ -126,12 +146,16 @@ const CountingVenus: React.FC = () => {
               ))}
             </div>
             
-            {mcqChecked && (
+            {mcqChecked && !showGuided && (
               <div className="mt-8 space-y-4">
                 <p className={`text-xl font-semibold ${
                   mcqAnswer === mcqQuestion.count ? 'text-success' : 'text-destructive'
                 }`}>
-                  {mcqAnswer === mcqQuestion.count ? 'Great!' : `The answer is ${mcqQuestion.count}`}
+                  {mcqAnswer === mcqQuestion.count
+                    ? 'Great!'
+                    : wrongAttempts >= 2
+                      ? `The answer is ${mcqQuestion.count}`
+                      : "Let's practice counting with pencils!"}
                 </p>
                 {mcqAnswer !== mcqQuestion.count ? (
                   <Button variant="outline" size="lg" onClick={resetMcq}>
@@ -143,6 +167,18 @@ const CountingVenus: React.FC = () => {
                   </Button>
                 )}
               </div>
+            )}
+
+            {showGuided && (
+              <GuidedPractice
+                lessonType="counting"
+                num1={mcqQuestion.count}
+                storyHint="How many circles?"
+                onClose={() => {
+                  setShowGuided(false);
+                  resetMcq();
+                }}
+              />
             )}
           </div>
         );
@@ -169,10 +205,13 @@ const CountingVenus: React.FC = () => {
             score={quizScore}
             totalQuestions={8}
             areasToImprove={quizAreas}
+            questionTries={quizTries}
             lessonType="counting"
-            videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
             onFinish={() => setShowTransition(true)}
-            onBack={() => navigate('/planets')}
+            onBack={() => {
+              void completePlanet('venus');
+              navigate('/planets');
+            }}
             finishLabel={nextPlanet ? `Go to ${PLANET_META[nextPlanet].name}` : 'Continue'}
           />
         );
@@ -183,30 +222,15 @@ const CountingVenus: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background subtle-stars flex flex-col p-4 md:p-8">
-      <HomeButton />
-      
-      <div className="flex justify-center gap-2 mb-6">
-        {Array.from({ length: totalSteps }).map((_, i) => (
-          <div
-            key={i}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              i === step ? 'bg-venus' : i < step ? 'bg-venus/50' : 'bg-muted'
-            }`}
-          />
-        ))}
-      </div>
-
-      <div className="flex-1 flex flex-col w-full max-w-4xl mx-auto">
-        {renderStep()}
-      </div>
-
-      <NavigationArrows
-        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-        showNext={false}
-        backLabel="Back"
-      />
-    </div>
+    <LessonShell
+      planet="venus"
+      totalSteps={totalSteps}
+      step={step}
+      onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
+      showNext={false}
+    >
+      {renderStep()}
+    </LessonShell>
   );
 };
 

@@ -5,13 +5,15 @@ import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
-import HomeButton from '@/components/HomeButton';
-import NavigationArrows from '@/components/NavigationArrows';
+import LessonShell from '@/components/LessonShell';
+import ReadAloudButton from '@/components/ReadAloudButton';
+import GuidedPractice from '@/components/GuidedPractice';
 import { Button } from '@/components/ui/button';
+import { hapticError, hapticSuccess } from '@/lib/haptics';
 
 const SubtractionNeptune: React.FC = () => {
   const navigate = useNavigate();
-  const { completePlanet } = useGame();
+  const { completePlanet, saveLastQuiz } = useGame();
   const [step, setStep] = useLessonStep('neptune');
   
   // MCQ state
@@ -28,21 +30,44 @@ const SubtractionNeptune: React.FC = () => {
   });
   const [mcqSelected, setMcqSelected] = useState<number | null>(null);
   const [mcqChecked, setMcqChecked] = useState(false);
+  const [showGuided, setShowGuided] = useState(false);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   
   // Quiz results state
   const [quizScore, setQuizScore] = useState(0);
   const [quizAreas, setQuizAreas] = useState<string[]>([]);
+  const [quizTries, setQuizTries] = useState<number[]>([]);
 
   const totalSteps = 3;
 
   const resetMcq = () => {
     setMcqSelected(null);
     setMcqChecked(false);
+    setShowGuided(false);
+  };
+
+  const checkMcq = () => {
+    setMcqChecked(true);
+    if (mcqSelected !== mcqAnswer) {
+      hapticError();
+      setWrongAttempts((prev) => prev + 1);
+      setShowGuided(true);
+    } else {
+      hapticSuccess();
+    }
   };
   
-  const handleQuizComplete = (score: number, areas: string[]) => {
+  const handleQuizComplete = (score: number, areas: string[], tries: number[]) => {
     setQuizScore(score);
     setQuizAreas(areas);
+    setQuizTries(tries);
+    void saveLastQuiz({
+      planet: 'neptune',
+      lesson: 'subtraction',
+      score,
+      total: 8,
+      tries,
+    });
     setStep(2);
   };
 
@@ -54,9 +79,12 @@ const SubtractionNeptune: React.FC = () => {
             <h2 className="text-3xl font-semibold text-foreground mb-4">
               Quick Quiz!
             </h2>
-            <p className="text-2xl text-foreground mb-10">
-              What is <span className="font-bold text-neptune">{mcqA}</span> − <span className="font-bold text-neptune">{mcqB}</span>?
-            </p>
+            <div className="flex items-center justify-center gap-3 mb-10">
+              <p className="text-2xl text-foreground">
+                What is <span className="font-bold text-neptune">{mcqA}</span> − <span className="font-bold text-neptune">{mcqB}</span>?
+              </p>
+              <ReadAloudButton text={`What is ${mcqA} minus ${mcqB}?`} />
+            </div>
             
             <div className="grid grid-cols-2 gap-6 max-w-sm mx-auto mb-10">
               {mcqOptions.map((option) => (
@@ -87,17 +115,21 @@ const SubtractionNeptune: React.FC = () => {
             </div>
             
             {!mcqChecked && mcqSelected !== null && (
-              <Button onClick={() => setMcqChecked(true)} size="lg">
+              <Button onClick={checkMcq} size="lg">
                 Check
               </Button>
             )}
             
-            {mcqChecked && (
+            {mcqChecked && !showGuided && (
               <div className="space-y-4">
                 <p className={`text-xl font-semibold ${
                   mcqSelected === mcqAnswer ? 'text-success' : 'text-destructive'
                 }`}>
-                  {mcqSelected === mcqAnswer ? 'Great!' : `The answer is ${mcqAnswer}`}
+                  {mcqSelected === mcqAnswer
+                    ? 'Great!'
+                    : wrongAttempts >= 2
+                      ? `The answer is ${mcqAnswer}`
+                      : "Let's practice with pencils!"}
                 </p>
                 {mcqSelected !== mcqAnswer ? (
                   <Button variant="outline" size="lg" onClick={resetMcq}>
@@ -109,6 +141,19 @@ const SubtractionNeptune: React.FC = () => {
                   </Button>
                 )}
               </div>
+            )}
+
+            {showGuided && (
+              <GuidedPractice
+                lessonType="subtraction"
+                num1={mcqA}
+                num2={mcqB}
+                storyHint={`What is ${mcqA} minus ${mcqB}?`}
+                onClose={() => {
+                  setShowGuided(false);
+                  resetMcq();
+                }}
+              />
             )}
           </div>
         );
@@ -135,14 +180,17 @@ const SubtractionNeptune: React.FC = () => {
             score={quizScore}
             totalQuestions={8}
             areasToImprove={quizAreas}
+            questionTries={quizTries}
             lessonType="subtraction"
-            videoUrl="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
             onFinish={() => {
-              completePlanet('neptune');
+              void completePlanet('neptune');
               navigate('/planets');
             }}
-            onBack={() => navigate('/planets')}
-            finishLabel="Return to Solar System"
+            onBack={() => {
+              void completePlanet('neptune');
+              navigate('/planets');
+            }}
+            finishLabel="Return to Planets"
           />
         );
 
@@ -152,30 +200,15 @@ const SubtractionNeptune: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background subtle-stars flex flex-col p-4 md:p-8">
-      <HomeButton />
-      
-      <div className="flex justify-center gap-2 mb-6">
-        {Array.from({ length: totalSteps }).map((_, i) => (
-          <div
-            key={i}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              i === step ? 'bg-neptune' : i < step ? 'bg-neptune/50' : 'bg-muted'
-            }`}
-          />
-        ))}
-      </div>
-
-      <div className="flex-1 flex flex-col w-full max-w-4xl mx-auto">
-        {renderStep()}
-      </div>
-
-      <NavigationArrows
-        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-        showNext={false}
-        backLabel="Back"
-      />
-    </div>
+    <LessonShell
+      planet="neptune"
+      totalSteps={totalSteps}
+      step={step}
+      onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
+      showNext={false}
+    >
+      {renderStep()}
+    </LessonShell>
   );
 };
 

@@ -56,16 +56,23 @@ const CircleDiagram: React.FC<Props> = ({ planets, size = 360, onSelect, selecte
             <g
               key={p.id}
               onClick={() => !isDisabled && onSelect?.(p)}
-              style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+              style={{
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                transition: 'opacity 0.25s ease, transform 0.25s ease',
+              }}
               opacity={isDisabled ? 0.35 : 1}
+              className={!isDisabled ? 'origin-center hover:opacity-100' : undefined}
             >
+              {/* Invisible larger hit target for touch (~44pt) */}
+              <circle cx={px} cy={py} r={28} fill="transparent" />
               <circle
                 cx={px}
                 cy={py}
-                r={isSelected ? 22 : 18}
+                r={isSelected ? 24 : 22}
                 fill={p.color || '#f3f4f6'}
                 stroke={isSelected ? '#fff' : isDisabled ? '#666' : '#e2e8f0'}
                 strokeWidth={isSelected ? 2.5 : 1}
+                style={{ transition: 'r 0.2s ease, stroke-width 0.2s ease' }}
               />
               <text
                 x={px}
