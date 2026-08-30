@@ -251,6 +251,15 @@
   animation: slide-up-fade 1.5s ease-out 5s forwards;
 }
 
+@keyframes planet-think {
+  0%, 100% { box-shadow: 0 0 8px hsl(var(--accent) / 0.35); }
+  50% { box-shadow: 0 0 22px hsl(var(--accent) / 0.85); }
+}
+
+.planet-glow {
+  animation: planet-think 1.8s ease-in-out infinite;
+}
+
 @keyframes rocket-launch-screen {
   0% { transform: translateY(0); opacity: 1; }
   30% { transform: translateY(-10px); opacity: 1; }

@@ -1,5 +1,5 @@
 // Addition Lesson - Mars (Concept + Word Problem)
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
@@ -11,20 +11,19 @@ import LessonShell from '@/components/LessonShell';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import EquationBuilder from '@/components/EquationBuilder';
 import GuidedPractice from '@/components/GuidedPractice';
+import ThoughtCard from '@/components/ThoughtCard';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
-import { createFeatures } from '@/lib/recommendation/features';
-import { predictRecommendation, type Recommendation } from '@/lib/recommendation/model';
+import { diagnoseTrace, LessonTrace, type Diagnosis } from '@/lib/cognition';
 
 const AdditionMars: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet } = useGame();
+  const { setShowRocketTransition, completePlanet, saveDiagnosis } = useGame();
   const [step, setStep] = useLessonStep('mars');
   const [conceptStep, setConceptStep] = useState(1);
   const [showTransition, setShowTransition] = useState(false);
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
-  const [attempts, setAttempts] = useState(0);
-  const [activityStartTime] = useState(() => Date.now());
+  const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
+  const traceRef = useRef(new LessonTrace());
   
   // Word problem state
   const [wordLeft] = useState(3);
@@ -50,40 +49,29 @@ const AdditionMars: React.FC = () => {
     }
   }, [step, conceptStep]);
 
+  const publishDiagnosis = () => {
+    const result = diagnoseTrace('mars', traceRef.current);
+    setDiagnosis(result);
+    void saveDiagnosis(result);
+  };
+
   const addPencilWord = () => {
     if (wordAvailable > 0 && !wordChecked && wordLeft + wordRight < 9) {
-      setWordRight(prev => prev + 1);
+      const next = wordRight + 1;
+      setWordRight(next);
       setWordAvailable(prev => prev - 1);
+      traceRef.current.tap(wordLeft + next, wordTarget);
     }
   };
 
   const checkWord = () => {
     const correct = wordLeft + wordRight === wordTarget;
-    const nextAttempts = attempts + 1;
-    setAttempts(nextAttempts);
     setWordChecked(true);
+    traceRef.current.check(wordLeft + wordRight, wordTarget);
     if (!correct) {
       setShowGuided(true);
     }
-
-    try {
-      const elapsedSeconds = Math.max(1, Math.round((Date.now() - activityStartTime) / 1000));
-      const features = createFeatures({
-        planet: 5,
-        lessonDifficulty: 5,
-        correctAnswers: correct ? 1 : 0,
-        totalAnswers: 1,
-        totalTimeSeconds: elapsedSeconds,
-        hints: 0,
-        retries: Math.max(0, nextAttempts - 1),
-        improvement: correct ? 100 : 0,
-        consistency: correct ? 100 : 0,
-        streak: correct ? 1 : 0,
-      });
-      setRecommendation(predictRecommendation(features));
-    } catch {
-      setRecommendation(null);
-    }
+    publishDiagnosis();
   };
 
   const resetWord = () => {
@@ -91,7 +79,7 @@ const AdditionMars: React.FC = () => {
     setWordAvailable(5);
     setWordChecked(false);
     setShowGuided(false);
-    setRecommendation(null);
+    traceRef.current.reset();
   };
 
   const goToNextPlanet = () => {
@@ -143,6 +131,11 @@ const AdditionMars: React.FC = () => {
                 num2={wordNeed}
                 operator="+"
                 questionText={wordStoryText}
+                onResult={({ reverseAddends, usedTotal, correct }) => {
+                  if (usedTotal || (!correct && reverseAddends)) {
+                    traceRef.current.setEquationSwap(true);
+                  }
+                }}
                 onComplete={() => {
                   resetWord();
                   setWordPhase('solve');
@@ -246,16 +239,7 @@ const AdditionMars: React.FC = () => {
                     </>
                   )}
                 </div>
-                {recommendation && (
-                  <div className="bg-card rounded-xl p-5 border border-border max-w-xl">
-                    <p className="text-lg font-semibold">
-                      {recommendation === 'review' && "Let's review this a little more before moving on."}
-                      {recommendation === 'practice' && "You're doing well! How about some more practice?"}
-                      {recommendation === 'advance' && "Great job! You're ready for Jupiter!"}
-                      {recommendation === 'challenge' && "Wow! You're doing amazing! Ready for a challenge on Jupiter?"}
-                    </p>
-                  </div>
-                )}
+                {diagnosis && <ThoughtCard diagnosis={diagnosis} />}
                 {wordLeft + wordRight !== wordTarget ? (
                   <Button onClick={resetWord} variant="outline" size="lg">
                     Try Again

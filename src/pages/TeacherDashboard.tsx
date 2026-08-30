@@ -12,6 +12,7 @@ import {
   type PlanetId,
 } from '@/lib/planets';
 import { Button } from '@/components/ui/button';
+import { MISCONCEPTION_LABEL, TEACHER_LINE, type MisconceptionCode } from '@/lib/cognition';
 
 const TeacherDashboard: React.FC = () => {
   const params = useParams();
@@ -121,6 +122,14 @@ const TeacherDashboard: React.FC = () => {
   };
 
   const students = cls?.students ? Object.entries(cls.students) : [];
+  const thinkingGroups = students.reduce<Record<string, number>>((acc, [, s]) => {
+    const code = (s.lastDiagnosis?.primary ?? 'none') as string;
+    acc[code] = (acc[code] ?? 0) + 1;
+    return acc;
+  }, {});
+  const earlyWarnings = students
+    .map(([, s]) => ({ name: s.nickname, warning: s.lastDiagnosis?.earlyWarning }))
+    .filter((row) => row.warning);
 
   return (
     <div className="min-h-screen bg-background subtle-stars p-4 sm:p-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
@@ -194,6 +203,39 @@ const TeacherDashboard: React.FC = () => {
           </div>
         </section>
 
+        {students.length > 0 && (
+          <section className="mb-8 bg-card/95 p-6 rounded-2xl shadow border border-border backdrop-blur-sm">
+            <h2 className="text-xl font-semibold mb-2">How the class is thinking</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              MathLift only stores a short thinking summary — not drawings or tap-by-tap traces.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {Object.entries(thinkingGroups).map(([code, count]) => (
+                <span
+                  key={code}
+                  className="rounded-full border border-border bg-background px-3 py-1 text-sm"
+                >
+                  {code === 'none'
+                    ? 'No signal yet'
+                    : MISCONCEPTION_LABEL[code as MisconceptionCode] ?? code}
+                  {' · '}
+                  {count}
+                </span>
+              ))}
+            </div>
+            {earlyWarnings.length > 0 && (
+              <div className="rounded-xl border border-accent/40 bg-accent/10 p-4 space-y-2">
+                <p className="text-sm font-semibold text-foreground">Early signals</p>
+                {earlyWarnings.map((row) => (
+                  <p key={row.name} className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{row.name}:</span> {row.warning}
+                  </p>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
         <section className="bg-card/95 p-6 rounded-2xl shadow border border-border backdrop-blur-sm">
           <h2 className="text-xl font-semibold mb-4">Student Roster & Progress</h2>
           {removeError && <p className="mb-3 text-sm text-destructive">{removeError}</p>}
@@ -221,6 +263,13 @@ const TeacherDashboard: React.FC = () => {
                     <div className="text-sm font-medium text-sky-300 mt-1">
                       {planetName} — {lesson}
                     </div>
+                    {s.lastDiagnosis && (
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        Thinking: {MISCONCEPTION_LABEL[s.lastDiagnosis.primary]} (
+                        {Math.round(s.lastDiagnosis.confidence * 100)}%)
+                        <p className="mt-1">{TEACHER_LINE[s.lastDiagnosis.primary]}</p>
+                      </div>
+                    )}
                     {s.lastQuiz && (
                       <div className="mt-2 text-xs text-muted-foreground">
                         Last quiz ({PLANET_META[s.lastQuiz.planet as PlanetId]?.name ?? s.lastQuiz.planet}):{' '}

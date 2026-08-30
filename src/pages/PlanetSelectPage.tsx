@@ -30,6 +30,7 @@ const PlanetSelectPage: React.FC = () => {
     getPlanetStep,
     planetSteps,
     lastPlanetId,
+    lastDiagnosis,
     markPlanetVisited,
     hydrateFromStudent,
     hydrateClassMax,
@@ -87,9 +88,10 @@ const PlanetSelectPage: React.FC = () => {
           color: PLANET_META[id].color,
           route: getLessonRoute(id),
           disabled: !selectable,
+          glow: Boolean(lastDiagnosis?.glowPlanets.includes(id)),
         };
       }),
-    [classMax, progressPlanetId]
+    [classMax, progressPlanetId, lastDiagnosis]
   );
 
   const handlePlanetSelect = (planetId: string) => {
@@ -142,6 +144,12 @@ const PlanetSelectPage: React.FC = () => {
               {' '}
               Tap <strong className="text-foreground">{PLANET_META[continuePlanet].name}</strong> to
               continue where you left off.
+            </>
+          )}
+          {lastDiagnosis && lastDiagnosis.glowPlanets.length > 0 && (
+            <>
+              {' '}
+              {PLANET_META[lastDiagnosis.nextPlanet].name} is glowing for your next practice.
             </>
           )}
         </p>

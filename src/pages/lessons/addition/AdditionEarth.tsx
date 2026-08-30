@@ -1,5 +1,5 @@
 // Addition Lesson - Earth (Activity/Practice with pencils)
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
@@ -10,19 +10,19 @@ import LessonShell from '@/components/LessonShell';
 import LessonCelebration from '@/components/LessonCelebration';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import GuidedPractice from '@/components/GuidedPractice';
+import NumberDraw from '@/components/NumberDraw';
+import ThoughtCard from '@/components/ThoughtCard';
 import { Button } from '@/components/ui/button';
 import { Check, X, Play, RotateCcw, ArrowRight } from 'lucide-react';
-import { createFeatures } from '@/lib/recommendation/features';
-import { predictRecommendation, type Recommendation } from '@/lib/recommendation/model';
+import { diagnoseTrace, LessonTrace, type Diagnosis, type DigitRead } from '@/lib/cognition';
 
 const AdditionEarth: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet } = useGame();
+  const { setShowRocketTransition, completePlanet, saveDiagnosis } = useGame();
   const [step, setStep] = useLessonStep('earth');
   const [showTransition, setShowTransition] = useState(false);
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
-  const [activity2Retries, setActivity2Retries] = useState(0);
-  const [activityStartTime] = useState(() => Date.now());
+  const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
+  const traceRef = useRef(new LessonTrace());
   
   // Animation state
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'initial' | 'animating' | 'final'>('idle');
@@ -65,6 +65,12 @@ const AdditionEarth: React.FC = () => {
     }, 3000);
   };
 
+  const publishDiagnosis = () => {
+    const result = diagnoseTrace('earth', traceRef.current);
+    setDiagnosis(result);
+    void saveDiagnosis(result);
+  };
+
   const addPencilRight = () => {
     if (availablePencils > 0 && leftPencils + rightPencils < 9) {
       setRightPencils(prev => prev + 1);
@@ -74,37 +80,27 @@ const AdditionEarth: React.FC = () => {
 
   const addPencilActivity2 = () => {
     if (activity2Available > 0 && !activity2Checked && activity2Left + activity2Right < 9) {
-      setActivity2Right(prev => prev + 1);
+      const next = activity2Right + 1;
+      setActivity2Right(next);
       setActivity2Available(prev => prev - 1);
+      traceRef.current.tap(activity2Left + next, activity2Target);
     }
   };
 
   const checkActivity2 = () => {
-    const isCorrect = activity2Left + activity2Right === activity2Target;
+    const total = activity2Left + activity2Right;
+    const isCorrect = total === activity2Target;
     setActivity2Checked(true);
+    traceRef.current.check(total, activity2Target);
     if (!isCorrect) {
-      setActivity2Retries((prev) => prev + 1);
       setShowGuided(true);
     }
+    publishDiagnosis();
+  };
 
-    try {
-      const elapsedSeconds = Math.max(1, Math.round((Date.now() - activityStartTime) / 1000));
-      const features = createFeatures({
-        planet: 4,
-        lessonDifficulty: 4,
-        correctAnswers: isCorrect ? 1 : 0,
-        totalAnswers: 1,
-        totalTimeSeconds: elapsedSeconds,
-        hints: 0,
-        retries: activity2Retries + (isCorrect ? 0 : 1),
-        improvement: isCorrect ? 100 : 0,
-        consistency: isCorrect ? 100 : 0,
-        streak: isCorrect ? 1 : 0,
-      });
-      setRecommendation(predictRecommendation(features));
-    } catch {
-      setRecommendation(null);
-    }
+  const handleDrawnNumber = (read: DigitRead) => {
+    traceRef.current.setDigit(read, activity2Left + activity2Right);
+    publishDiagnosis();
   };
 
   const resetActivity2 = () => {
@@ -112,7 +108,7 @@ const AdditionEarth: React.FC = () => {
     setActivity2Available(6);
     setActivity2Checked(false);
     setShowGuided(false);
-    setRecommendation(null);
+    traceRef.current.reset();
   };
 
   const resetPractice = () => {
@@ -315,16 +311,14 @@ const AdditionEarth: React.FC = () => {
                     </>
                   )}
                 </div>
-                {recommendation && activity2Left + activity2Right === activity2Target && (
-                  <div className="bg-card rounded-xl p-5 border border-border max-w-xl">
-                    <p className="text-lg font-semibold">
-                      {recommendation === 'advance' && "You're ready for Mars!"}
-                      {recommendation === 'challenge' && "Amazing work! You're ready for a challenge on Mars!"}
-                      {recommendation === 'practice' && "Nice work! A little more practice will help you get even stronger."}
-                      {recommendation === 'review' && "Let's review this skill a little more before moving on."}
-                    </p>
-                  </div>
+                {diagnosis && activity2Left + activity2Right === activity2Target && (
+                  <ThoughtCard diagnosis={diagnosis} />
                 )}
+                <NumberDraw
+                  prompt={`Write how many pencils you have (${activity2Left + activity2Right}).`}
+                  expected={activity2Left + activity2Right}
+                  onRead={handleDrawnNumber}
+                />
                 {activity2Left + activity2Right !== activity2Target && (
                   <Button onClick={resetActivity2} variant="outline" size="lg">
                     Try Again
@@ -362,34 +356,25 @@ const AdditionEarth: React.FC = () => {
               <LessonCelebration lessonType="addition" />
             </div>
 
-            {recommendation && (
-              <div className="bg-card rounded-xl p-6 border border-border max-w-xl mx-auto mb-6">
-                <p className="text-xl font-semibold">
-                  {recommendation === 'review' && "Let's review this a little more before moving on."}
-                  {recommendation === 'practice' && "You're doing well! A little more practice will help."}
-                  {recommendation === 'advance' && "Great job! You're ready for Mars!"}
-                  {recommendation === 'challenge' && "Wow! You're doing amazing! Ready for a challenge on Mars?"}
-                </p>
+            {diagnosis && (
+              <div className="mb-6 flex justify-center">
+                <ThoughtCard
+                  diagnosis={diagnosis}
+                  onPractice={
+                    diagnosis.primary !== 'STEADY'
+                      ? () => {
+                          setStep(2);
+                          setActivity2Checked(false);
+                          setShowGuided(false);
+                        }
+                      : undefined
+                  }
+                  practiceLabel="Practice this again"
+                />
               </div>
             )}
 
             <div className="flex flex-col items-center gap-3">
-              {(recommendation === 'review' || recommendation === 'practice') && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  onClick={() => {
-                    setStep(2);
-                    setRecommendation(null);
-                    setActivity2Checked(false);
-                    setShowGuided(false);
-                  }}
-                >
-                  <RotateCcw className="w-5 h-5 mr-2" />
-                  {recommendation === 'review' ? 'Practice Again' : 'More Practice'}
-                </Button>
-              )}
               <Button onClick={() => setShowTransition(true)} size="lg">
                 <ArrowRight className="w-5 h-5 mr-2" />
                 Go to Mars

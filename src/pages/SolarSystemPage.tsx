@@ -31,6 +31,7 @@ const SolarSystemPage: React.FC = () => {
     getPlanetStep,
     planetSteps,
     lastPlanetId,
+    lastDiagnosis,
     markPlanetVisited,
     hydrateFromStudent,
     hydrateClassMax,
@@ -155,6 +156,12 @@ const SolarSystemPage: React.FC = () => {
               continue where you left off.
             </>
           )}
+          {lastDiagnosis && lastDiagnosis.glowPlanets.length > 0 && (
+            <>
+              {' '}
+              {PLANET_META[lastDiagnosis.nextPlanet].name} is glowing for your next practice.
+            </>
+          )}
         </p>
       </div>
 
@@ -205,6 +212,7 @@ const SolarSystemPage: React.FC = () => {
               });
               const isCompleted = completedPlanets[planetId];
               const topic = getTopicDisplayName(planetId);
+              const isGlow = Boolean(lastDiagnosis?.glowPlanets.includes(planetId));
 
               if (planetId === 'sun') {
                 return (
@@ -219,7 +227,7 @@ const SolarSystemPage: React.FC = () => {
                     style={{ minWidth: 56, minHeight: 56 }}
                   >
                     <div
-                      className="w-14 h-14 rounded-full shadow-lg"
+                      className={`w-14 h-14 rounded-full shadow-lg ${isGlow ? 'planet-glow' : ''}`}
                       style={{
                         backgroundColor: meta.color,
                         boxShadow: selectable ? `0 0 20px ${meta.color}80` : 'none',
@@ -253,7 +261,7 @@ const SolarSystemPage: React.FC = () => {
                   <div
                     className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center ${
                       isCompleted ? 'ring-2 ring-green-400' : ''
-                    }`}
+                    } ${isGlow ? 'planet-glow' : ''}`}
                     style={{
                       backgroundColor: selectable ? meta.color : '#666',
                       boxShadow: selectable ? `0 0 15px ${meta.color}80` : 'none',

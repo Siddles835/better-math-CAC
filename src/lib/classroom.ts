@@ -9,6 +9,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import type { Diagnosis } from './cognition';
 import {
   getClassroomUnlockPlanet,
   getFurthestProgressPlanet,
@@ -39,6 +40,8 @@ export interface StudentState {
   /** Last planet whose lesson the student opened, including replays. */
   lastPlanet?: string;
   lastQuiz?: LastQuizSummary;
+  /** Aggregated thinking signal only — drawings and raw taps stay on-device. */
+  lastDiagnosis?: Diagnosis;
   lastUpdated: number;
 }
 

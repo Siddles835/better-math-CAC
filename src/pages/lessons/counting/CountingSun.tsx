@@ -1,8 +1,11 @@
 // Counting Lesson - Sun (Activity/Practice with apples + Concept Explanation)
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import NumberDraw from '@/components/NumberDraw';
+import ThoughtCard from '@/components/ThoughtCard';
+import { diagnoseTrace, LessonTrace, type Diagnosis, type DigitRead } from '@/lib/cognition';
 import Apple from '@/components/Apple';
 import Basket from '@/components/Basket';
 import Counter from '@/components/Counter';
@@ -17,10 +20,12 @@ import { Volume2 } from 'lucide-react';
 
 const CountingSun: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet } = useGame();
+  const { setShowRocketTransition, completePlanet, saveDiagnosis } = useGame();
   const [step, setStep] = useLessonStep('sun');
   const [basketCount, setBasketCount] = useState(0);
   const [availableApples, setAvailableApples] = useState(7);
+  const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
+  const traceRef = useRef(new LessonTrace());
   const [showTransition, setShowTransition] = useState(false);
   const [conceptStep, setConceptStep] = useState(1);
 
@@ -37,9 +42,19 @@ const CountingSun: React.FC = () => {
 
   const addAppleToBasket = () => {
     if (availableApples > 0 && basketCount < 9) {
-      setBasketCount(prev => prev + 1);
+      const next = basketCount + 1;
+      setBasketCount(next);
       setAvailableApples(prev => prev - 1);
+      traceRef.current.tap(next, next);
     }
+  };
+
+  const handleDrawnCount = (read: DigitRead) => {
+    traceRef.current.setDigit(read, basketCount);
+    traceRef.current.check(read.digit, basketCount);
+    const result = diagnoseTrace('sun', traceRef.current);
+    setDiagnosis(result);
+    void saveDiagnosis(result);
   };
 
   const goToNextPlanet = () => {
@@ -93,6 +108,20 @@ const CountingSun: React.FC = () => {
                   <Apple key={i} onClick={addAppleToBasket} size="md" />
                 ))}
               </div>
+              {basketCount > 0 && (
+                <div className="mt-6 w-full">
+                  <NumberDraw
+                    prompt="Write how many apples are in the basket."
+                    expected={basketCount}
+                    onRead={handleDrawnCount}
+                  />
+                  {diagnosis && (
+                    <div className="mt-4 flex justify-center">
+                      <ThoughtCard diagnosis={diagnosis} />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         );
