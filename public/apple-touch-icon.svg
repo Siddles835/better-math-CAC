@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="MathLift">
+  <rect width="180" height="180" rx="40" fill="#181b2e"/>
+  <circle cx="90" cy="90" r="40" fill="#ffd166"/>
+  <circle cx="90" cy="90" r="24" fill="#f4b942"/>
+  <circle cx="136" cy="48" r="10" fill="#8ecae6"/>
+  <circle cx="44" cy="128" r="8" fill="#f28b6b"/>
+  <circle cx="140" cy="120" r="6" fill="#7aa2f7"/>
+</svg>

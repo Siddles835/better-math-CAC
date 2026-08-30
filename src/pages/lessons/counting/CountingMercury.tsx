@@ -3,13 +3,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
-import NavigationArrows from '@/components/NavigationArrows';
 import Apple from '@/components/Apple';
 import Basket from '@/components/Basket';
 import Counter from '@/components/Counter';
 import PlanetTransition from '@/components/PlanetTransition';
-import HomeButton from '@/components/HomeButton';
+import LessonCelebration from '@/components/LessonCelebration';
+import LessonShell from '@/components/LessonShell';
+import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
+import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { Check, X } from 'lucide-react';
 
 const CountingMercury: React.FC = () => {
@@ -36,7 +38,13 @@ const CountingMercury: React.FC = () => {
 
   const checkWordProblem = () => {
     setWordProblemChecked(true);
-    setWordProblemCorrect(wordProblemCount === targetCount);
+    const correct = wordProblemCount === targetCount;
+    setWordProblemCorrect(correct);
+    if (correct) {
+      hapticSuccess();
+    } else {
+      hapticError();
+    }
   };
 
   const resetWordProblem = () => {
@@ -51,7 +59,8 @@ const CountingMercury: React.FC = () => {
     setShowRocketTransition(true);
     setTimeout(() => {
       navigate('/lesson/counting/venus');
-    }, 2500);
+      setShowRocketTransition(false);
+    }, 1600);
   };
 
   if (showTransition) {
@@ -76,12 +85,20 @@ const CountingMercury: React.FC = () => {
               Help Fill the Basket!
             </h2>
             <div className="bg-card rounded-xl p-6 border border-border mb-8 max-w-lg">
-              <p className="text-lg text-foreground">
-                Jo needs <span className="font-bold text-primary text-xl">{targetCount} apples</span> for a pie.
-              </p>
-              <p className="text-muted-foreground mt-2">
-                Can you put the right amount?
-              </p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-left flex-1">
+                  <p className="text-lg text-foreground">
+                    Jo needs <span className="font-bold text-primary text-xl">{targetCount} apples</span> for a pie.
+                  </p>
+                  <p className="text-muted-foreground mt-2">
+                    Can you put the right amount?
+                  </p>
+                </div>
+                <ReadAloudButton
+                  text={`Jo needs ${targetCount} apples for a pie. Can you put the right amount?`}
+                  className="shrink-0"
+                />
+              </div>
             </div>
             
             <div className="flex flex-col items-center gap-6">
@@ -92,20 +109,20 @@ const CountingMercury: React.FC = () => {
               
               <Basket>
                 {Array.from({ length: wordProblemCount }).map((_, i) => (
-                  <Apple key={i} size="lg" className="pointer-events-none" />
+                  <Apple key={i} size="sm" className="pointer-events-none" />
                 ))}
               </Basket>
               
               {!wordProblemChecked && (
-                <div className="flex flex-wrap justify-center gap-3 max-w-md">
+                <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-md">
                   {Array.from({ length: wordProblemAvailable }).map((_, i) => (
-                    <Apple key={i} onClick={addAppleToWordProblem} size="lg" />
+                    <Apple key={i} onClick={addAppleToWordProblem} size="md" />
                   ))}
                 </div>
               )}
               
               {!wordProblemChecked ? (
-                <Button onClick={checkWordProblem} className="mt-4" size="lg">
+                <Button onClick={checkWordProblem} className="mt-4 relative z-20" size="lg">
                   Check
                 </Button>
               ) : (
@@ -121,7 +138,7 @@ const CountingMercury: React.FC = () => {
                         <X className="w-8 h-8" />
                         <span className="text-xl font-semibold">Try again!</span>
                       </div>
-                      <Button onClick={resetWordProblem} variant="outline" size="lg">
+                      <Button type="button" onClick={resetWordProblem} variant="outline" size="lg" className="min-h-[48px] relative z-20">
                         Try Again
                       </Button>
                     </div>
@@ -139,21 +156,11 @@ const CountingMercury: React.FC = () => {
               Great Work on Mercury!
             </h2>
             <p className="text-xl text-muted-foreground mb-10">
-              You practiced counting! Watch this fun video:
+              You practiced counting! Celebrate what you learned:
             </p>
             
-            <div className="bg-card rounded-xl p-10 border border-border max-w-xl mx-auto mb-10">
-              <div className="aspect-video bg-muted rounded-lg">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src="https://www.youtube.com/embed/G8hLQFpq0rU?si=BcyEG-LomVzdDWL_"
-                  title="Counting Fun"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="rounded-lg"
-                />
-              </div>
+            <div className="mb-10 w-full px-2">
+              <LessonCelebration lessonType="counting" />
             </div>
             
             <Button onClick={() => setShowTransition(true)} size="lg">
@@ -168,32 +175,16 @@ const CountingMercury: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background subtle-stars flex flex-col p-4 md:p-8">
-      <HomeButton />
-      
-      <div className="flex justify-center gap-2 mb-6">
-        {Array.from({ length: totalSteps }).map((_, i) => (
-          <div
-            key={i}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              i === step ? 'bg-mercury' : i < step ? 'bg-mercury/50' : 'bg-muted'
-            }`}
-          />
-        ))}
-      </div>
-
-      <div className="flex-1 flex flex-col w-full max-w-4xl mx-auto">
-        {renderStep()}
-      </div>
-
-      <NavigationArrows
-        onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-        onNext={step < totalSteps - 1 && wordProblemCorrect ? () => setStep(step + 1) : undefined}
-        showNext={step < totalSteps - 1 && wordProblemCorrect}
-        backLabel="Back"
-        nextLabel="Next"
-      />
-    </div>
+    <LessonShell
+      planet="mercury"
+      totalSteps={totalSteps}
+      step={step}
+      onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
+      onNext={step < totalSteps - 1 && wordProblemCorrect ? () => setStep(step + 1) : undefined}
+      showNext={step < totalSteps - 1 && wordProblemCorrect}
+    >
+      {renderStep()}
+    </LessonShell>
   );
 };
 

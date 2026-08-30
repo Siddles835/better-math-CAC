@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { speak } from '@/lib/speech';
 
 interface CounterProps {
   count: number;
@@ -7,13 +8,14 @@ interface CounterProps {
 }
 
 const Counter: React.FC<CounterProps> = ({ count, label, className = '' }) => {
+  const prevCount = useRef(count);
+
   useEffect(() => {
-    if (count > 0 && 'speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(count.toString());
-      utterance.rate = 0.8;
-      utterance.pitch = 1.2;
-      speechSynthesis.speak(utterance);
+    // Only speak when the count changes from a user action (not initial mount at 0).
+    if (count > 0 && count !== prevCount.current) {
+      speak(String(count));
     }
+    prevCount.current = count;
   }, [count]);
 
   return (

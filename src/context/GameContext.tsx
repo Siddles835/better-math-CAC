@@ -3,8 +3,10 @@ import {
   updateStudentState,
   subscribeToClass,
   getClass,
+  applyClassStartIfNeeded,
   LessonType,
   StudentState,
+  LastQuizSummary,
 } from '@/lib/classroom';
 import {
   getActiveStudent,
@@ -18,7 +20,10 @@ import {
   getPlanetIndex,
   buildCompletedMap,
   getFurthestProgressPlanet,
+  getClassroomUnlockPlanet,
+  normalizePlanetId,
 } from '@/lib/planets';
+import { hapticMedium } from '@/lib/haptics';
 
 interface GameContextType {
   currentLesson: LessonType | null;
@@ -31,9 +36,12 @@ interface GameContextType {
   completedPlanets: Record<PlanetId, boolean>;
   progressPlanetId: PlanetId;
   classMaxPlanetId: PlanetId;
+  lastPlanetId: PlanetId | null;
   completePlanet: (planetId: PlanetId) => Promise<void>;
   getOrderedSequence: () => { planet: PlanetId; lesson: LessonType }[];
   setPosition: (planet: PlanetId, lesson: LessonType) => void;
+  markPlanetVisited: (planetId: PlanetId) => Promise<void>;
+  saveLastQuiz: (summary: LastQuizSummary) => Promise<void>;
   hydrateFromStudent: (student: StudentState) => void;
   hydrateClassMax: (classMaxPlanetId?: string) => void;
 }
@@ -56,20 +64,36 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [completedPlanets, setCompletedPlanets] = useState<Record<PlanetId, boolean>>(emptyCompleted);
   const [progressPlanetId, setProgressPlanetId] = useState<PlanetId>('sun');
   const [classMaxPlanetId, setClassMaxPlanetId] = useState<PlanetId>('sun');
+  const [lastPlanetId, setLastPlanetId] = useState<PlanetId | null>(null);
   const [activeSession, setActiveSession] = useState<ActiveStudent | null>(() =>
     getActiveStudent()
   );
 
+  const resetLocalProgress = useCallback(() => {
+    setCurrentLesson(null);
+    setPlanetSteps({});
+    setCompletedPlanets(emptyCompleted());
+    setProgressPlanetId('sun');
+    setClassMaxPlanetId('sun');
+    setLastPlanetId(null);
+    setShowRocketTransition(false);
+  }, []);
+
   useEffect(() => {
-    const syncSession = () => setActiveSession(getActiveStudent());
+    const syncSession = () => {
+      const next = getActiveStudent();
+      setActiveSession(next);
+      if (!next) resetLocalProgress();
+    };
     window.addEventListener(SESSION_CHANGED, syncSession);
     return () => window.removeEventListener(SESSION_CHANGED, syncSession);
-  }, []);
+  }, [resetLocalProgress]);
 
   const hydrateFromStudent = useCallback((student: StudentState) => {
     const progressPlanet = getFurthestProgressPlanet(student);
     setCurrentLesson(student.lesson);
     setProgressPlanetId(progressPlanet);
+    setLastPlanetId((prev) => normalizePlanetId(student.lastPlanet) ?? prev);
     setCompletedPlanets(
       buildCompletedMap(progressPlanet, student.completedPlanets ?? [])
     );
@@ -77,11 +101,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const hydrateClassMax = useCallback((maxPlanetId?: string) => {
-    setClassMaxPlanetId(
-      (maxPlanetId && PLANET_ORDER.includes(maxPlanetId as PlanetId)
-        ? maxPlanetId
-        : 'sun') as PlanetId
-    );
+    const normalized = normalizePlanetId(maxPlanetId);
+    // Never regress unlock to Sun when a snapshot omits defaultStart.
+    if (!normalized) return;
+    setClassMaxPlanetId(normalized);
   }, []);
 
   const getPlanetStep = useCallback(
@@ -100,29 +123,109 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const existing = clsSnap?.students?.[active.nickname];
       if (!existing) return;
 
-      await updateStudentState(active.classCode, {
-        ...existing,
-        planetSteps: { ...(existing.planetSteps ?? {}), [planetId]: step },
-        lastUpdated: Date.now(),
-      });
+      await updateStudentState(
+        active.classCode,
+        {
+          ...existing,
+          planetSteps: { ...(existing.planetSteps ?? {}), [planetId]: step },
+          lastUpdated: Date.now(),
+        },
+        active.nickname
+      );
+    },
+    [activeSession]
+  );
+
+  const markPlanetVisited = useCallback(
+    async (planetId: PlanetId) => {
+      setLastPlanetId(planetId);
+      setProgressPlanetId((prev) =>
+        getPlanetIndex(planetId) >= getPlanetIndex(prev) ? planetId : prev
+      );
+      setCurrentLesson(getLessonForPlanet(planetId));
+
+      const active = activeSession ?? getActiveStudent();
+      if (!active) return;
+
+      const clsSnap = await getClass(active.classCode);
+      const existing = clsSnap?.students?.[active.nickname];
+      if (!existing) return;
+
+      const current = getFurthestProgressPlanet(existing);
+      const nextPlanet =
+        getPlanetIndex(planetId) >= getPlanetIndex(current) ? planetId : current;
+
+      await updateStudentState(
+        active.classCode,
+        {
+          ...existing,
+          planet: nextPlanet,
+          lesson: getLessonForPlanet(nextPlanet),
+          lastPlanet: planetId,
+          lastUpdated: Date.now(),
+        },
+        active.nickname
+      );
+    },
+    [activeSession]
+  );
+
+  const saveLastQuiz = useCallback(
+    async (summary: LastQuizSummary) => {
+      const active = activeSession ?? getActiveStudent();
+      if (!active) return;
+
+      const clsSnap = await getClass(active.classCode);
+      const existing = clsSnap?.students?.[active.nickname];
+      if (!existing) return;
+
+      await updateStudentState(
+        active.classCode,
+        {
+          ...existing,
+          lastQuiz: summary,
+          lastUpdated: Date.now(),
+        },
+        active.nickname
+      );
     },
     [activeSession]
   );
 
   useEffect(() => {
     if (!activeSession) return;
+    let writeInFlight = false;
 
     const unsubscribe = subscribeToClass(activeSession.classCode, (cls) => {
       if (!cls) return;
-      hydrateClassMax(cls.defaultStart?.planet);
+      const unlock = getClassroomUnlockPlanet(cls);
+      if (unlock) hydrateClassMax(unlock);
       const student = cls.students?.[activeSession.nickname];
-      if (student) hydrateFromStudent(student);
+      if (!student) return;
+
+      const adjusted = applyClassStartIfNeeded(student, cls);
+      hydrateFromStudent(adjusted);
+
+      const needsWrite =
+        adjusted.planet !== student.planet ||
+        adjusted.lesson !== student.lesson ||
+        (adjusted.completedPlanets?.length ?? 0) !== (student.completedPlanets?.length ?? 0);
+
+      if (needsWrite && !writeInFlight) {
+        writeInFlight = true;
+        void updateStudentState(activeSession.classCode, adjusted, activeSession.nickname).finally(
+          () => {
+            writeInFlight = false;
+          }
+        );
+      }
     });
 
     return () => unsubscribe();
   }, [activeSession, hydrateFromStudent, hydrateClassMax]);
 
   const completePlanet = async (planetId: PlanetId) => {
+    hapticMedium();
     const active = activeSession ?? getActiveStudent();
     if (!active) return;
 
@@ -140,18 +243,24 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     setCompletedPlanets((prev) => ({ ...prev, [planetId]: true }));
     setProgressPlanetId(nextPlanet);
+    setLastPlanetId(nextPlanet);
     setCurrentLesson(nextLesson);
 
     if (!existing) return;
 
-    await updateStudentState(active.classCode, {
-      ...existing,
-      planet: nextPlanet,
-      lesson: nextLesson,
-      completedPlanets: completedList,
-      planetSteps: { ...(existing.planetSteps ?? {}) },
-      lastUpdated: Date.now(),
-    });
+    await updateStudentState(
+      active.classCode,
+      {
+        ...existing,
+        planet: nextPlanet,
+        lesson: nextLesson,
+        lastPlanet: nextPlanet,
+        completedPlanets: completedList,
+        planetSteps: { ...(existing.planetSteps ?? {}) },
+        lastUpdated: Date.now(),
+      },
+      active.nickname
+    );
   };
 
   const getOrderedSequence = () => {
@@ -183,9 +292,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         completedPlanets,
         progressPlanetId,
         classMaxPlanetId,
+        lastPlanetId,
         completePlanet,
         getOrderedSequence,
         setPosition,
+        markPlanetVisited,
+        saveLastQuiz,
         hydrateFromStudent,
         hydrateClassMax,
       }}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { hapticTap } from '@/lib/haptics';
 
 interface PencilProps {
   onClick?: () => void;
@@ -13,10 +14,18 @@ const Pencil: React.FC<PencilProps> = ({ onClick, className = '', size = 'md' })
     lg: 'w-10 h-24',
   };
 
+  const handleClick = onClick
+    ? () => {
+        hapticTap();
+        onClick();
+      }
+    : undefined;
+
   return (
     <button
-      onClick={onClick}
-      className={`${sizeClasses[size]} transition-transform hover:scale-110 cursor-pointer ${className}`}
+      type="button"
+      onClick={handleClick}
+      className={`${sizeClasses[size]} rounded-lg transition-transform duration-200 hover:scale-110 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className}`}
       aria-label="Pencil"
     >
       <svg viewBox="0 0 20 60" fill="none" className="w-full h-full">

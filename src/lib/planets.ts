@@ -43,6 +43,39 @@ export const getPlanetIndex = (planetId: string): number => {
   return idx === -1 ? 0 : idx;
 };
 
+/** Normalize Firestore / UI planet ids (trim + lowercase). */
+export const normalizePlanetId = (planetId?: string | null): PlanetId | null => {
+  if (!planetId || typeof planetId !== 'string') return null;
+  const key = planetId.trim().toLowerCase();
+  return PLANET_ORDER.includes(key as PlanetId) ? (key as PlanetId) : null;
+};
+
+/**
+ * Teacher unlock / start planet from a classroom document.
+ * Supports defaultStart.planet and legacy defaultPlanet.
+ */
+export const getClassroomUnlockPlanet = (
+  cls?: {
+    defaultStart?: { planet?: string } | string | null;
+    defaultPlanet?: string | null;
+  } | null
+): PlanetId | null => {
+  if (!cls) return null;
+  if (typeof cls.defaultStart === 'string') {
+    return normalizePlanetId(cls.defaultStart);
+  }
+  return (
+    normalizePlanetId(cls.defaultStart?.planet) ??
+    normalizePlanetId(cls.defaultPlanet)
+  );
+};
+
+/** Planets before the teacher start level (treated as already cleared for new students). */
+export const planetsBefore = (planetId: PlanetId): PlanetId[] => {
+  const idx = getPlanetIndex(planetId);
+  return PLANET_ORDER.slice(0, idx);
+};
+
 export const getLessonForPlanet = (planetId: string): LessonType => {
   if (['earth', 'mars', 'jupiter'].includes(planetId)) return 'addition';
   if (['saturn', 'uranus', 'neptune'].includes(planetId)) return 'subtraction';
@@ -70,10 +103,25 @@ export const getFurthestProgressPlanet = (
   return PLANET_ORDER[maxIndex];
 };
 
-/** Planet with the highest saved in-lesson step, if any. */
+/**
+ * Planet the student should continue on.
+ * Prefers the last lesson they actually opened (including replays of earlier
+ * worlds) over furthest unlock / class start, so "continue where you left off"
+ * matches where they were — not Neptune just because the teacher unlocked it.
+ */
 export const getInProgressPlanet = (
-  planetSteps: Record<string, number> | undefined
+  planetSteps: Record<string, number> | undefined,
+  currentPlanet?: string | null,
+  lastPlanet?: string | null
 ): PlanetId | null => {
+  const last = normalizePlanetId(lastPlanet);
+  if (last) {
+    const hasSteps = Object.values(planetSteps ?? {}).some((step) => step > 0);
+    // Don't prompt "continue on the Sun" for a brand-new student at step 0.
+    if (!hasSteps && getPlanetIndex(last) === 0) return null;
+    return last;
+  }
+
   let best: PlanetId | null = null;
   let bestIndex = -1;
   for (const [planet, step] of Object.entries(planetSteps ?? {})) {
@@ -84,6 +132,12 @@ export const getInProgressPlanet = (
         best = planet as PlanetId;
       }
     }
+  }
+  const current = normalizePlanetId(currentPlanet);
+  if (current && getPlanetIndex(current) >= bestIndex) {
+    // Don't prompt "continue on the Sun" for a brand-new student at step 0.
+    if (best === null && getPlanetIndex(current) === 0) return null;
+    return current;
   }
   return best;
 };
@@ -108,10 +162,35 @@ export const canSelectPlanet = (
   }
 ): boolean => {
   const index = getPlanetIndex(planetId);
-  const teacherMax = getClassMaxPlanetIndex(options.classMaxPlanetId ?? 'sun');
+  const teacherPlanet = normalizePlanetId(options.classMaxPlanetId) ?? 'sun';
+  const teacherMax = getPlanetIndex(teacherPlanet);
   const progressIndex = getPlanetIndex(options.progressPlanetId);
   const visibleMax = Math.max(teacherMax, progressIndex);
   return index <= visibleMax;
+};
+
+/** True when the student has not made real lesson progress yet. */
+export const isFreshStudent = (
+  student: Pick<StudentState, 'planet' | 'completedPlanets' | 'planetSteps'>
+): boolean => {
+  const hasCompleted = (student.completedPlanets?.length ?? 0) > 0;
+  const hasSteps = Object.values(student.planetSteps ?? {}).some((step) => step > 0);
+  const atSun = (normalizePlanetId(student.planet) ?? 'sun') === 'sun';
+  return atSun && !hasCompleted && !hasSteps;
+};
+
+/**
+ * Planet shown on the teacher roster: furthest real progress, never below
+ * the class start level when the student is still behind that start.
+ */
+export const getTeacherVisiblePlanet = (
+  student: Pick<StudentState, 'planet' | 'completedPlanets' | 'planetSteps'>,
+  classUnlockPlanet?: string | null
+): PlanetId => {
+  const progress = getFurthestProgressPlanet(student);
+  const unlock = normalizePlanetId(classUnlockPlanet);
+  if (!unlock) return progress;
+  return getPlanetIndex(progress) >= getPlanetIndex(unlock) ? progress : unlock;
 };
 
 export const getNextPlanet = (planetId: PlanetId): PlanetId | null => {

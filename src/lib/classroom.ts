@@ -3,243 +3,330 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
+  deleteField,
   onSnapshot,
-  FieldPath,
+  type Unsubscribe,
 } from 'firebase/firestore';
-
 import { db } from './firebase';
-import { getLessonForPlanet } from './planets';
+import {
+  getClassroomUnlockPlanet,
+  getFurthestProgressPlanet,
+  getLessonForPlanet,
+  getPlanetIndex,
+  normalizePlanetId,
+  planetsBefore,
+  type PlanetId,
+} from './planets';
 
-export type LessonType =
-  | 'counting'
-  | 'addition'
-  | 'subtraction';
+export type LessonType = 'counting' | 'addition' | 'subtraction';
+
+export interface LastQuizSummary {
+  planet: string;
+  lesson: LessonType;
+  score: number;
+  total: number;
+  /** How many attempts each question took (1 = first try). */
+  tries: number[];
+}
 
 export interface StudentState {
   nickname: string;
   planet: string;
   lesson: LessonType;
-
-  /** Planets the student has fully completed. */
   completedPlanets?: string[];
-
-  /** Last reached step index for each planet lesson. */
   planetSteps?: Record<string, number>;
-
+  /** Last planet whose lesson the student opened, including replays. */
+  lastPlanet?: string;
+  lastQuiz?: LastQuizSummary;
   lastUpdated: number;
 }
 
 export interface Classroom {
   classCode: string;
   teacherCode: string;
-
-  defaultStart?: {
-    planet: string;
-    lesson: LessonType;
-  };
-
+  defaultStart?: { planet: string; lesson: LessonType };
+  /** Legacy field some older docs may still have */
+  defaultPlanet?: string;
   students: Record<string, StudentState>;
 }
 
-// ============================================================
-// CLOUD EXISTENCE CHECKS
-// ============================================================
+export const normalizeLabel = (value: string) => value.trim().replace(/\s+/g, ' ');
 
-export const checkClassExists = async (
-  classCode: string
-): Promise<boolean> => {
-  const docRef = doc(db, 'classrooms', classCode);
-  const docSnap = await getDoc(docRef);
+export const classCodeKey = (classCode: string) => normalizeLabel(classCode).toLowerCase();
 
-  return docSnap.exists();
-};
+export const nicknameKey = (nickname: string) => normalizeLabel(nickname).toLowerCase();
 
-export const checkStudentExists = async (
-  classCode: string,
+export const findStudentKey = (
+  students: Record<string, StudentState> | undefined,
   nickname: string
-): Promise<boolean> => {
-  const cls = await getClass(classCode);
-
-  return !!(
-    cls &&
-    cls.students &&
-    cls.students[nickname]
-  );
+): string | null => {
+  if (!students) return null;
+  const key = nicknameKey(nickname);
+  if (students[key]) return key;
+  const found = Object.keys(students).find((k) => k.toLowerCase() === key);
+  return found ?? null;
 };
 
-// ============================================================
-// DATABASE OPERATIONS
-// ============================================================
+export const resolveClassCode = async (input: string): Promise<string | null> => {
+  const exact = normalizeLabel(input);
+  if (!exact) return null;
+
+  const exactSnap = await getDoc(doc(db, 'classrooms', exact));
+  if (exactSnap.exists()) return exact;
+
+  const key = classCodeKey(exact);
+  if (key !== exact) {
+    const keySnap = await getDoc(doc(db, 'classrooms', key));
+    if (keySnap.exists()) return key;
+  }
+
+  return null;
+};
+
+export const generateTeacherPin = () =>
+  Math.random().toString(36).slice(2, 8).toUpperCase();
+
+export const checkClassExists = async (classCode: string): Promise<boolean> => {
+  return !!(await resolveClassCode(classCode));
+};
+
+export const checkStudentExists = async (classCode: string, nickname: string): Promise<boolean> => {
+  const resolved = await resolveClassCode(classCode);
+  if (!resolved) return false;
+  const cls = await getClassById(resolved);
+  return !!findStudentKey(cls?.students, nickname);
+};
+
+const getClassById = async (id: string): Promise<Classroom | null> => {
+  const docSnap = await getDoc(doc(db, 'classrooms', id));
+  return docSnap.exists() ? (docSnap.data() as Classroom) : null;
+};
 
 export const createClass = async (
   classCode: string,
   teacherCode?: string
-) => {
-  const docRef = doc(db, 'classrooms', classCode);
-
-  await setDoc(docRef, {
-    classCode,
-    teacherCode:
-      teacherCode ||
-      Math.random().toString(36).slice(2, 8),
+): Promise<{ classCode: string; teacherCode: string }> => {
+  const key = classCodeKey(classCode);
+  const pin = teacherCode || generateTeacherPin();
+  await setDoc(doc(db, 'classrooms', key), {
+    classCode: key,
+    teacherCode: pin,
     students: {},
   });
+  return { classCode: key, teacherCode: pin };
 };
 
-export const getClass = async (
-  classCode: string
-): Promise<Classroom | null> => {
-  const docRef = doc(db, 'classrooms', classCode);
-  const docSnap = await getDoc(docRef);
-
-  return docSnap.exists()
-    ? (docSnap.data() as Classroom)
-    : null;
+export const getClass = async (classCode: string): Promise<Classroom | null> => {
+  const resolved = await resolveClassCode(classCode);
+  if (!resolved) return null;
+  return getClassById(resolved);
 };
 
-// ============================================================
-// REGISTER STUDENT
-// ============================================================
+export const verifyTeacherPin = async (
+  classCode: string,
+  teacherPin: string
+): Promise<{ ok: true; classCode: string; teacherCode: string } | { ok: false; reason: string }> => {
+  const resolved = await resolveClassCode(classCode);
+  if (!resolved) {
+    return { ok: false, reason: `Class code "${normalizeLabel(classCode)}" does not exist.` };
+  }
+  const cls = await getClassById(resolved);
+  if (!cls) {
+    return { ok: false, reason: `Class code "${normalizeLabel(classCode)}" does not exist.` };
+  }
+  const pin = normalizeLabel(teacherPin).toUpperCase();
+  if (!cls.teacherCode || cls.teacherCode.toUpperCase() !== pin) {
+    return { ok: false, reason: 'Teacher PIN is incorrect.' };
+  }
+  return { ok: true, classCode: resolved, teacherCode: cls.teacherCode };
+};
+
+/** Place a brand-new student at the teacher start / unlock planet. */
+export const buildStudentAtClassStart = (
+  nickname: string,
+  cls: Classroom | null | undefined
+): StudentState => {
+  const startPlanet: PlanetId = getClassroomUnlockPlanet(cls) ?? 'sun';
+  return {
+    nickname,
+    planet: startPlanet,
+    lesson: getLessonForPlanet(startPlanet),
+    completedPlanets: planetsBefore(startPlanet),
+    planetSteps: {},
+    lastUpdated: Date.now(),
+  };
+};
+
+/**
+ * Move a student up to the class start level when they are still behind it.
+ * Keeps any existing completed planets / steps; advances planet + lesson for
+ * accurate teacher roster and hub unlock.
+ */
+export const applyClassStartIfNeeded = (
+  student: StudentState,
+  cls: Classroom | null | undefined
+): StudentState => {
+  const startPlanet = getClassroomUnlockPlanet(cls);
+  if (!startPlanet) return student;
+
+  const progress = getFurthestProgressPlanet(student);
+  if (getPlanetIndex(progress) >= getPlanetIndex(startPlanet)) {
+    // Still ensure planet/lesson fields match furthest progress for the roster.
+    const lesson = getLessonForPlanet(progress);
+    if (student.planet === progress && student.lesson === lesson) return student;
+    return {
+      ...student,
+      planet: progress,
+      lesson,
+      lastUpdated: Date.now(),
+    };
+  }
+
+  const completed = new Set([
+    ...(student.completedPlanets ?? []),
+    ...planetsBefore(startPlanet),
+  ]);
+
+  return {
+    ...student,
+    planet: startPlanet,
+    lesson: getLessonForPlanet(startPlanet),
+    completedPlanets: Array.from(completed),
+    lastUpdated: Date.now(),
+  };
+};
+
+/** Persist class-start bumps for every student still behind the new start. */
+export const syncStudentsToClassStart = async (
+  classCode: string,
+  startPlanet: string
+): Promise<number> => {
+  const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
+  const cls = await getClassById(resolved);
+  if (!cls?.students) return 0;
+
+  const normalized = normalizePlanetId(startPlanet) ?? 'sun';
+  const pretendClass: Classroom = {
+    ...cls,
+    defaultStart: { planet: normalized, lesson: getLessonForPlanet(normalized) },
+    defaultPlanet: normalized,
+  };
+
+  const payload: Record<string, StudentState> = {};
+  for (const [key, student] of Object.entries(cls.students)) {
+    const next = applyClassStartIfNeeded(student, pretendClass);
+    if (
+      next.planet !== student.planet ||
+      next.lesson !== student.lesson ||
+      (next.completedPlanets?.length ?? 0) !== (student.completedPlanets?.length ?? 0)
+    ) {
+      payload[`students.${key}`] = next;
+    }
+  }
+
+  const count = Object.keys(payload).length;
+  if (count === 0) return 0;
+
+  await updateDoc(doc(db, 'classrooms', resolved), payload);
+  return count;
+};
 
 export const registerStudent = async (
   classCode: string,
   nickname: string
-): Promise<StudentState | null> => {
-  const cls = await getClass(classCode);
+): Promise<{ student: StudentState; classCode: string } | null> => {
+  const resolved = await resolveClassCode(classCode);
+  if (!resolved) return null;
 
-  if (!cls) {
-    return null;
-  }
+  const cls = await getClassById(resolved);
+  const displayName = normalizeLabel(nickname);
+  const key = nicknameKey(displayName);
+  const newStudent = buildStudentAtClassStart(displayName, cls);
 
-  const newStudent: StudentState = {
-    nickname,
-    planet: 'sun',
-    lesson: 'counting',
-    completedPlanets: [],
-    planetSteps: {},
-    lastUpdated: Date.now(),
-  };
-
-  /*
-   * Update only this student's entry instead of replacing
-   * the entire students object.
-   *
-   * FieldPath keeps nicknames safe even if they contain
-   * characters that would otherwise have special meaning
-   * in a Firestore field path.
-   */
-  const studentPath = new FieldPath(
-    'students',
-    nickname
-  );
-
-  await updateDoc(
-    doc(db, 'classrooms', classCode),
-    studentPath,
-    newStudent
-  );
-
-  return newStudent;
+  await updateDoc(doc(db, 'classrooms', resolved), {
+    [`students.${key}`]: newStudent,
+  });
+  return { student: newStudent, classCode: resolved };
 };
-
-// ============================================================
-// UPDATE STUDENT
-// ============================================================
 
 export const updateStudentState = async (
   classCode: string,
-  student: StudentState
+  student: StudentState,
+  studentKey?: string
 ) => {
-  const cls = await getClass(classCode);
-
-  if (!cls) {
-    return;
-  }
-
-  const updatedStudent: StudentState = {
-    ...student,
-    lastUpdated: Date.now(),
-  };
-
-  /*
-   * Only update this student's document field.
-   *
-   * This is much safer than:
-   *
-   *   students: {
-   *     ...cls.students,
-   *     [student.nickname]: student
-   *   }
-   *
-   * because teacher and student devices can otherwise
-   * overwrite each other's classroom state.
-   */
-
-  const studentPath = new FieldPath(
-    'students',
-    student.nickname
-  );
-
-  await updateDoc(
-    doc(db, 'classrooms', classCode),
-    studentPath,
-    updatedStudent
-  );
+  const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
+  const key = studentKey || nicknameKey(student.nickname);
+  student.lastUpdated = Date.now();
+  await updateDoc(doc(db, 'classrooms', resolved), {
+    [`students.${key}`]: student,
+  });
 };
 
-// ============================================================
-// TEACHER DEFAULT START
-// ============================================================
-
-export const setClassDefaultStart = async (
-  classCode: string,
-  planet: string
-) => {
-  const lesson = getLessonForPlanet(planet);
-
-  await updateDoc(
-    doc(db, 'classrooms', classCode),
-    {
-      defaultStart: {
-        planet,
-        lesson,
-      },
-    }
-  );
+export const setClassDefaultStart = async (classCode: string, planet: string) => {
+  const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
+  const normalized = normalizePlanetId(planet) ?? 'sun';
+  const lesson = getLessonForPlanet(normalized);
+  await updateDoc(doc(db, 'classrooms', resolved), {
+    defaultStart: { planet: normalized, lesson },
+    // Keep legacy field in sync for older readers
+    defaultPlanet: normalized,
+  });
+  // Advance roster records so teachers see the correct current planet live.
+  await syncStudentsToClassStart(resolved, normalized);
 };
 
-// ============================================================
-// REAL-TIME STREAMING
-// ============================================================
-//
-// Teachers use this to watch student progress update
-// automatically.
-//
+/** Permanently remove one student (username + progress + quiz history) from a class. */
+export const deleteStudent = async (classCode: string, nicknameOrKey: string): Promise<boolean> => {
+  const resolved = await resolveClassCode(classCode);
+  if (!resolved) return false;
+  const cls = await getClassById(resolved);
+  const students = cls?.students;
+  const key =
+    students && Object.prototype.hasOwnProperty.call(students, nicknameOrKey)
+      ? nicknameOrKey
+      : findStudentKey(students, nicknameOrKey);
+  if (!key) return false;
+  await updateDoc(doc(db, 'classrooms', resolved), {
+    [`students.${key}`]: deleteField(),
+  });
+  return true;
+};
+
+/** Permanently delete a class, its teacher PIN, roster, and all student progress. */
+export const deleteClassroom = async (classCode: string): Promise<boolean> => {
+  const resolved = await resolveClassCode(classCode);
+  if (!resolved) return false;
+  await deleteDoc(doc(db, 'classrooms', resolved));
+  return true;
+};
 
 export const subscribeToClass = (
   classCode: string,
-  callback: (data: Classroom | null) => void
-) => {
-  const docRef = doc(db, 'classrooms', classCode);
+  callback: (data: Classroom | null) => void,
+  onError?: (error: Error) => void
+): Unsubscribe => {
+  let activeUnsub: Unsubscribe | null = null;
+  let cancelled = false;
 
-  return onSnapshot(
-    docRef,
-    (docSnap) => {
-      if (docSnap.exists()) {
-        callback(
-          docSnap.data() as Classroom
-        );
-      } else {
+  void resolveClassCode(classCode).then((resolved) => {
+    if (cancelled) return;
+    const id = resolved ?? classCodeKey(classCode);
+    activeUnsub = onSnapshot(
+      doc(db, 'classrooms', id),
+      (docSnap) => {
+        callback(docSnap.exists() ? (docSnap.data() as Classroom) : null);
+      },
+      (error) => {
+        console.error('Class subscription error:', error);
+        onError?.(error);
         callback(null);
       }
-    },
-    (error) => {
-      console.error(
-        'Firestore classroom subscription error:',
-        error
-      );
+    );
+  });
 
-      callback(null);
-    }
-  );
+  return () => {
+    cancelled = true;
+    activeUnsub?.();
+  };
 };
