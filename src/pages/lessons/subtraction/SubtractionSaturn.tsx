@@ -1,7 +1,9 @@
 // Subtraction Lesson - Saturn (Activity/Practice)
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import ThoughtCard from '@/components/ThoughtCard';
+import { diagnoseTrace, LessonTrace, type Diagnosis } from '@/lib/cognition';
 import { useLessonStep } from '@/hooks/useLessonStep';
 import Pencil from '@/components/Pencil';
 import Counter from '@/components/Counter';
@@ -16,9 +18,11 @@ import { Check, X, Play, RotateCcw } from 'lucide-react';
 
 const SubtractionSaturn: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet } = useGame();
+  const { setShowRocketTransition, completePlanet, saveDiagnosis } = useGame();
   const [step, setStep] = useLessonStep('saturn');
   const [showTransition, setShowTransition] = useState(false);
+  const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
+  const traceRef = useRef(new LessonTrace());
   
   // Animation state
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'initial' | 'animating' | 'final'>('idle');
@@ -69,13 +73,19 @@ const SubtractionSaturn: React.FC = () => {
 
   const removePencilActivity2 = () => {
     if (activity2Pencils > 0 && !activity2Checked) {
-      setActivity2Pencils(prev => prev - 1);
+      const next = activity2Pencils - 1;
+      setActivity2Pencils(next);
       setActivity2Removed(prev => prev + 1);
+      traceRef.current.tap(next, activity2Target);
     }
   };
 
   const checkActivity2 = () => {
     setActivity2Checked(true);
+    traceRef.current.check(activity2Pencils, activity2Target);
+    const result = diagnoseTrace('saturn', traceRef.current);
+    setDiagnosis(result);
+    void saveDiagnosis(result);
     if (activity2Pencils !== activity2Target) {
       hapticError();
       setShowGuided(true);
@@ -316,6 +326,7 @@ const SubtractionSaturn: React.FC = () => {
                     Try Again
                   </Button>
                 )}
+                {diagnosis && <ThoughtCard diagnosis={diagnosis} />}
               </div>
             )}
 

@@ -6,6 +6,7 @@ type Planet = {
   color?: string;
   route?: string;
   disabled?: boolean;
+  glow?: boolean;
 };
 
 interface Props {
@@ -51,6 +52,7 @@ const CircleDiagram: React.FC<Props> = ({ planets, size = 360, onSelect, selecte
           const labelY = py + labelOffset;
           const isSelected = p.id === selectedId;
           const isDisabled = p.disabled;
+          const isGlow = Boolean(p.glow) && !isDisabled;
 
           return (
             <g
@@ -65,13 +67,24 @@ const CircleDiagram: React.FC<Props> = ({ planets, size = 360, onSelect, selecte
             >
               {/* Invisible larger hit target for touch (~44pt) */}
               <circle cx={px} cy={py} r={28} fill="transparent" />
+              {isGlow && (
+                <circle
+                  cx={px}
+                  cy={py}
+                  r={32}
+                  fill="none"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth={2}
+                  opacity={0.7}
+                />
+              )}
               <circle
                 cx={px}
                 cy={py}
                 r={isSelected ? 24 : 22}
                 fill={p.color || '#f3f4f6'}
-                stroke={isSelected ? '#fff' : isDisabled ? '#666' : '#e2e8f0'}
-                strokeWidth={isSelected ? 2.5 : 1}
+                stroke={isGlow ? 'hsl(var(--accent))' : isSelected ? '#fff' : isDisabled ? '#666' : '#e2e8f0'}
+                strokeWidth={isGlow || isSelected ? 2.5 : 1}
                 style={{ transition: 'r 0.2s ease, stroke-width 0.2s ease' }}
               />
               <text

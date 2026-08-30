@@ -8,6 +8,7 @@ import {
   StudentState,
   LastQuizSummary,
 } from '@/lib/classroom';
+import type { Diagnosis } from '@/lib/cognition';
 import {
   getActiveStudent,
   SESSION_CHANGED,
@@ -42,6 +43,8 @@ interface GameContextType {
   setPosition: (planet: PlanetId, lesson: LessonType) => void;
   markPlanetVisited: (planetId: PlanetId) => Promise<void>;
   saveLastQuiz: (summary: LastQuizSummary) => Promise<void>;
+  lastDiagnosis: Diagnosis | null;
+  saveDiagnosis: (diagnosis: Diagnosis) => Promise<void>;
   hydrateFromStudent: (student: StudentState) => void;
   hydrateClassMax: (classMaxPlanetId?: string) => void;
 }
@@ -65,6 +68,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [progressPlanetId, setProgressPlanetId] = useState<PlanetId>('sun');
   const [classMaxPlanetId, setClassMaxPlanetId] = useState<PlanetId>('sun');
   const [lastPlanetId, setLastPlanetId] = useState<PlanetId | null>(null);
+  const [lastDiagnosis, setLastDiagnosis] = useState<Diagnosis | null>(null);
   const [activeSession, setActiveSession] = useState<ActiveStudent | null>(() =>
     getActiveStudent()
   );
@@ -76,6 +80,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setProgressPlanetId('sun');
     setClassMaxPlanetId('sun');
     setLastPlanetId(null);
+    setLastDiagnosis(null);
     setShowRocketTransition(false);
   }, []);
 
@@ -98,6 +103,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       buildCompletedMap(progressPlanet, student.completedPlanets ?? [])
     );
     setPlanetSteps(student.planetSteps ?? {});
+    if (student.lastDiagnosis) setLastDiagnosis(student.lastDiagnosis);
   }, []);
 
   const hydrateClassMax = useCallback((maxPlanetId?: string) => {
@@ -184,6 +190,27 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         {
           ...existing,
           lastQuiz: summary,
+          lastUpdated: Date.now(),
+        },
+        active.nickname
+      );
+    },
+    [activeSession]
+  );
+
+  const saveDiagnosis = useCallback(
+    async (diagnosis: Diagnosis) => {
+      setLastDiagnosis(diagnosis);
+      const active = activeSession ?? getActiveStudent();
+      if (!active) return;
+      const clsSnap = await getClass(active.classCode);
+      const existing = clsSnap?.students?.[active.nickname];
+      if (!existing) return;
+      await updateStudentState(
+        active.classCode,
+        {
+          ...existing,
+          lastDiagnosis: diagnosis,
           lastUpdated: Date.now(),
         },
         active.nickname
@@ -298,6 +325,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setPosition,
         markPlanetVisited,
         saveLastQuiz,
+        lastDiagnosis,
+        saveDiagnosis,
         hydrateFromStudent,
         hydrateClassMax,
       }}

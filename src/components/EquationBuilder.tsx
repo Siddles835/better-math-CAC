@@ -10,6 +10,7 @@ interface EquationBuilderProps {
   operator: '+' | '−';
   questionText: string;
   onComplete: () => void;
+  onResult?: (info: { correct: boolean; reverseAddends: boolean; usedTotal: boolean }) => void;
 }
 
 type Chip = { id: number; value: number };
@@ -33,6 +34,7 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
   operator,
   questionText,
   onComplete,
+  onResult,
 }) => {
   const chips = useMemo<Chip[]>(() => {
     const values = [num1, num2];
@@ -73,12 +75,15 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
     const v1 = chipValue(slots[0]);
     const v2 = chipValue(slots[1]);
     if (v1 === null || v2 === null) return;
+    const reverseAddends = v1 === num2 && v2 === num1;
+    const usedTotal = v1 === num1 + num2 || v2 === num1 + num2;
     const ok =
       operator === '+'
-        ? (v1 === num1 && v2 === num2) || (v1 === num2 && v2 === num1)
+        ? (v1 === num1 && v2 === num2) || reverseAddends
         : v1 === num1 && v2 === num2;
     setChecked(true);
     setCorrect(ok);
+    onResult?.({ correct: ok, reverseAddends, usedTotal });
     if (ok) {
       hapticSuccess();
     } else {
