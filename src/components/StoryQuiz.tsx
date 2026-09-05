@@ -242,14 +242,10 @@ const subtractionQuestions: Question[] = [
 ];
 
 const affirmations = [
-  "Great!",
-  "Good job!",
-  "Nice!",
-  "Yes!",
-  "Super!",
-  "Wow!",
-  "Yay!",
-  "Perfect!"
+  "That's right.",
+  "Yes.",
+  "Good.",
+  "Correct.",
 ];
 
 interface EquationChip {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const COMPANY_NAME = 'MathLift';
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
-const LAST_UPDATED = 'August 29, 2026';
+const LAST_UPDATED = 'September 5, 2026';
 const WEBSITE_URL = 'https://better-math-lalith.vercel.app';
 
 const PrivacyPolicyPage: React.FC = () => {
@@ -15,7 +15,7 @@ const PrivacyPolicyPage: React.FC = () => {
             to="/"
             className="text-sm font-medium text-sky-700 hover:text-sky-600 transition-colors"
           >
-            ← Back to {COMPANY_NAME}
+            Back to {COMPANY_NAME}
           </Link>
         </div>
       </header>
@@ -97,6 +97,12 @@ const PrivacyPolicyPage: React.FC = () => {
                   <td className="py-2">Help the teacher see which skills need more practice. Not used for grading outside the app.</td>
                 </tr>
                 <tr className="border-b border-slate-100">
+                  <td className="py-2 pr-3">Thinking summary (named practice pattern, confidence, suggested planet)</td>
+                  <td className="py-2 pr-3">Student</td>
+                  <td className="py-2 pr-3">Computed on the device after a checked activity or quiz</td>
+                  <td className="py-2">Give the teacher a short briefing. Drawings and raw tap traces are not uploaded.</td>
+                </tr>
+                <tr className="border-b border-slate-100">
                   <td className="py-2 pr-3">Class start planet</td>
                   <td className="py-2 pr-3">Teacher setting</td>
                   <td className="py-2 pr-3">Chosen on the teacher dashboard</td>
@@ -112,9 +118,9 @@ const PrivacyPolicyPage: React.FC = () => {
             </table>
           </div>
           <p className="text-[15px] leading-relaxed text-slate-600">
-            MathLift does <strong>not</strong> collect: advertising IDs, analytics user IDs, crash
-            reports that include usernames, microphone audio (read-aloud uses on-device speech
-            synthesis only), camera, contacts, or precise location.
+            MathLift does <strong>not</strong> collect: handwriting images, stroke data, advertising
+            IDs, analytics user IDs, crash reports that include usernames, microphone audio
+            (read-aloud uses on-device speech synthesis only), camera, contacts, or precise location.
           </p>
         </section>
 

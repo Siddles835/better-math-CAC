@@ -85,7 +85,10 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background subtle-stars text-foreground pb-[max(2rem,env(safe-area-inset-bottom))]">
       <main className="mx-auto max-w-lg px-6 py-10 animate-fade-in">
-        <h1 className="text-3xl font-semibold mb-2">Settings</h1>
+        <Link to="/" className="text-sm font-medium text-primary hover:underline">
+          Back to MathLift
+        </Link>
+        <h1 className="text-3xl font-semibold mb-2 mt-6">Settings</h1>
         <p className="text-muted-foreground mb-8">
           Privacy, account, and classroom controls. MathLift never uses student data for ads.
         </p>
@@ -190,8 +193,9 @@ const SettingsPage: React.FC = () => {
         <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5 space-y-3">
           <h2 className="text-xl font-semibold">Privacy &amp; data</h2>
           <p className="text-sm text-muted-foreground">
-            MathLift collects only a generated space name, class code, and lesson progress so the
-            classroom app can work. We do not sell data, run ads, or build advertising profiles.
+            MathLift stores a generated space name, class code, lesson progress, and a short
+            thinking summary. Drawings stay on the device. We do not sell data, run ads, or build
+            advertising profiles.
           </p>
           <div className="flex flex-col gap-2">
             <Link to="/privacy-policy" className="text-primary font-medium hover:underline min-h-[44px] flex items-center">

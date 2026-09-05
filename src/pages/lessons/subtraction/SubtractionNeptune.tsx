@@ -10,10 +10,11 @@ import ReadAloudButton from '@/components/ReadAloudButton';
 import GuidedPractice from '@/components/GuidedPractice';
 import { Button } from '@/components/ui/button';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
+import { diagnoseFromQuiz } from '@/lib/cognition';
 
 const SubtractionNeptune: React.FC = () => {
   const navigate = useNavigate();
-  const { completePlanet, saveLastQuiz } = useGame();
+  const { completePlanet, saveLastQuiz, saveDiagnosis } = useGame();
   const [step, setStep] = useLessonStep('neptune');
   
   // MCQ state
@@ -68,6 +69,7 @@ const SubtractionNeptune: React.FC = () => {
       total: 8,
       tries,
     });
+    void saveDiagnosis(diagnoseFromQuiz('neptune', score, 8, tries));
     setStep(2);
   };
 

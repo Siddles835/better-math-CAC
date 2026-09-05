@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, LogOut, Rocket } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
 import NavigationArrows from '@/components/NavigationArrows';
+import NextFocusCard from '@/components/NextFocusCard';
 import { subscribeToClass, Classroom } from '@/lib/classroom';
 import { clearActiveStudent, getActiveStudent, getStudentDisplayName } from '@/lib/session';
 import {
@@ -143,7 +144,7 @@ const SolarSystemPage: React.FC = () => {
           </p>
         )}
         <h1 className="text-2xl sm:text-3xl font-semibold text-foreground mb-2">
-          Choose Your Destination
+          Your solar system
         </h1>
         <p className="text-muted-foreground max-w-lg mx-auto text-sm sm:text-base">
           Your teacher has unlocked planets through{' '}
@@ -156,13 +157,17 @@ const SolarSystemPage: React.FC = () => {
               continue where you left off.
             </>
           )}
-          {lastDiagnosis && lastDiagnosis.glowPlanets.length > 0 && (
-            <>
-              {' '}
-              {PLANET_META[lastDiagnosis.nextPlanet].name} is glowing for your next practice.
-            </>
-          )}
         </p>
+        {lastDiagnosis && lastDiagnosis.primary !== 'STEADY' && (
+          <NextFocusCard
+            diagnosis={lastDiagnosis}
+            canOpen={canSelectPlanet(lastDiagnosis.nextPlanet, {
+              classMaxPlanetId: classMax,
+              progressPlanetId,
+            })}
+            onOpen={() => handlePlanetClick(lastDiagnosis.nextPlanet)}
+          />
+        )}
       </div>
 
       <div ref={stageRef} className="relative w-full max-w-3xl aspect-square flex items-center justify-center mb-8">
@@ -221,8 +226,8 @@ const SolarSystemPage: React.FC = () => {
                     type="button"
                     disabled={!selectable || selecting}
                     onClick={() => handlePlanetClick(planetId)}
-                    className={`absolute z-10 flex flex-col items-center transition-transform duration-200 ${
-                      selectable ? 'cursor-pointer hover:scale-110 active:scale-95' : 'cursor-not-allowed opacity-40'
+                    className={`absolute z-10 flex flex-col items-center ${
+                      selectable ? 'cursor-pointer' : 'cursor-not-allowed opacity-40'
                     }`}
                     style={{ minWidth: 56, minHeight: 56 }}
                   >
@@ -253,8 +258,8 @@ const SolarSystemPage: React.FC = () => {
                   type="button"
                   disabled={!selectable || selecting}
                   onClick={() => handlePlanetClick(planetId)}
-                  className={`absolute z-10 flex flex-col items-center transition-all duration-200 ${
-                    selectable ? 'cursor-pointer hover:scale-110 active:scale-95' : 'cursor-not-allowed opacity-40'
+                  className={`absolute z-10 flex flex-col items-center ${
+                    selectable ? 'cursor-pointer' : 'cursor-not-allowed opacity-40'
                   }`}
                   style={{ transform: `translate(${x}px, ${y}px)`, minWidth: 48, minHeight: 48 }}
                 >

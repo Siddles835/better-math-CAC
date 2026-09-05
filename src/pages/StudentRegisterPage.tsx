@@ -120,7 +120,7 @@ const StudentRegisterPage: React.FC = () => {
               type="button"
               onClick={rollNewUsername}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background text-foreground font-semibold hover:bg-muted hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 min-h-[48px] disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background text-foreground font-semibold hover:bg-muted min-h-[48px] disabled:opacity-60"
               aria-label="Get a new space name"
             >
               <Dices className="w-5 h-5" aria-hidden />

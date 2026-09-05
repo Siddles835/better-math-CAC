@@ -56,8 +56,19 @@ export const NEXT_PLANET: Record<MisconceptionCode, PlanetId> = {
   STEADY: 'earth',
 };
 
-export const confidenceWords = (confidence: number): string => {
-  if (confidence >= 0.78) return 'pretty sure';
-  if (confidence >= 0.55) return 'a good hunch';
-  return 'still watching';
+export const PRACTICE_TITLE: Record<MisconceptionCode, string> = {
+  COUNT_ALL: 'Five minutes of counting on',
+  OVERSHOOT: 'Exact totals with pencils',
+  SUB_FLIP: 'Story subtraction, one direction',
+  COMMUTE: 'Same sum, two orders',
+  DIGIT_REV: 'Write 2, 5, 6, and 9 once each',
+  WORD_GAP: 'Hear the number, then build it',
+  PLACE_SPLIT: 'Tens and ones as one amount',
+  STEADY: 'Continue on the next unlocked planet',
+};
+
+export const confidenceLabel = (confidence: number): string => {
+  if (confidence >= 0.78) return 'High confidence';
+  if (confidence >= 0.55) return 'Moderate confidence';
+  return 'Low confidence — still gathering';
 };

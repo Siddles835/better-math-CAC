@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trophy, Target, AlertCircle, ChevronRight } from 'lucide-react';
+import { Target, AlertCircle } from 'lucide-react';
 import LessonCelebration from '@/components/LessonCelebration';
 
 interface QuizResultsProps {
@@ -32,10 +32,10 @@ const QuizResults: React.FC<QuizResultsProps> = ({
   const perfectFirstTry = percentage === 100 && extraTryCount === 0;
 
   const getPerformanceMessage = () => {
-    if (percentage >= 90) return "Outstanding! You're a star!";
-    if (percentage >= 70) return 'Great job! Keep practicing!';
-    if (percentage >= 50) return "Good effort! You're learning!";
-    return 'Keep trying! Practice makes perfect!';
+    if (percentage >= 90) return 'Strong first-try work.';
+    if (percentage >= 70) return 'Solid work. A little more practice will lock this in.';
+    if (percentage >= 50) return 'You are learning the pattern. Try the highlighted planet next.';
+    return 'Go back one planet and try a slower round.';
   };
 
   const getTopicLabel = (topic: string) => {
@@ -55,9 +55,11 @@ const QuizResults: React.FC<QuizResultsProps> = ({
 
   return (
     <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1 py-4">
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-3 sm:mb-4 px-2">Congratulations!</h2>
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-3 sm:mb-4 px-2">
+        Quiz complete
+      </h2>
       <p className="text-base sm:text-xl text-muted-foreground mb-6 sm:mb-8 px-2">
-        You completed the {lessonType} quiz!
+        You finished the {lessonType} check.
       </p>
 
       <div className="mb-6 sm:mb-8 w-full px-2">
@@ -70,10 +72,9 @@ const QuizResults: React.FC<QuizResultsProps> = ({
           onClick={() => setShowResults(true)}
           variant="outline"
           size="lg"
-          className="gap-2 min-h-[48px] cursor-pointer touch-manipulation"
+          className="min-h-[48px] cursor-pointer touch-manipulation"
         >
-          <Trophy className="w-5 h-5" />
-          View My Score
+          View score
         </Button>
         <Button
           type="button"
@@ -100,10 +101,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-card rounded-2xl border border-border max-w-lg w-full p-8 animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="text-center mb-8">
-              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-10 h-10 text-primary" />
-              </div>
-              <h3 className="text-2xl font-semibold text-foreground mb-2">Your Quiz Results</h3>
+              <h3 className="text-2xl font-semibold text-foreground mb-2">Your score</h3>
               <p className="text-muted-foreground">{getPerformanceMessage()}</p>
             </div>
 
@@ -173,7 +171,6 @@ const QuizResults: React.FC<QuizResultsProps> = ({
               </Button>
               <Button type="button" onClick={onFinish} className="flex-1 min-h-[48px]">
                 {finishLabel}
-                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
