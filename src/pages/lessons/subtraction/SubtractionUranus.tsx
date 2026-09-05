@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import ThoughtCard from '@/components/ThoughtCard';
+import { useCognitionSession } from '@/hooks/useCognitionSession';
 import { useLessonStep } from '@/hooks/useLessonStep';
 import ConceptVisual from '@/components/ConceptVisual';
 import Pencil from '@/components/Pencil';
@@ -18,6 +20,7 @@ import { Check, X } from 'lucide-react';
 const SubtractionUranus: React.FC = () => {
   const navigate = useNavigate();
   const { setShowRocketTransition, completePlanet } = useGame();
+  const { trace, diagnosis, publish } = useCognitionSession('uranus');
   const [step, setStep] = useLessonStep('uranus');
   const [conceptStep, setConceptStep] = useState(1);
   const [showTransition, setShowTransition] = useState(false);
@@ -48,13 +51,17 @@ const SubtractionUranus: React.FC = () => {
 
   const removePencilWord = () => {
     if (wordPencils > 0 && !wordChecked) {
-      setWordPencils(prev => prev - 1);
+      const next = wordPencils - 1;
+      setWordPencils(next);
       setWordRemoved(prev => prev + 1);
+      trace.tap(next, wordTarget);
     }
   };
 
   const checkWord = () => {
     setWordChecked(true);
+    trace.check(wordPencils, wordTarget);
+    publish();
     if (wordPencils !== wordTarget) {
       hapticError();
       setShowGuided(true);
@@ -119,6 +126,11 @@ const SubtractionUranus: React.FC = () => {
                 num2={wordGiveAway}
                 operator="−"
                 questionText={wordStoryText}
+                onResult={({ reverseAddends, usedTotal, correct }) => {
+                  if (!correct && (reverseAddends || usedTotal)) {
+                    trace.setEquationSwap(true);
+                  }
+                }}
                 onComplete={() => {
                   resetWord();
                   setWordPhase('solve');
@@ -228,6 +240,7 @@ const SubtractionUranus: React.FC = () => {
                     Go to Neptune
                   </Button>
                 )}
+                {diagnosis && <ThoughtCard diagnosis={diagnosis} />}
               </div>
             )}
 

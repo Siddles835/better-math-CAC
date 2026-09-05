@@ -5,21 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-lg font-bold font-display ring-offset-background transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 active:scale-95 hover:brightness-110 cursor-pointer touch-manipulation",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-base font-semibold ring-offset-background transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 cursor-pointer touch-manipulation",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border-2 border-primary bg-transparent text-primary hover:bg-primary/10",
+        outline: "border border-border bg-transparent text-foreground hover:bg-muted",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        space: "bg-gradient-to-r from-primary to-secondary text-foreground shadow-lg hover:shadow-primary/50 hover:scale-105 transition-transform",
-        planet: "bg-card border-2 border-primary/30 text-foreground hover:border-primary hover:shadow-lg hover:shadow-primary/30 transition-all",
-        gold: "bg-gradient-to-r from-accent to-amber-400 text-background shadow-lg hover:shadow-accent/50 hover:scale-105 transition-transform",
-        correct: "bg-green-500 text-foreground shadow-lg hover:bg-green-600",
-        wrong: "bg-destructive text-foreground shadow-lg hover:bg-destructive/90",
+        space: "bg-primary text-primary-foreground hover:bg-primary/90",
+        planet: "bg-card border border-border text-foreground hover:bg-muted",
+        gold: "bg-accent text-accent-foreground hover:bg-accent/90",
+        correct: "bg-green-600 text-white hover:bg-green-500",
+        wrong: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
       },
       size: {
         default: "h-12 px-6 py-3",

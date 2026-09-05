@@ -1,4 +1,4 @@
-import type { PlanetId } from '@/lib/planets';
+import { getLessonForPlanet, getPlanetIndex, type PlanetId } from '@/lib/planets';
 import {
   GLOW_PLANETS,
   KID_LINE,
@@ -7,7 +7,13 @@ import {
 } from './catalog';
 import { extractFeatures } from './features';
 import type { LessonTrace } from './trace';
-import type { Diagnosis, MisconceptionCode, MisconceptionScore } from './types';
+import type {
+  CognitionFeatures,
+  Diagnosis,
+  LessonCode,
+  MisconceptionCode,
+  MisconceptionScore,
+} from './types';
 import { FEATURE_ORDER } from './types';
 import { walkTree } from './walkTree';
 import treeData from './models/misconception_tree.json';
@@ -41,8 +47,10 @@ const earlyWarningFor = (code: MisconceptionCode, planet: PlanetId): string | nu
   return null;
 };
 
-export const diagnoseTrace = (planet: PlanetId, trace: LessonTrace): Diagnosis => {
-  const features = extractFeatures(planet, trace);
+export const diagnoseFeatures = (
+  planet: PlanetId,
+  features: CognitionFeatures
+): Diagnosis => {
   const values = FEATURE_ORDER.map((key) => features[key]);
   const walked = walkTree(tree, values);
 
@@ -55,8 +63,11 @@ export const diagnoseTrace = (planet: PlanetId, trace: LessonTrace): Diagnosis =
   } else if (features.overshoot >= 1 && features.correct === 0) {
     primary = 'OVERSHOOT';
     confidence = Math.max(confidence, 0.7);
-  } else if (features.equationSwap === 1) {
+  } else if (features.equationSwap === 1 && features.lessonCode === 1) {
     primary = 'COMMUTE';
+    confidence = Math.max(confidence, 0.68);
+  } else if (features.equationSwap === 1 && features.lessonCode === 2 && features.correct === 0) {
+    primary = 'SUB_FLIP';
     confidence = Math.max(confidence, 0.68);
   } else if (features.restartFromOne === 1 && features.lessonCode === 0) {
     primary = 'COUNT_ALL';
@@ -85,4 +96,45 @@ export const diagnoseTrace = (planet: PlanetId, trace: LessonTrace): Diagnosis =
     earlyWarning: earlyWarningFor(primary, planet),
     updatedAt: Date.now(),
   };
+};
+
+export const diagnoseTrace = (planet: PlanetId, trace: LessonTrace): Diagnosis => {
+  return diagnoseFeatures(planet, extractFeatures(planet, trace));
+};
+
+const lessonCodeFor = (planet: PlanetId): LessonCode => {
+  const lesson = getLessonForPlanet(planet);
+  if (lesson === 'addition') return 1;
+  if (lesson === 'subtraction') return 2;
+  return 0;
+};
+
+/** Quiz pages do not have pencil taps; tries per question still diagnose well. */
+export const diagnoseFromQuiz = (
+  planet: PlanetId,
+  score: number,
+  total: number,
+  tries: number[]
+): Diagnosis => {
+  const extra = tries.filter((t) => t > 1).length;
+  const missed = Math.max(0, total - score);
+  const features: CognitionFeatures = {
+    planetIndex: getPlanetIndex(planet),
+    lessonCode: lessonCodeFor(planet),
+    timeToFirst: extra > 2 ? 6 : 2,
+    avgGap: extra > 2 ? 2.4 : 1.1,
+    gapStd: extra > 2 ? 1.1 : 0.3,
+    tapCount: total,
+    removeCount: 0,
+    retries: extra,
+    overshoot: 0,
+    undershoot: missed,
+    correct: missed === 0 ? 1 : 0,
+    drawMatch: 0,
+    drawReversal: 0,
+    drawConfidence: 0,
+    equationSwap: 0,
+    restartFromOne: extra >= 3 && lessonCodeFor(planet) === 0 ? 1 : 0,
+  };
+  return diagnoseFeatures(planet, features);
 };

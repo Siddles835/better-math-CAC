@@ -49,11 +49,26 @@ const HomePage: React.FC = () => {
         </div>
 
         <h1 className="text-4xl md:text-5xl font-semibold text-foreground mb-4">
-          Welcome to MathLift
+          MathLift
         </h1>
-        <p className="text-lg text-muted-foreground max-w-md mx-auto mb-8">
-          Students join with a class code. Teachers manage live progress. Resume anytime on any
-          device. Students get a fun generated space name instead of typing a real name.
+        <p className="text-lg text-muted-foreground max-w-lg mx-auto mb-3">
+          A K–2 classroom for counting, addition, and subtraction. Students travel a solar system.
+          The app notices how they think — on the device — so a teacher can pull a five-minute
+          group before a gap becomes a grade.
+        </p>
+        <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-8">
+          Generated space names. Drawings stay on the device.{' '}
+          <Link to="/how-it-works" className="underline underline-offset-2 hover:text-foreground">
+            How it works
+          </Link>
+          {' · '}
+          <Link to="/classroom" className="underline underline-offset-2 hover:text-foreground">
+            Sample classroom
+          </Link>
+          {' · '}
+          <Link to="/methods" className="underline underline-offset-2 hover:text-foreground">
+            Methods
+          </Link>
         </p>
       </div>
 
@@ -154,6 +169,15 @@ const HomePage: React.FC = () => {
       </div>
 
       <footer className="mt-12 text-center text-sm text-muted-foreground flex flex-wrap justify-center gap-x-4 gap-y-2">
+        <Link to="/classroom" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
+          Sample classroom
+        </Link>
+        <Link to="/how-it-works" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
+          How it works
+        </Link>
+        <Link to="/methods" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
+          Methods
+        </Link>
         <Link to="/settings" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
           Settings
         </Link>

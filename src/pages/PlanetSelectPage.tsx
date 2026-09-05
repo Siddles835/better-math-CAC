@@ -5,6 +5,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useGame } from '@/context/GameContext';
 import CircleDiagram from '@/components/CircleDiagram';
 import NavigationArrows from '@/components/NavigationArrows';
+import NextFocusCard from '@/components/NextFocusCard';
 import { subscribeToClass, Classroom } from '@/lib/classroom';
 import { clearActiveStudent, getActiveStudent, getStudentDisplayName } from '@/lib/session';
 import {
@@ -133,7 +134,7 @@ const PlanetSelectPage: React.FC = () => {
           </p>
         )}
         <h1 className="text-3xl font-semibold text-foreground mb-2">
-          Choose Your Destination
+          Your solar system
         </h1>
         <p className="text-muted-foreground max-w-lg mx-auto">
           Your teacher has unlocked planets through{' '}
@@ -146,13 +147,17 @@ const PlanetSelectPage: React.FC = () => {
               continue where you left off.
             </>
           )}
-          {lastDiagnosis && lastDiagnosis.glowPlanets.length > 0 && (
-            <>
-              {' '}
-              {PLANET_META[lastDiagnosis.nextPlanet].name} is glowing for your next practice.
-            </>
-          )}
         </p>
+        {lastDiagnosis && lastDiagnosis.primary !== 'STEADY' && (
+          <NextFocusCard
+            diagnosis={lastDiagnosis}
+            canOpen={canSelectPlanet(lastDiagnosis.nextPlanet, {
+              classMaxPlanetId: classMax,
+              progressPlanetId,
+            })}
+            onOpen={() => handlePlanetSelect(lastDiagnosis.nextPlanet)}
+          />
+        )}
       </div>
 
       <div className="flex w-full justify-center items-center mb-10 animate-fade-in">

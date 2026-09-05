@@ -30,6 +30,9 @@ import CookiePolicyPage from "./pages/CookiePolicyPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import SupportPage from "./pages/SupportPage";
 import SettingsPage from "./pages/SettingsPage";
+import HowItWorksPage from "./pages/HowItWorksPage";
+import MethodsPage from "./pages/MethodsPage";
+import ClassroomWalkthroughPage from "./pages/ClassroomWalkthroughPage";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +55,9 @@ const App = () => (
               <Route path="/cookie-policy" element={<CookiePolicyPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/support" element={<SupportPage />} />
+              <Route path="/how-it-works" element={<HowItWorksPage />} />
+              <Route path="/methods" element={<MethodsPage />} />
+              <Route path="/classroom" element={<ClassroomWalkthroughPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/planets" element={<StudentHubPage />} />
               <Route path="/solar-system" element={<Navigate to="/planets" replace />} />

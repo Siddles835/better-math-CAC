@@ -3,16 +3,12 @@ import { Link } from 'react-router-dom';
 
 const COMPANY_NAME = 'MathLift';
 const WEBSITE_URL = 'https://better-math-lalith.vercel.app';
-const LAST_UPDATED = 'August 27, 2026';
+const LAST_UPDATED = 'September 5, 2026';
 
 const browserLinks = [
   {
     label: 'Chrome',
     href: 'https://support.google.com/chrome/answer/95647#zippy=%2Callow-or-block-cookies',
-  },
-  {
-    label: 'Internet Explorer',
-    href: 'https://support.microsoft.com/en-us/windows/delete-and-manage-cookies-168dab11-0753-043d-7c16-ede5947fc64d',
   },
   {
     label: 'Firefox',
@@ -50,7 +46,7 @@ const CookiePolicyPage: React.FC = () => {
             to="/"
             className="text-sm font-medium text-sky-700 hover:text-sky-600 transition-colors"
           >
-            ← Back to {COMPANY_NAME}
+            Back to {COMPANY_NAME}
           </Link>
         </div>
       </header>

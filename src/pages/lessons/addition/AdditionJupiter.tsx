@@ -10,6 +10,7 @@ import PlanetTransition from '@/components/PlanetTransition';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import GuidedPractice from '@/components/GuidedPractice';
 import { Button } from '@/components/ui/button';
+import { diagnoseFromQuiz } from '@/lib/cognition';
 import {
   getNextPlanet,
   getLessonRoute,
@@ -20,7 +21,7 @@ import {
 
 const AdditionJupiter: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet, saveLastQuiz } = useGame();
+  const { setShowRocketTransition, completePlanet, saveLastQuiz, saveDiagnosis } = useGame();
   const [step, setStep] = useLessonStep('jupiter');
   const [showTransition, setShowTransition] = useState(false);
   const nextPlanet = getNextPlanet('jupiter');
@@ -74,6 +75,7 @@ const AdditionJupiter: React.FC = () => {
       total: 8,
       tries,
     });
+    void saveDiagnosis(diagnoseFromQuiz('jupiter', score, 8, tries));
     setStep(2);
   };
 

@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import ThoughtCard from '@/components/ThoughtCard';
+import { useCognitionSession } from '@/hooks/useCognitionSession';
 import { useLessonStep } from '@/hooks/useLessonStep';
 import Apple from '@/components/Apple';
 import Basket from '@/components/Basket';
@@ -17,6 +19,7 @@ import { Check, X } from 'lucide-react';
 const CountingMercury: React.FC = () => {
   const navigate = useNavigate();
   const { setShowRocketTransition, completePlanet } = useGame();
+  const { trace, diagnosis, publish } = useCognitionSession('mercury');
   const [step, setStep] = useLessonStep('mercury');
   const [showTransition, setShowTransition] = useState(false);
   
@@ -31,8 +34,10 @@ const CountingMercury: React.FC = () => {
 
   const addAppleToWordProblem = () => {
     if (wordProblemAvailable > 0 && !wordProblemChecked && wordProblemCount < 9) {
-      setWordProblemCount(prev => prev + 1);
+      const next = wordProblemCount + 1;
+      setWordProblemCount(next);
       setWordProblemAvailable(prev => prev - 1);
+      trace.tap(next, targetCount);
     }
   };
 
@@ -40,6 +45,8 @@ const CountingMercury: React.FC = () => {
     setWordProblemChecked(true);
     const correct = wordProblemCount === targetCount;
     setWordProblemCorrect(correct);
+    trace.check(wordProblemCount, targetCount);
+    publish();
     if (correct) {
       hapticSuccess();
     } else {
@@ -143,6 +150,7 @@ const CountingMercury: React.FC = () => {
                       </Button>
                     </div>
                   )}
+                  {diagnosis && <ThoughtCard diagnosis={diagnosis} />}
                 </div>
               )}
             </div>

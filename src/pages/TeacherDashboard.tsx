@@ -12,7 +12,9 @@ import {
   type PlanetId,
 } from '@/lib/planets';
 import { Button } from '@/components/ui/button';
-import { MISCONCEPTION_LABEL, TEACHER_LINE, type MisconceptionCode } from '@/lib/cognition';
+import ClassBriefing from '@/components/ClassBriefing';
+import FamilyNote from '@/components/FamilyNote';
+import { MISCONCEPTION_LABEL, TEACHER_LINE } from '@/lib/cognition';
 
 const TeacherDashboard: React.FC = () => {
   const params = useParams();
@@ -122,11 +124,7 @@ const TeacherDashboard: React.FC = () => {
   };
 
   const students = cls?.students ? Object.entries(cls.students) : [];
-  const thinkingGroups = students.reduce<Record<string, number>>((acc, [, s]) => {
-    const code = (s.lastDiagnosis?.primary ?? 'none') as string;
-    acc[code] = (acc[code] ?? 0) + 1;
-    return acc;
-  }, {});
+  const roster = students.map(([, s]) => s);
   const earlyWarnings = students
     .map(([, s]) => ({ name: s.nickname, warning: s.lastDiagnosis?.earlyWarning }))
     .filter((row) => row.warning);
@@ -136,11 +134,26 @@ const TeacherDashboard: React.FC = () => {
       <div className="max-w-5xl mx-auto animate-fade-in">
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Teacher Dashboard</h1>
+            <h1 className="text-3xl font-semibold text-foreground">Class {classCode}</h1>
             <p className="text-muted-foreground mt-1">
-              Class code:{' '}
-              <span className="font-semibold text-foreground">{classCode}</span>
-              {' — '}share this with students to join.
+              Share this code with students so they can join.
+            </p>
+            <p className="text-sm text-muted-foreground mt-1 print:hidden">
+              <button
+                type="button"
+                onClick={() => navigate('/how-it-works')}
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                How it works
+              </button>
+              {' · '}
+              <button
+                type="button"
+                onClick={() => navigate('/methods')}
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                Methods
+              </button>
             </p>
             {teacherPin && (
               <p className="text-sm text-sky-300 mt-1">
@@ -149,7 +162,7 @@ const TeacherDashboard: React.FC = () => {
               </p>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 print:hidden">
             <AuthNavButton onClick={handleBack} />
             <Button
               type="button"
@@ -169,8 +182,8 @@ const TeacherDashboard: React.FC = () => {
           </div>
         )}
 
-        <section className="mb-8 bg-card/95 p-6 rounded-2xl shadow border border-border backdrop-blur-sm">
-          <h2 className="text-xl font-semibold mb-2">Class Start Level</h2>
+        <section className="mb-8 bg-card/95 p-6 rounded-2xl border border-border print:hidden">
+          <h2 className="text-xl font-semibold mb-2">Starting planet</h2>
           <p className="text-sm text-muted-foreground mb-4">
             Students begin at this planet. Raising it updates the roster live so you see where each
             student currently is.
@@ -204,40 +217,25 @@ const TeacherDashboard: React.FC = () => {
         </section>
 
         {students.length > 0 && (
-          <section className="mb-8 bg-card/95 p-6 rounded-2xl shadow border border-border backdrop-blur-sm">
-            <h2 className="text-xl font-semibold mb-2">How the class is thinking</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              MathLift only stores a short thinking summary — not drawings or tap-by-tap traces.
-            </p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {Object.entries(thinkingGroups).map(([code, count]) => (
-                <span
-                  key={code}
-                  className="rounded-full border border-border bg-background px-3 py-1 text-sm"
-                >
-                  {code === 'none'
-                    ? 'No signal yet'
-                    : MISCONCEPTION_LABEL[code as MisconceptionCode] ?? code}
-                  {' · '}
-                  {count}
-                </span>
-              ))}
-            </div>
+          <>
+            <ClassBriefing students={roster} />
             {earlyWarnings.length > 0 && (
-              <div className="rounded-xl border border-accent/40 bg-accent/10 p-4 space-y-2">
-                <p className="text-sm font-semibold text-foreground">Early signals</p>
-                {earlyWarnings.map((row) => (
-                  <p key={row.name} className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">{row.name}:</span> {row.warning}
-                  </p>
-                ))}
-              </div>
+              <section className="mb-8 rounded-2xl border border-border bg-card/95 p-6 print:break-inside-avoid">
+                <h2 className="text-xl font-semibold mb-3">Watch before the next unit</h2>
+                <div className="space-y-2">
+                  {earlyWarnings.map((row) => (
+                    <p key={row.name} className="text-sm text-muted-foreground">
+                      <span className="font-medium text-foreground">{row.name}:</span> {row.warning}
+                    </p>
+                  ))}
+                </div>
+              </section>
             )}
-          </section>
+          </>
         )}
 
-        <section className="bg-card/95 p-6 rounded-2xl shadow border border-border backdrop-blur-sm">
-          <h2 className="text-xl font-semibold mb-4">Student Roster & Progress</h2>
+        <section className="bg-card/95 p-6 rounded-2xl border border-border">
+          <h2 className="text-xl font-semibold mb-4">Roster</h2>
           {removeError && <p className="mb-3 text-sm text-destructive">{removeError}</p>}
           {loading ? (
             <div className="p-4 text-muted-foreground rounded-xl text-center border border-dashed border-border">
@@ -257,17 +255,18 @@ const TeacherDashboard: React.FC = () => {
                 return (
                   <div
                     key={key}
-                    className="p-4 rounded-xl border border-border bg-background/60 shadow-sm transition-transform duration-200 hover:scale-[1.02]"
+                    className="p-4 rounded-xl border border-border bg-background/60"
                   >
-                    <div className="text-lg font-bold text-foreground">{s.nickname}</div>
+                    <div className="text-lg font-semibold text-foreground">{s.nickname}</div>
                     <div className="text-sm font-medium text-sky-300 mt-1">
                       {planetName} — {lesson}
                     </div>
                     {s.lastDiagnosis && (
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        Thinking: {MISCONCEPTION_LABEL[s.lastDiagnosis.primary]} (
-                        {Math.round(s.lastDiagnosis.confidence * 100)}%)
-                        <p className="mt-1">{TEACHER_LINE[s.lastDiagnosis.primary]}</p>
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        <p className="font-medium text-foreground">
+                          {MISCONCEPTION_LABEL[s.lastDiagnosis.primary]}
+                        </p>
+                        <p className="mt-1 text-xs">{TEACHER_LINE[s.lastDiagnosis.primary]}</p>
                       </div>
                     )}
                     {s.lastQuiz && (
@@ -337,6 +336,8 @@ const TeacherDashboard: React.FC = () => {
             </div>
           )}
         </section>
+
+        {students.length > 0 && <FamilyNote classCode={classCode} />}
       </div>
     </div>
   );
