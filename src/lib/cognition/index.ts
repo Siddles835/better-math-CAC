@@ -14,3 +14,5 @@ export {
   NEXT_PLANET,
   confidenceLabel,
 } from './catalog';
+export { buildPersonalPath, adaptPath, STARTER_HINT } from './personalPath';
+export type { PersonalPath, PathItem, PathKind, ItemOutcome } from './personalPath';

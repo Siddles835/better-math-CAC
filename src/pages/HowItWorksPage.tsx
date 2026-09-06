@@ -38,6 +38,12 @@ const HowItWorksPage: React.FC = () => {
             for an on-device decision tree. Written numbers are read by a small local model.
           </li>
           <li>
+            <span className="text-foreground font-medium">The student gets a practice built for them.</span>{' '}
+            Three short problems are generated on the device from that pattern — different numbers
+            per child and per day. If a problem is missed, the next one tightens. This is not a
+            chatbot.
+          </li>
+          <li>
             <span className="text-foreground font-medium">The solar system updates.</span> The
             suggested planet is highlighted. The teacher roster stores only a short summary: the
             named pattern, a confidence, and a next planet.
@@ -105,6 +111,12 @@ const HowItWorksPage: React.FC = () => {
             className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-border bg-card px-5 text-sm font-semibold text-foreground hover:bg-muted"
           >
             Sample classroom
+          </Link>
+          <Link
+            to="/try-practice"
+            className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-border bg-card px-5 text-sm font-semibold text-foreground hover:bg-muted"
+          >
+            Try a student practice
           </Link>
         </div>
       </section>

@@ -33,6 +33,7 @@ import SettingsPage from "./pages/SettingsPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import MethodsPage from "./pages/MethodsPage";
 import ClassroomWalkthroughPage from "./pages/ClassroomWalkthroughPage";
+import PersonalPracticePage from "./pages/PersonalPracticePage";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,8 @@ const App = () => (
               <Route path="/how-it-works" element={<HowItWorksPage />} />
               <Route path="/methods" element={<MethodsPage />} />
               <Route path="/classroom" element={<ClassroomWalkthroughPage />} />
+              <Route path="/try-practice" element={<PersonalPracticePage demo />} />
+              <Route path="/practice" element={lesson(<PersonalPracticePage />)} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/planets" element={<StudentHubPage />} />
               <Route path="/solar-system" element={<Navigate to="/planets" replace />} />

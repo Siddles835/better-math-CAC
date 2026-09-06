@@ -30,6 +30,10 @@ const ClassroomWalkthroughPage: React.FC = () => {
         <Link to="/teacher-register" className="underline underline-offset-2 hover:text-foreground">
           Create your class
         </Link>
+        {' · '}
+        <Link to="/try-practice" className="underline underline-offset-2 hover:text-foreground">
+          Try QuietComet21’s practice
+        </Link>
       </p>
 
       <ClassBriefing students={SAMPLE_STUDENTS} />
