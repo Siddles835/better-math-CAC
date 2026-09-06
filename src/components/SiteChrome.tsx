@@ -34,6 +34,9 @@ const SiteChrome: React.FC<SiteChromeProps> = ({ children, wide }) => {
             <Link to="/methods" className="text-foreground hover:underline">
               Methods
             </Link>
+            <Link to="/try-practice" className="text-foreground hover:underline">
+              Try a practice
+            </Link>
           </nav>
         </div>
       </header>

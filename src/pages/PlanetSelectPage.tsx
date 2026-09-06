@@ -6,6 +6,7 @@ import { useGame } from '@/context/GameContext';
 import CircleDiagram from '@/components/CircleDiagram';
 import NavigationArrows from '@/components/NavigationArrows';
 import NextFocusCard from '@/components/NextFocusCard';
+import { STARTER_HINT } from '@/lib/cognition';
 import { subscribeToClass, Classroom } from '@/lib/classroom';
 import { clearActiveStudent, getActiveStudent, getStudentDisplayName } from '@/lib/session';
 import {
@@ -148,15 +149,20 @@ const PlanetSelectPage: React.FC = () => {
             </>
           )}
         </p>
-        {lastDiagnosis && lastDiagnosis.primary !== 'STEADY' && (
+        {lastDiagnosis ? (
           <NextFocusCard
             diagnosis={lastDiagnosis}
-            canOpen={canSelectPlanet(lastDiagnosis.nextPlanet, {
-              classMaxPlanetId: classMax,
-              progressPlanetId,
-            })}
+            canOpen={
+              lastDiagnosis.primary !== 'STEADY' &&
+              canSelectPlanet(lastDiagnosis.nextPlanet, {
+                classMaxPlanetId: classMax,
+                progressPlanetId,
+              })
+            }
             onOpen={() => handlePlanetSelect(lastDiagnosis.nextPlanet)}
           />
+        ) : (
+          <NextFocusCard diagnosis={STARTER_HINT} canOpen={false} onOpen={() => undefined} />
         )}
       </div>
 

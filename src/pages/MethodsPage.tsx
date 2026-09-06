@@ -81,6 +81,18 @@ const MethodsPage: React.FC = () => {
       </section>
 
       <section className="mb-8 rounded-2xl border border-border bg-card/90 p-6">
+        <h2 className="text-xl font-semibold mb-3">Practice built from the signal</h2>
+        <p className="text-[15px] leading-relaxed text-muted-foreground">
+          After a diagnosis, the student does not get a chat tutor. A small on-device generator
+          builds three problems from the named pattern, the student’s space name, and the date. A
+          child who recounts from one gets counting-on with a locked start amount. A child who
+          overshoots gets an exact-total with a stop. If an item is missed, later items tighten —
+          still on the device, still without uploading traces. Two students with the same pattern
+          receive different numbers.
+        </p>
+      </section>
+
+      <section className="mb-8 rounded-2xl border border-border bg-card/90 p-6">
         <h2 className="text-xl font-semibold mb-3">What this is not</h2>
         <p className="text-[15px] leading-relaxed text-muted-foreground">
           This is not a grade, a learning disability screen, or a substitute for a teacher. Low
@@ -94,6 +106,10 @@ const MethodsPage: React.FC = () => {
         See a filled-in briefing in the{' '}
         <Link to="/classroom" className="underline underline-offset-2 hover:text-foreground">
           sample classroom
+        </Link>
+        , try a{' '}
+        <Link to="/try-practice" className="underline underline-offset-2 hover:text-foreground">
+          sample student practice
         </Link>
         , or read{' '}
         <Link to="/how-it-works" className="underline underline-offset-2 hover:text-foreground">

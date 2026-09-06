@@ -4,6 +4,7 @@ import { Lock, LogOut, Rocket } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
 import NavigationArrows from '@/components/NavigationArrows';
 import NextFocusCard from '@/components/NextFocusCard';
+import { STARTER_HINT } from '@/lib/cognition';
 import { subscribeToClass, Classroom } from '@/lib/classroom';
 import { clearActiveStudent, getActiveStudent, getStudentDisplayName } from '@/lib/session';
 import {
@@ -158,15 +159,20 @@ const SolarSystemPage: React.FC = () => {
             </>
           )}
         </p>
-        {lastDiagnosis && lastDiagnosis.primary !== 'STEADY' && (
+        {lastDiagnosis ? (
           <NextFocusCard
             diagnosis={lastDiagnosis}
-            canOpen={canSelectPlanet(lastDiagnosis.nextPlanet, {
-              classMaxPlanetId: classMax,
-              progressPlanetId,
-            })}
+            canOpen={
+              lastDiagnosis.primary !== 'STEADY' &&
+              canSelectPlanet(lastDiagnosis.nextPlanet, {
+                classMaxPlanetId: classMax,
+                progressPlanetId,
+              })
+            }
             onOpen={() => handlePlanetClick(lastDiagnosis.nextPlanet)}
           />
+        ) : (
+          <NextFocusCard diagnosis={STARTER_HINT} canOpen={false} onOpen={() => undefined} />
         )}
       </div>
 
