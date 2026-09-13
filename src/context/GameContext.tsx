@@ -334,7 +334,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return seq;
   };
 
-  const setPosition = (planet: PlanetId, lesson: LessonType) => {
+  const setPosition = (_planet: PlanetId, lesson: LessonType) => {
     setCurrentLesson(lesson);
     // Do not write planet to Firebase here — that regressed progress when replaying.
   };
