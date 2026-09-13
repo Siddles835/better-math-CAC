@@ -271,7 +271,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (needsWrite && !writeInFlight) {
         writeInFlight = true;
-        void updateStudentState(activeSession.classCode, adjusted, activeSession.nickname).finally(
+        void updateStudentState(activeSession.classCode, adjusted, subKey).finally(
+
           () => {
             writeInFlight = false;
           }
