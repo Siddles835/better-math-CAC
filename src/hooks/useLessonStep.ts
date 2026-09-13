@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
-import { getClass } from '@/lib/classroom';
+import { findStudentKey, getClass } from '@/lib/classroom';
 import { getActiveStudent } from '@/lib/session';
 import type { PlanetId } from '@/lib/planets';
 
