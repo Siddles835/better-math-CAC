@@ -47,10 +47,12 @@ export function useLessonStep(planetId: PlanetId) {
 
     getClass(active.classCode).then((cls) => {
       if (cancelled) return;
-      const saved = cls?.students?.[active.nickname]?.planetSteps?.[planetId];
+      const key = findStudentKey(cls?.students, active.nickname);
+      const saved = key ? cls?.students?.[key]?.planetSteps?.[planetId] : undefined;
       if (saved != null && saved >= 0) {
         setStepState((prev) => Math.max(prev, saved));
       }
+
       setReady(true);
     });
 
