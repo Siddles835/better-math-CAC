@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
   subscribeToClass,
   getClass,
@@ -58,22 +59,22 @@ const emptyCompleted = (): Record<PlanetId, boolean> =>
     {} as Record<PlanetId, boolean>
   );
 
-const GameContext = createContext<GameContextType | undefined>(undefined);
+const GameContext = React.createContext<GameContextType | undefined>(undefined);
 
-export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentLesson, setCurrentLesson] = useState<LessonType | null>(null);
-  const [planetSteps, setPlanetSteps] = useState<Record<string, number>>({});
-  const [showRocketTransition, setShowRocketTransition] = useState(false);
-  const [completedPlanets, setCompletedPlanets] = useState<Record<PlanetId, boolean>>(emptyCompleted);
-  const [progressPlanetId, setProgressPlanetId] = useState<PlanetId>('sun');
-  const [classMaxPlanetId, setClassMaxPlanetId] = useState<PlanetId>('sun');
-  const [lastPlanetId, setLastPlanetId] = useState<PlanetId | null>(null);
-  const [lastDiagnosis, setLastDiagnosis] = useState<Diagnosis | null>(null);
-  const [activeSession, setActiveSession] = useState<ActiveStudent | null>(() =>
+export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [currentLesson, setCurrentLesson] = React.useState<LessonType | null>(null);
+  const [planetSteps, setPlanetSteps] = React.useState<Record<string, number>>({});
+  const [showRocketTransition, setShowRocketTransition] = React.useState(false);
+  const [completedPlanets, setCompletedPlanets] = React.useState<Record<PlanetId, boolean>>(emptyCompleted);
+  const [progressPlanetId, setProgressPlanetId] = React.useState<PlanetId>('sun');
+  const [classMaxPlanetId, setClassMaxPlanetId] = React.useState<PlanetId>('sun');
+  const [lastPlanetId, setLastPlanetId] = React.useState<PlanetId | null>(null);
+  const [lastDiagnosis, setLastDiagnosis] = React.useState<Diagnosis | null>(null);
+  const [activeSession, setActiveSession] = React.useState<ActiveStudent | null>(() =>
     getActiveStudent()
   );
 
-  const resetLocalProgress = useCallback(() => {
+  const resetLocalProgress = React.useCallback(() => {
     setCurrentLesson(null);
     setPlanetSteps({});
     setCompletedPlanets(emptyCompleted());
@@ -84,7 +85,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setShowRocketTransition(false);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const syncSession = () => {
       const next = getActiveStudent();
       setActiveSession((prev) => {
@@ -105,7 +106,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => window.removeEventListener(SESSION_CHANGED, syncSession);
   }, [resetLocalProgress]);
 
-  const hydrateFromStudent = useCallback((student: StudentState) => {
+  const hydrateFromStudent = React.useCallback((student: StudentState) => {
     const progressPlanet = getFurthestProgressPlanet(student);
     setCurrentLesson(student.lesson);
     setProgressPlanetId(progressPlanet);
@@ -117,19 +118,19 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (student.lastDiagnosis) setLastDiagnosis(student.lastDiagnosis);
   }, []);
 
-  const hydrateClassMax = useCallback((maxPlanetId?: string) => {
+  const hydrateClassMax = React.useCallback((maxPlanetId?: string) => {
     const normalized = normalizePlanetId(maxPlanetId);
     // Never regress unlock to Sun when a snapshot omits defaultStart.
     if (!normalized) return;
     setClassMaxPlanetId(normalized);
   }, []);
 
-  const getPlanetStep = useCallback(
+  const getPlanetStep = React.useCallback(
     (planetId: PlanetId) => planetSteps[planetId] ?? 0,
     [planetSteps]
   );
 
-  const savePlanetStep = useCallback(
+  const savePlanetStep = React.useCallback(
     async (planetId: PlanetId, step: number) => {
       // Never move a saved step backwards, user has to replay a finished lesson (or
       // unmounting before the saved step loaded) used to wipe progress
@@ -163,7 +164,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 
 
-  const markPlanetVisited = useCallback(
+  const markPlanetVisited = React.useCallback(
     async (planetId: PlanetId) => {
       setLastPlanetId(planetId);
       setProgressPlanetId((prev) =>
@@ -200,7 +201,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     [activeSession]
   );
 
-  const saveLastQuiz = useCallback(
+  const saveLastQuiz = React.useCallback(
     async (summary: LastQuizSummary) => {
       const active = activeSession ?? getActiveStudent();
       if (!active) return;
@@ -225,7 +226,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     [activeSession]
   );
 
-  const saveDiagnosis = useCallback(
+  const saveDiagnosis = React.useCallback(
     async (diagnosis: Diagnosis) => {
       setLastDiagnosis(diagnosis);
       const active = activeSession ?? getActiveStudent();
@@ -248,7 +249,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     [activeSession]
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!activeSession) return;
     let writeInFlight = false;
 
@@ -370,7 +371,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 };
 
 export const useGame = () => {
-  const context = useContext(GameContext);
+  const context = React.useContext(GameContext);
   if (!context) {
     throw new Error('useGame must be used within a GameProvider');
   }
