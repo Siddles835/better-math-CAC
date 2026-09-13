@@ -109,8 +109,9 @@ const SubtractionSaturn: React.FC = () => {
   useEffect(() => {
     if (step === 1) resetPractice();
     if (step === 2) resetActivity2();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Reset practice/target activities whenever the student returns to them.
   }, [step]);
+
 
   const goToNextPlanet = () => {
     completePlanet('saturn');
