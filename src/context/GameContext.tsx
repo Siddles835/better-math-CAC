@@ -256,8 +256,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!cls) return;
       const unlock = getClassroomUnlockPlanet(cls);
       if (unlock) hydrateClassMax(unlock);
-      const student = cls.students?.[activeSession.nickname];
-      if (!student) return;
+      const subKey = findStudentKey(cls.students, activeSession.nickname);
+      const student = subKey ? cls.students?.[subKey] : null;
+      if (!subKey || !student) return;
+
 
       const adjusted = applyClassStartIfNeeded(student, cls);
       hydrateFromStudent(adjusted);
