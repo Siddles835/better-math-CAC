@@ -131,27 +131,37 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const savePlanetStep = useCallback(
     async (planetId: PlanetId, step: number) => {
-      setPlanetSteps((prev) => ({ ...prev, [planetId]: step }));
+      // Never move a saved step backwards, user has to replay a finished lesson (or
+      // unmounting before the saved step loaded) used to wipe progress
+      setPlanetSteps((prev) => ({
+        ...prev,
+        [planetId]: Math.max(prev[planetId] ?? 0, step),
+      }));
 
       const active = activeSession ?? getActiveStudent();
       if (!active) return;
 
       const clsSnap = await getClass(active.classCode);
-      const existing = clsSnap?.students?.[active.nickname];
-      if (!existing) return;
+      const studentKey = findStudentKey(clsSnap?.students, active.nickname);
+      const existing = studentKey ? clsSnap?.students?.[studentKey] : null;
+      if (!studentKey || !existing) return;
 
       await updateStudentState(
         active.classCode,
         {
           ...existing,
-          planetSteps: { ...(existing.planetSteps ?? {}), [planetId]: step },
+          planetSteps: {
+            ...(existing.planetSteps ?? {}),
+            [planetId]: Math.max(existing.planetSteps?.[planetId] ?? 0, step),
+          },
           lastUpdated: Date.now(),
         },
-        active.nickname
+        studentKey
       );
     },
     [activeSession]
   );
+
 
   const markPlanetVisited = useCallback(
     async (planetId: PlanetId) => {
