@@ -87,8 +87,21 @@ export const resolveClassCode = async (input: string): Promise<string | null> =>
   return null;
 };
 
-export const generateTeacherPin = () =>
-  Math.random().toString(36).slice(2, 8).toUpperCase();
+const PIN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+/**
+ * 6-character PIN. The old Math.random().toString(36).slice(2, 8) version could
+ * return fewer than 6 characters (short/empty PIN) when the random float had a
+ * short base-36 expansion.
+ */
+export const generateTeacherPin = () => {
+  const bytes =
+    typeof crypto !== 'undefined' && 'getRandomValues' in crypto
+      ? crypto.getRandomValues(new Uint32Array(6))
+      : Array.from({ length: 6 }, () => Math.floor(Math.random() * 0xffffffff));
+  return Array.from(bytes, (n) => PIN_ALPHABET[n % PIN_ALPHABET.length]).join('');
+};
+
 
 export const checkClassExists = async (classCode: string): Promise<boolean> => {
   return !!(await resolveClassCode(classCode));
