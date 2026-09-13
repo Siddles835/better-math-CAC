@@ -289,7 +289,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!active) return;
 
     const clsSnap = await getClass(active.classCode);
-    const existing = clsSnap?.students?.[active.nickname];
+    const studentKey = findStudentKey(clsSnap?.students, active.nickname) ?? active.nickname;
+    const existing = clsSnap?.students?.[studentKey];
     const completedList = [...(existing?.completedPlanets ?? [])];
     if (!completedList.includes(planetId)) {
       completedList.push(planetId);
