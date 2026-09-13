@@ -275,9 +275,10 @@ export const updateStudentState = async (
 ) => {
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   const key = studentKey || nicknameKey(student.nickname);
-  student.lastUpdated = Date.now();
+  // Don't mutate the caller's object (it is often React state / a snapshot).
+  const payload: StudentState = { ...student, lastUpdated: Date.now() };
   await updateDoc(doc(db, 'classrooms', resolved), {
-    [`students.${key}`]: student,
+    [`students.${key}`]: payload,
   });
 };
 
