@@ -66,11 +66,17 @@ export function useLessonStep(planetId: PlanetId) {
   }, [planetId, markPlanetVisited]);
 
   // Persist when leaving the lesson (home, logout, back to planet ring)
+  const readyRef = useRef(ready);
+  readyRef.current = ready;
+
   useEffect(() => {
     return () => {
-      void savePlanetStep(planetId, stepRef.current);
+      // Only persist once the saved step has been read back, otherwise a quick
+      // exit would write step 0 over real progress.
+      if (readyRef.current) void savePlanetStep(planetId, stepRef.current);
     };
   }, [planetId, savePlanetStep]);
+
 
   const setStep = useCallback(
     (value: React.SetStateAction<number>) => {
