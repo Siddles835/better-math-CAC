@@ -241,7 +241,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           lastDiagnosis: diagnosis,
           lastUpdated: Date.now(),
         },
-        active.nickname
+        studentKey
+
       );
     },
     [activeSession]
