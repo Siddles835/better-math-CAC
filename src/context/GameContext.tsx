@@ -87,9 +87,20 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const syncSession = () => {
       const next = getActiveStudent();
-      setActiveSession(next);
+      setActiveSession((prev) => {
+        if (
+          prev &&
+          next &&
+          prev.classCode === next.classCode &&
+          prev.nickname === next.nickname
+        ) {
+          return prev; // same student: don't tear down the live listener
+        }
+        return next;
+      });
       if (!next) resetLocalProgress();
     };
+    
     window.addEventListener(SESSION_CHANGED, syncSession);
     return () => window.removeEventListener(SESSION_CHANGED, syncSession);
   }, [resetLocalProgress]);
