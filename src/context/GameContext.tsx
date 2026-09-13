@@ -319,7 +319,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         planetSteps: { ...(existing.planetSteps ?? {}) },
         lastUpdated: Date.now(),
       },
-      active.nickname
+      studentKey
     );
   };
 
