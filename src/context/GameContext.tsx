@@ -193,7 +193,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           lastPlanet: planetId,
           lastUpdated: Date.now(),
         },
-        active.nickname
+        studentKey
+
       );
     },
     [activeSession]
