@@ -206,8 +206,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!active) return;
 
       const clsSnap = await getClass(active.classCode);
-      const existing = clsSnap?.students?.[active.nickname];
-      if (!existing) return;
+      const studentKey = findStudentKey(clsSnap?.students, active.nickname);
+      const existing = studentKey ? clsSnap?.students?.[studentKey] : null;
+      if (!studentKey || !existing) return;
+
 
       await updateStudentState(
         active.classCode,
