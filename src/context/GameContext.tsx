@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import {
-  updateStudentState,
   subscribeToClass,
   getClass,
   applyClassStartIfNeeded,
+  findStudentKey,
   LessonType,
   StudentState,
   LastQuizSummary,
