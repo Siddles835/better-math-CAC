@@ -120,8 +120,8 @@ const AdditionEarth: React.FC = () => {
     if (step === 1) resetPractice();
     if (step === 2) resetActivity2();
     // Reset practice/target activities whenever the student returns to them.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
+
 
   const goToNextPlanet = () => {
     completePlanet('earth');
