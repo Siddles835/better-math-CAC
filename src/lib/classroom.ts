@@ -229,7 +229,9 @@ export const syncStudentsToClassStart = async (
     defaultPlanet: normalized,
   };
 
-  const payload: Record<string, StudentState> = {};
+   // Dotted keys are Firestore field paths, not a students map.
+  const payload: Record<string, unknown> = {};
+
   for (const [key, student] of Object.entries(cls.students)) {
     const next = applyClassStartIfNeeded(student, pretendClass);
     if (
