@@ -218,7 +218,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           lastQuiz: summary,
           lastUpdated: Date.now(),
         },
-        active.nickname
+        studentKey
+
       );
     },
     [activeSession]
