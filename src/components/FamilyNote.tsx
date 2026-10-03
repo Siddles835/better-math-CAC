@@ -7,7 +7,10 @@ interface FamilyNoteProps {
 
 const FamilyNote: React.FC<FamilyNoteProps> = ({ classCode }) => {
   return (
-    <section className="mb-8 bg-card/95 p-6 rounded-2xl border border-border print:break-inside-avoid">
+    <section
+      data-secondary="true"
+      className="mb-8 bg-card/95 p-6 rounded-2xl border border-border print:break-inside-avoid"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
           <h2 className="text-xl font-semibold">Note for families</h2>
