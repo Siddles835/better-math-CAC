@@ -106,7 +106,7 @@ const AccessibilityPanel: React.FC<{ className?: string }> = ({ className = '' }
                     <span className="font-medium">{label}</span>
                     <span className="block text-sm text-muted-foreground">{hint}</span>
                   </span>
-                  {/* Word, not colour, carries the state. */}
+                  {/* Words carry the state */}
                   <span className="text-sm font-semibold">{on ? 'On' : 'Off'}</span>
                 </button>
               </li>
