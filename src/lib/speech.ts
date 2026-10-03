@@ -71,7 +71,7 @@ export interface SpeakOptions {
  * @returns true if speech was queued
  */
 export const speak = (text: string, options?: SpeakOptions): boolean => {
-  if (!isSpeechSupported()) {
+  if (speechMuted || !isSpeechSupported()) {
     options?.onEnd?.();
     return false;
   }
