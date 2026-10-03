@@ -25,7 +25,7 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
 }) => {
   const { prefs } = useAccessibility();
   // "Read pages aloud" turns autoplay on everywhere, without hiding the
-  // manual speaker button for anyone else.
+  // manual speaker button others
   const autoPlay = autoPlayProp || prefs.autoReadAloud;
   const [isSpeaking, setIsSpeaking] = useState(false);
   const safetyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
