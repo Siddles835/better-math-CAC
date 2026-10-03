@@ -85,6 +85,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </GameProvider>
+       </AccessibilityProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
