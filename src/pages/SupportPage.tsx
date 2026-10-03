@@ -1,12 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import SiteChrome from '@/components/SiteChrome';
+import LegalLanguageNotice from '@/components/LegalLanguageNotice';
 
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
 
 const SupportPage: React.FC = () => {
+  const { t, i18n } = useTranslation('legal');
   return (
     <SiteChrome>
+      <LegalLanguageNotice />
+      {i18n.language !== 'en' && (
+        <p className="text-[15px] leading-relaxed text-muted-foreground mb-6">{t('supportLead')}</p>
+      )}
       <h1 className="text-3xl font-semibold mb-4">Support</h1>
       <p className="text-[15px] leading-relaxed text-muted-foreground mb-8">
         MathLift is a K–2 classroom app for counting, addition, and subtraction. Teachers create a

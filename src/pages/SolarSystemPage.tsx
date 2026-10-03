@@ -22,6 +22,9 @@ import {
 
 const BASE_SIZE = 640; // design space that fits Neptune orbit (580) + labels
 
+// The orbit map stays visually left-to-right in Arabic. Mirroring it would
+// put the Sun on the opposite side of the path and break the planet order
+// children learn (Sun, Mercury, Venus, ...). Equations elsewhere use dir=ltr.
 const SolarSystemPage: React.FC = () => {
   const navigate = useNavigate();
   const {

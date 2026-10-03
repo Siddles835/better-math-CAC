@@ -18,6 +18,12 @@ export const postToNativeShell = (message: Record<string, unknown>): boolean => 
   }
 };
 
+/** Ask the iOS shell to print. Browsers fall back to window.print(). */
+export const requestPrint = (): void => {
+  const sent = postToNativeShell({ type: 'print' });
+  if (!sent && typeof window !== 'undefined') window.print();
+};
+
 /** Paths that correspond to the native Home / Classes / Settings tab bar. */
 export const nativeTabPathFor = (pathname: string): string | null => {
   const withoutQuery = pathname.split('?')[0] ?? pathname;

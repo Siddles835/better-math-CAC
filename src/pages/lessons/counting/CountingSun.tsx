@@ -6,6 +6,7 @@ import { useLessonStep } from '@/hooks/useLessonStep';
 import NumberDraw from '@/components/NumberDraw';
 import ThoughtCard from '@/components/ThoughtCard';
 import { diagnoseTrace, LessonTrace, type Diagnosis, type DigitRead } from '@/lib/cognition';
+import { useAnswerCheck } from '@/hooks/useAnswerCheck';
 import Apple from '@/components/Apple';
 import Basket from '@/components/Basket';
 import Counter from '@/components/Counter';
@@ -25,6 +26,9 @@ const CountingSun: React.FC = () => {
   const [basketCount, setBasketCount] = useState(0);
   const [availableApples, setAvailableApples] = useState(7);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
+  const basketRef = useRef(0);
+  const drawCheck = useAnswerCheck();
+  basketRef.current = basketCount;
   const traceRef = useRef(new LessonTrace());
   const [showTransition, setShowTransition] = useState(false);
   const [conceptStep, setConceptStep] = useState(1);
@@ -41,20 +45,41 @@ const CountingSun: React.FC = () => {
   }, [step, conceptStep]);
 
   const addAppleToBasket = () => {
+    if (drawCheck.state.lockedSuccess) return;
     if (availableApples > 0 && basketCount < 9) {
       const next = basketCount + 1;
       setBasketCount(next);
       setAvailableApples(prev => prev - 1);
       traceRef.current.tap(next, next);
+      const stayed = drawCheck.noteChange();
+      if (!stayed.lockedSuccess) setDiagnosis(null);
+    }
+  };
+
+  const recordReadable = (read: DigitRead) => {
+    const target = basketRef.current;
+    if (read.status === 'unreadable') {
+      drawCheck.submit('unreadable');
+      return;
+    }
+    const correct = read.digit === target;
+    const next = drawCheck.submit(correct ? 'correct' : 'incorrect');
+    if (!next) return;
+    traceRef.current.setDigit(read, target);
+    traceRef.current.check(read.digit, target);
+    if (next.lockedSuccess && correct) {
+      const result = diagnoseTrace('sun', traceRef.current);
+      setDiagnosis(result);
+      void saveDiagnosis(result).catch((error) => console.error(error));
+    } else if (!correct) {
+      const result = diagnoseTrace('sun', traceRef.current);
+      setDiagnosis(result);
+      void saveDiagnosis(result).catch((error) => console.error(error));
     }
   };
 
   const handleDrawnCount = (read: DigitRead) => {
-    traceRef.current.setDigit(read, basketCount);
-    traceRef.current.check(read.digit, basketCount);
-    const result = diagnoseTrace('sun', traceRef.current);
-    setDiagnosis(result);
-    void saveDiagnosis(result);
+    recordReadable(read);
   };
 
   const goToNextPlanet = () => {
@@ -111,11 +136,29 @@ const CountingSun: React.FC = () => {
               {basketCount > 0 && (
                 <div className="mt-6 w-full">
                   <NumberDraw
+                    key="sun-apples"
                     prompt="Write how many apples are in the basket."
-                    expected={basketCount}
+                    result={drawCheck.state.verdict}
+                    checkEnabled={drawCheck.canSubmit(true)}
+                    disabled={drawCheck.state.lockedSuccess}
+                    showTypeHint={drawCheck.state.unreadableStreak >= 3}
+                    onChange={() => {
+                      const next = drawCheck.noteChange();
+                      if (!next.lockedSuccess) setDiagnosis(null);
+                    }}
                     onRead={handleDrawnCount}
+                    onTyped={(value) =>
+                      recordReadable({
+                        status: 'ok',
+                        digit: value,
+                        confidence: 1,
+                        reversal: false,
+                        strokeCount: 0,
+                        startQuadrant: 0,
+                      })
+                    }
                   />
-                  {diagnosis && (
+                  {diagnosis && drawCheck.state.verdict !== 'unreadable' && (
                     <div className="mt-4 flex justify-center">
                       <ThoughtCard diagnosis={diagnosis} />
                     </div>

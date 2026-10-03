@@ -126,7 +126,10 @@ const CountingVenus: React.FC = () => {
               {mcqQuestion.options.map((option) => (
                 <Button
                   key={option}
-                  onClick={() => !mcqChecked && checkMcq(option)}
+                  onClick={() => {
+                    if (mcqChecked && mcqAnswer === mcqQuestion.count) return;
+                    checkMcq(option);
+                  }}
                   variant={
                     mcqChecked
                       ? option === mcqQuestion.count
@@ -137,11 +140,11 @@ const CountingVenus: React.FC = () => {
                       : 'outline'
                   }
                   className={`text-2xl py-8 transition-all duration-500 ${
-                    mcqChecked && option === mcqQuestion.count
+                    mcqChecked && mcqAnswer === mcqQuestion.count && option === mcqQuestion.count
                       ? 'bg-success hover:bg-success'
                       : ''
                   }`}
-                  disabled={mcqChecked}
+                  disabled={mcqChecked && mcqAnswer === mcqQuestion.count}
                 >
                   {option}
                 </Button>
@@ -155,9 +158,7 @@ const CountingVenus: React.FC = () => {
                 }`}>
                   {mcqAnswer === mcqQuestion.count
                     ? 'Great!'
-                    : wrongAttempts >= 2
-                      ? `The answer is ${mcqQuestion.count}`
-                      : "Let's practice counting with pencils!"}
+                    : 'Count them again, one at a time'}
                 </p>
                 {mcqAnswer !== mcqQuestion.count ? (
                   <Button variant="outline" size="lg" onClick={resetMcq}>

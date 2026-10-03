@@ -32,6 +32,8 @@ export class LessonTrace {
   }
 
   setDigit(read: DigitRead, expected?: number) {
+    // Unreadable drawings are not errors and must not affect diagnosis.
+    if (read.status === 'unreadable') return;
     this.digit = read;
     this.record('draw', { value: read.digit, target: expected, extra: read.reversal ? 1 : 0 });
   }

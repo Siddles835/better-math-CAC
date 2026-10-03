@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { useAccessibility } from '@/context/AccessibilityContext';
+import { formatNumberDisplay } from '@/lib/i18n/language';
 import {
   ChevronRight,
   Star,
@@ -278,6 +281,9 @@ const buildEquationChips = (question: Question): EquationChip[] => {
 };
 
 const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
+  const { t } = useTranslation(['quiz', 'lessons']);
+  const { prefs } = useAccessibility();
+  const showNum = (value: number) => formatNumberDisplay(value, prefs.numberStyle);
   const questions = lessonType === 'counting' 
     ? countingQuestions 
     : lessonType === 'addition' 
@@ -286,6 +292,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
 
   const needsEquation = lessonType !== 'counting';
   const operator = lessonType === 'subtraction' ? '−' : '+';
+  const prefix = lessonType === 'counting' ? 'c' : lessonType === 'addition' ? 'a' : 's';
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -497,19 +504,19 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
         <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full inline-block">
           Step 1: Build the equation
         </span>
-        <ReadAloudButton text={question.question} />
+        <ReadAloudButton text={t(`quiz:${prefix}${currentQuestion}_question`)} />
       </div>
 
       <p className="text-xl text-foreground mb-4">
-        {question.question}
+        {t(`quiz:${prefix}${currentQuestion}_question`)}
       </p>
 
       <p className="text-sm text-muted-foreground mb-6">
-        Use the numbers from the story to set up the problem!
+        {t('quiz:useNumbers')}
       </p>
 
       {/* Equation slots */}
-      <div className="flex items-center justify-center gap-3 mb-8">
+      <div dir="ltr" className="flex items-center justify-center gap-3 mb-8">
         {slots.map((chipId, i) => (
           <React.Fragment key={i}>
             {i === 1 && <span className="text-3xl font-bold text-primary">{operator}</span>}
@@ -560,7 +567,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
       {equationChecked && equationCorrect && (
         <div ref={actionsRef} className="text-center animate-fade-in space-y-4 relative z-20">
           <p className="text-xl font-semibold text-success">
-            You built the equation! {chipValue(slots[0])} {operator} {chipValue(slots[1])} = ?
+            {t('quiz:built')} <span dir="ltr">{showNum(chipValue(slots[0]))} {operator} {showNum(chipValue(slots[1]))} = ?</span>
           </p>
           <Button type="button" onClick={() => setStage('solve')} size="lg" className="min-h-[48px] relative z-20">
             Now Solve It
@@ -572,11 +579,11 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
       {equationChecked && !equationCorrect && (
         <div ref={actionsRef} className="text-center animate-fade-in space-y-4 relative z-20">
           <p className="text-lg text-destructive font-semibold">
-            Not quite! Look at the story again.
+            {t('quiz:lookAgain')}
           </p>
           {equationAttempts >= 2 && (
             <p className="text-muted-foreground">
-              Hint: the story says <span className="font-bold text-primary">{question.num1} {operator} {question.num2}</span>
+              Hint: look at the story again.
             </p>
           )}
           <Button type="button" onClick={retryEquation} variant="outline" size="lg" className="min-h-[48px] relative z-20">
@@ -609,16 +616,16 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
           <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full inline-block">
             {needsEquation ? 'Step 2: Solve it' : `${currentQuestion + 1} of ${questions.length}`}
           </span>
-          <ReadAloudButton text={question.question} />
+          <ReadAloudButton text={t(`quiz:${prefix}${currentQuestion}_question`)} />
         </div>
         
         {needsEquation && (
-          <p className="text-3xl font-bold text-primary text-center mb-6">
-            {question.num1} {operator} {question.num2} = ?
+          <p dir="ltr" className="text-3xl font-bold text-primary text-center mb-6">
+            {showNum(question.num1 ?? 0)} {operator} {showNum(question.num2 ?? 0)} = ?
           </p>
         )}
 
-        <p className="text-xl text-foreground mb-4">{question.question}</p>
+        <p className="text-xl text-foreground mb-4">{t(`quiz:${prefix}${currentQuestion}_question`)}</p>
 
         {countingStars}
 
@@ -658,7 +665,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
                     : 'outline'
                 }
                 className={`text-2xl py-7 transition-all duration-300 active:scale-95 ${
-                  isChecked && option === question.answer
+                  isChecked && isCorrect && option === question.answer
                     ? 'bg-success hover:bg-success'
                     : ''
                 }`}
@@ -680,12 +687,9 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
         </div>
       )}
 
-      {/* Feedback for wrong answer - only show correct answer on second wrong attempt */}
       {wrongAttempts >= 2 && !showGuidedPractice && !(isChecked && isCorrect) && (
         <div className="text-center mb-5 animate-fade-in">
-          <p className="text-lg text-muted-foreground">
-            The answer is <span className="font-bold text-success">{question.answer}</span>
-          </p>
+          <p className="text-lg text-muted-foreground">{t('quiz:lookChoice')}</p>
         </div>
       )}
 
@@ -760,9 +764,9 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
         <div className="bg-card/50 rounded-xl p-5 mb-5 border border-border">
           <div className="flex items-start justify-between gap-3">
             <p className="text-lg text-foreground leading-relaxed flex-1">
-              {question.story}
+              {t(`quiz:${prefix}${currentQuestion}_story`)}
             </p>
-            <ReadAloudButton text={question.story} className="shrink-0" />
+            <ReadAloudButton text={t(`quiz:${prefix}${currentQuestion}_story`)} className="shrink-0" />
           </div>
         </div>
 
@@ -775,7 +779,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
           lessonType={lessonType}
           num1={question.num1 || question.answer}
           num2={question.num2}
-          storyHint={`${question.story} ${question.question}`}
+          storyHint={`${t(`quiz:${prefix}${currentQuestion}_story`)} ${t(`quiz:${prefix}${currentQuestion}_question`)}`}
           onClose={handleGuidedPracticeClose}
         />
       )}

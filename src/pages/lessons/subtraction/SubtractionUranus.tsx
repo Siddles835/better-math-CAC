@@ -50,11 +50,12 @@ const SubtractionUranus: React.FC = () => {
   }, [step, conceptStep]);
 
   const removePencilWord = () => {
-    if (wordPencils > 0 && !wordChecked) {
+    if (wordPencils > 0 && !(wordChecked && wordPencils === wordTarget)) {
       const next = wordPencils - 1;
       setWordPencils(next);
       setWordRemoved(prev => prev + 1);
       trace.tap(next, wordTarget);
+      if (wordChecked) setWordChecked(false);
     }
   };
 
@@ -185,11 +186,15 @@ const SubtractionUranus: React.FC = () => {
                     return (
                       <Pencil
                         key={i}
-                        onClick={!wordChecked && !givenAway ? removePencilWord : undefined}
+                        onClick={
+                          !(wordChecked && wordPencils === wordTarget) && !givenAway
+                            ? removePencilWord
+                            : undefined
+                        }
                         className={
                           givenAway
                             ? 'pointer-events-none opacity-25 grayscale'
-                            : wordChecked
+                            : wordChecked && wordPencils === wordTarget
                               ? 'pointer-events-none'
                               : ''
                         }

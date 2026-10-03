@@ -161,7 +161,7 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
       {checked && correct && (
         <div className="text-center space-y-4 animate-fade-in">
           <p className="text-xl font-semibold text-success">
-            You built the equation! {num1} {operator} {num2} = ?
+            You built the equation! <span dir="ltr">{num1} {operator} {num2} = ?</span>
           </p>
           <Button type="button" onClick={onComplete} size="lg">
             Now Solve It
@@ -175,7 +175,7 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
           <p className="text-lg text-destructive font-semibold">Not quite! Look at the story again.</p>
           {attempts >= 2 && (
             <p className="text-muted-foreground">
-              Hint: try <span className="font-bold text-primary">{num1} {operator} {num2}</span>
+              Hint: look at the story again.
             </p>
           )}
           <Button type="button" onClick={retry} variant="outline" size="lg">

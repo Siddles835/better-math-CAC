@@ -69,10 +69,18 @@ const PersonalPracticePage: React.FC<PersonalPracticePageProps> = ({ demo = fals
     if (!demo) void saveDiagnosis(next);
   };
 
+  const itemBase = useRef(path);
+  React.useEffect(() => {
+    itemBase.current = path;
+    // Capture the path at the start of each item so a later correct re-check
+    // does not keep a tighten that belonged to the earlier wrong check.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
   const handleResult = (outcome: ItemOutcome, value: number) => {
     if (!item) return;
     traceRef.current.check(value, item.target);
-    setPath((current) => adaptPath(current, step, outcome));
+    setPath(adaptPath(itemBase.current, step, outcome));
     setReady(true);
   };
 

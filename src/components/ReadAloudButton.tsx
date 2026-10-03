@@ -28,6 +28,7 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
   // manual speaker button others
   const autoPlay = autoPlayProp || prefs.autoReadAloud;
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
   const safetyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playedRef = useRef(false);
   const onPlayedRef = useRef(onPlayed);
@@ -53,11 +54,14 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
         clearSafety();
         setIsSpeaking(false);
       },
+      onUnavailable: () => setUnavailable(true),
     });
-    if (!queued) {
+    if (queued !== 'spoken') {
       setIsSpeaking(false);
+      if (queued === 'unavailable') setUnavailable(true);
       return false;
     }
+    setUnavailable(false);
     setIsSpeaking(true);
     markPlayed();
     clearSafety();
@@ -104,6 +108,7 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
   };
 
   return (
+    <span className="inline-flex flex-col items-center gap-1">
     <button
       type="button"
       onClick={handleClick}
@@ -115,6 +120,12 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
     >
       <Volume2 className="w-6 h-6" />
     </button>
+    {unavailable && (
+      <span className="max-w-[12rem] text-xs text-muted-foreground text-center">
+        Read aloud isn't available in this language on this device
+      </span>
+    )}
+    </span>
   );
 };
 

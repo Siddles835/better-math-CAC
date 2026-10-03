@@ -56,11 +56,13 @@ const AdditionMars: React.FC = () => {
   };
 
   const addPencilWord = () => {
-    if (wordAvailable > 0 && !wordChecked && wordLeft + wordRight < 9) {
+    const wordOk = wordChecked && wordLeft + wordRight === wordTarget;
+    if (wordAvailable > 0 && !wordOk && wordLeft + wordRight < 9) {
       const next = wordRight + 1;
       setWordRight(next);
       setWordAvailable(prev => prev - 1);
       traceRef.current.tap(wordLeft + next, wordTarget);
+      if (wordChecked) setWordChecked(false);
     }
   };
 
@@ -209,15 +211,15 @@ const AdditionMars: React.FC = () => {
               </div>
             </div>
             
+            {!(wordChecked && wordLeft + wordRight === wordTarget) && (
+              <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto mb-8">
+                {Array.from({ length: wordAvailable }).map((_, i) => (
+                  <Pencil key={i} onClick={addPencilWord} />
+                ))}
+              </div>
+            )}
             {!wordChecked && (
-              <>
-                <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto mb-8">
-                  {Array.from({ length: wordAvailable }).map((_, i) => (
-                    <Pencil key={i} onClick={addPencilWord} />
-                  ))}
-                </div>
-                <Button onClick={checkWord} size="lg">Check</Button>
-              </>
+              <Button onClick={checkWord} size="lg">Check</Button>
             )}
             
             {wordChecked && !showGuided && (

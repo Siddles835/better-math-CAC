@@ -72,11 +72,12 @@ const SubtractionSaturn: React.FC = () => {
   };
 
   const removePencilActivity2 = () => {
-    if (activity2Pencils > 0 && !activity2Checked) {
+    if (activity2Pencils > 0 && !(activity2Checked && activity2Pencils === activity2Target)) {
       const next = activity2Pencils - 1;
       setActivity2Pencils(next);
       setActivity2Removed(prev => prev + 1);
       traceRef.current.tap(next, activity2Target);
+      if (activity2Checked) setActivity2Checked(false);
     }
   };
 
@@ -274,11 +275,15 @@ const SubtractionSaturn: React.FC = () => {
                     return (
                       <Pencil
                         key={i}
-                        onClick={!activity2Checked && !taken ? removePencilActivity2 : undefined}
+                        onClick={
+                          !(activity2Checked && activity2Pencils === activity2Target) && !taken
+                            ? removePencilActivity2
+                            : undefined
+                        }
                         className={
                           taken
                             ? 'pointer-events-none opacity-25 grayscale'
-                            : activity2Checked
+                            : activity2Checked && activity2Pencils === activity2Target
                               ? 'pointer-events-none'
                               : ''
                         }
@@ -336,7 +341,7 @@ const SubtractionSaturn: React.FC = () => {
                 lessonType="subtraction"
                 num1={activity2Start}
                 num2={activity2Start - activity2Target}
-                storyHint={`Leave ${activity2Target} pencils. You start with ${activity2Start}.`}
+                storyHint="Take pencils away one at a time."
                 onClose={() => {
                   setShowGuided(false);
                   resetActivity2();

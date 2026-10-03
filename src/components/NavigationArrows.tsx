@@ -47,7 +47,7 @@ const NavigationArrows: React.FC<NavigationArrowsProps> = ({
     >
       {showBack && onBack ? (
         <Button type="button" onClick={onBack} variant="outline" className={navBtnClass}>
-          <ChevronLeft className="h-6 w-6 shrink-0 text-foreground" strokeWidth={2.5} aria-hidden />
+          <ChevronLeft className="h-6 w-6 shrink-0 text-foreground rtl:scale-x-[-1]" strokeWidth={2.5} aria-hidden />
           <span>{backLabel ?? 'Back'}</span>
         </Button>
       ) : (
@@ -64,7 +64,7 @@ const NavigationArrows: React.FC<NavigationArrowsProps> = ({
           ) : (
             <>
               <span>{nextLabel ?? 'Next'}</span>
-              <ChevronRight className="h-6 w-6 shrink-0 text-foreground" strokeWidth={2.5} aria-hidden />
+              <ChevronRight className="h-6 w-6 shrink-0 text-foreground rtl:scale-x-[-1]" strokeWidth={2.5} aria-hidden />
             </>
           )}
         </Button>

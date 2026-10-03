@@ -1,0 +1,14 @@
+{
+  "title": "Settings",
+  "languageHelp": "The choice stays on this device. It is not sent to the class.",
+  "numberHelp": "This only changes how numbers look. The math stays the same.",
+  "deleteStudent": "Delete my student account",
+  "deleteClass": "Delete this class",
+  "intro": "Privacy, account, and classroom controls. MathLift never uses student data for ads.",
+  "backHome": "Back to MathLift",
+  "signedStudent": "Signed in as student",
+  "signedTeacher": "Signed in as teacher",
+  "signOut": "Sign out",
+  "deleteAccount": "Delete my account",
+  "deleteClassButton": "Delete this class"
+}

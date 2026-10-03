@@ -1,0 +1,17 @@
+{
+  "progress": "Progress",
+  "progressHelp": "Each student counts once per bucket, using their latest check. If they skipped a bucket, the previous result is carried forward.",
+  "resolved": "Resolved this month",
+  "resolvedEmpty": "No one has two steady sessions after a flag yet this month.",
+  "emptyTrends": "Trends appear after students have played on 2 or more days.",
+  "byStudent": "By student",
+  "noSessions": "No sessions yet.",
+  "sampleBanner": "Sample data. These space names are examples for reviewers, not a real classroom.",
+  "showTable": "Show data table",
+  "hideTable": "Hide data table",
+  "carried": "{{count}} carried forward from an earlier bucket.",
+  "students_one": "{{count}} student",
+  "students_other": "{{count}} students",
+  "steadyFor_one": "now steady for {{count}} session.",
+  "steadyFor_other": "now steady for {{count}} sessions."
+}

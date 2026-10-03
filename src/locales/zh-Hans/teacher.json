@@ -1,0 +1,15 @@
+{
+  "progress": "进展",
+  "progressHelp": "每个学生在每个时间段只算一次，用他们最近的一次检查。如果他们跳过了某个时间段，就沿用上一次的结果。",
+  "resolved": "本月已稳住",
+  "resolvedEmpty": "这个月还没有人在被标记之后连续两次表现稳定。",
+  "emptyTrends": "学生在两天或更多天练习之后，才会出现趋势。",
+  "byStudent": "按学生",
+  "noSessions": "还没有练习记录。",
+  "sampleBanner": "示例数据。这些太空名字是给审阅者看的例子，不是真实班级。",
+  "showTable": "显示数据表",
+  "hideTable": "隐藏数据表",
+  "carried": "有 {{count}} 个沿用了更早的结果。",
+  "students_other": "{{count}} 名学生",
+  "steadyFor_other": "已经稳定 {{count}} 次。"
+}

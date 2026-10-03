@@ -1,0 +1,14 @@
+{
+  "title": "الإعدادات",
+  "languageHelp": "الاختيار يبقى على هذا الجهاز. لا يُرسل إلى الصف.",
+  "numberHelp": "هذا يغير شكل الأرقام فقط. الحساب نفسه لا يتغير.",
+  "deleteStudent": "احذف حساب الطالب",
+  "deleteClass": "احذف هذا الصف",
+  "intro": "الخصوصية والحساب وضوابط الصف. لا يستخدم MathLift بيانات الطلاب للإعلانات.",
+  "backHome": "العودة إلى MathLift",
+  "signedStudent": "دخلت كطالب",
+  "signedTeacher": "دخلت كمعلم",
+  "signOut": "خروج",
+  "deleteAccount": "احذف حسابي",
+  "deleteClassButton": "احذف هذا الصف"
+}

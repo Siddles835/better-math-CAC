@@ -33,11 +33,12 @@ const CountingMercury: React.FC = () => {
   const totalSteps = 2;
 
   const addAppleToWordProblem = () => {
-    if (wordProblemAvailable > 0 && !wordProblemChecked && wordProblemCount < 9) {
+    if (wordProblemAvailable > 0 && !wordProblemCorrect && wordProblemCount < 9) {
       const next = wordProblemCount + 1;
       setWordProblemCount(next);
       setWordProblemAvailable(prev => prev - 1);
       trace.tap(next, targetCount);
+      if (wordProblemChecked) setWordProblemChecked(false);
     }
   };
 
@@ -120,7 +121,7 @@ const CountingMercury: React.FC = () => {
                 ))}
               </Basket>
               
-              {!wordProblemChecked && (
+              {!wordProblemCorrect && (
                 <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-md">
                   {Array.from({ length: wordProblemAvailable }).map((_, i) => (
                     <Apple key={i} onClick={addAppleToWordProblem} size="md" />

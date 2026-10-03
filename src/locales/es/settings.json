@@ -1,0 +1,14 @@
+{
+  "title": "Ajustes",
+  "languageHelp": "La elección se queda en este dispositivo. No se envía a la clase.",
+  "numberHelp": "Esto solo cambia cómo se ven los números. La matemática sigue igual.",
+  "deleteStudent": "Borrar mi cuenta de estudiante",
+  "deleteClass": "Borrar esta clase",
+  "intro": "Privacidad, cuenta y controles de la clase. MathLift no usa datos de estudiantes para anuncios.",
+  "backHome": "Volver a MathLift",
+  "signedStudent": "Entraste como estudiante",
+  "signedTeacher": "Entraste como maestro",
+  "signOut": "Salir",
+  "deleteAccount": "Borrar mi cuenta",
+  "deleteClassButton": "Borrar esta clase"
+}

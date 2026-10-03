@@ -1,6 +1,7 @@
 import type { StudentState } from '@/lib/classroom';
 import { getLessonForPlanet, type PlanetId } from '@/lib/planets';
 import { GLOW_PLANETS, KID_LINE, NEXT_PLANET, TEACHER_LINE } from './catalog';
+import type { DiagnosisSnapshot } from './history';
 import type { Diagnosis, MisconceptionCode } from './types';
 
 const STAMP = 1_725_580_800_000;
@@ -55,6 +56,50 @@ const student = (
 /** Fixed sample roster so judges can read a briefing without joining Firebase. */
 export const SAMPLE_CLASS_CODE = 'SAMPLE';
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Deterministic 6-week paths. Most improve. KindRocket3 stays flagged. */
+const SAMPLE_PATHS: Record<string, MisconceptionCode[]> = {
+  QuietComet21: ['COUNT_ALL', 'COUNT_ALL', 'COUNT_ALL', 'COUNT_ALL', 'STEADY', 'STEADY'],
+  BraveOtter8: ['OVERSHOOT', 'OVERSHOOT', 'OVERSHOOT', 'STEADY', 'STEADY', 'STEADY'],
+  SwiftMoon44: ['SUB_FLIP', 'SUB_FLIP', 'SUB_FLIP', 'SUB_FLIP', 'STEADY', 'STEADY'],
+  CalmNova16: ['COMMUTE', 'COMMUTE', 'COMMUTE', 'STEADY', 'STEADY', 'STEADY'],
+  KindRocket3: ['DIGIT_REV', 'DIGIT_REV', 'DIGIT_REV', 'DIGIT_REV', 'DIGIT_REV', 'DIGIT_REV'],
+  LuckyStar55: ['WORD_GAP', 'WORD_GAP', 'WORD_GAP', 'WORD_GAP', 'WORD_GAP', 'STEADY'],
+  CoralShip7: ['PLACE_SPLIT', 'PLACE_SPLIT', 'PLACE_SPLIT', 'STEADY', 'STEADY', 'STEADY'],
+  BrightOrbit9: ['STEADY', 'STEADY', 'STEADY', 'STEADY', 'STEADY', 'STEADY'],
+  GentleTide12: ['COUNT_ALL', 'COUNT_ALL', 'STEADY', 'STEADY', 'STEADY', 'STEADY'],
+};
+
+export const sampleHistory = (
+  nickname: string,
+  planet: PlanetId,
+  now = Date.now()
+): DiagnosisSnapshot[] => {
+  const path = SAMPLE_PATHS[nickname] ?? ['STEADY', 'STEADY', 'STEADY', 'STEADY', 'STEADY', 'STEADY'];
+  const end = now - 12 * 60 * 60 * 1000;
+  const stamps = [35, 28, 21, 14, 3, 0].map((days) => end - days * DAY_MS);
+  return path.map((primary, index) => ({
+    at: stamps[index],
+    planet,
+    primary,
+    confidence: primary === 'STEADY' ? 0.9 : 0.74,
+  }));
+};
+
+const withHistory = (entry: StudentState, now = Date.now()): StudentState => {
+  const planet = entry.planet as PlanetId;
+  const diagnosisHistory = sampleHistory(entry.nickname, planet, now);
+  const latest = diagnosisHistory[diagnosisHistory.length - 1];
+  return {
+    ...entry,
+    diagnosisHistory,
+    lastDiagnosis: entry.lastDiagnosis
+      ? { ...entry.lastDiagnosis, primary: latest.primary, confidence: latest.confidence, updatedAt: latest.at }
+      : entry.lastDiagnosis,
+  };
+};
+
 export const SAMPLE_STUDENTS: StudentState[] = [
   student('QuietComet21', 'mercury', 'COUNT_ALL', 0.81),
   student('BraveOtter8', 'earth', 'OVERSHOOT', 0.74),
@@ -65,4 +110,4 @@ export const SAMPLE_STUDENTS: StudentState[] = [
   student('CoralShip7', 'jupiter', 'PLACE_SPLIT', 0.68),
   student('BrightOrbit9', 'venus', 'STEADY', 0.88, { score: 5, total: 5, tries: [1, 1, 1, 1, 1] }),
   student('GentleTide12', 'earth', 'STEADY', 0.91),
-];
+].map((entry) => withHistory(entry));

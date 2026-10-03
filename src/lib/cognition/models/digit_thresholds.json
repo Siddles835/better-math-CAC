@@ -1,0 +1,1 @@
+{"minConfidence": 0.75, "minMargin": 0.3, "minPoints": 8, "minSize": 16, "cleanAcceptRate": 0.9583, "badRejectRate": 0.9083, "metTarget": true}
