@@ -46,6 +46,7 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <AccessibilityProvider>
         <GameProvider>
           <Toaster />
           <Sonner />
