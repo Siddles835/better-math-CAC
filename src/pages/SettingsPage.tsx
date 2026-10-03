@@ -13,6 +13,7 @@ import {
 } from '@/lib/session';
 import { deleteClassroom, deleteStudent } from '@/lib/classroom';
 import { Button } from '@/components/ui/button';
+import AccessibilityPanel from '@/components/AccessibilityPanel';
 
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
 
