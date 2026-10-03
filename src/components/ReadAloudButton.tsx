@@ -20,9 +20,13 @@ interface ReadAloudButtonProps {
 const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
   text,
   className = '',
-  autoPlay = false,
+  autoPlay: autoPlayProp = false,
   onPlayed,
 }) => {
+  const { prefs } = useAccessibility();
+  // "Read pages aloud" turns autoplay on everywhere, without hiding the
+  // manual speaker button for anyone else.
+  const autoPlay = autoPlayProp || prefs.autoReadAloud;
   const [isSpeaking, setIsSpeaking] = useState(false);
   const safetyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playedRef = useRef(false);
