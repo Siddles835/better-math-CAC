@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LegalLanguageNotice from '@/components/LegalLanguageNotice';
 
 const COMPANY_NAME = 'MathLift';
 const WEBSITE_URL = 'https://better-math-lalith.vercel.app';
@@ -38,6 +40,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 const CookiePolicyPage: React.FC = () => {
+  const { t, i18n } = useTranslation('legal');
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <header className="border-b border-slate-200 bg-white">
@@ -51,7 +54,11 @@ const CookiePolicyPage: React.FC = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-12">
+      <main className="mx-auto max-w-3xl px-6 py-12 space-y-4">
+        <LegalLanguageNotice />
+        {i18n.language !== 'en' && (
+          <p className="text-[15px] leading-relaxed text-slate-700">{t('cookieLead')}</p>
+        )}
         <h1 className="text-3xl font-semibold text-slate-900 mb-2">Cookie Policy</h1>
         <p className="text-sm text-slate-500 mb-10">Last updated {LAST_UPDATED}</p>
 

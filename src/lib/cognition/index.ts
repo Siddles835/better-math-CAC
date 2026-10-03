@@ -1,7 +1,9 @@
-export type { Diagnosis, DigitRead, MisconceptionCode } from './types';
+export type { Diagnosis, DigitRead, MisconceptionCode, UnreadableReason, DigitScript } from './types';
+export type { DiagnosisSnapshot } from './history';
+export { appendDiagnosisSnapshot } from './history';
 export { LessonTrace } from './trace';
 export { diagnoseTrace, diagnoseFromQuiz, diagnoseFeatures } from './diagnose';
-export { readDrawnDigit } from './digitModel';
+export { readDrawnDigit, readDrawing } from './digitModel';
 export { extractFeatures } from './features';
 export { buildClassBriefing, briefingHeadline, briefingToText } from './briefing';
 export type { ClassBriefing, BriefingAction } from './briefing';

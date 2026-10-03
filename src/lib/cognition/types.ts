@@ -20,12 +20,27 @@ export interface TraceEvent {
   extra?: number;
 }
 
+export type UnreadableReason =
+  | 'too_small'
+  | 'too_few_points'
+  | 'low_confidence'
+  | 'ambiguous'
+  | 'too_many_parts';
+
+export type DigitScript = 'western' | 'arabic' | 'devanagari';
+
 export interface DigitRead {
+  status: 'ok' | 'unreadable';
+  /** Combined value for one or two digits. 0 when unreadable. */
   digit: number;
   confidence: number;
   reversal: boolean;
   strokeCount: number;
   startQuadrant: number;
+  reason?: UnreadableReason;
+  /** Digits left to right when status is ok. */
+  parts?: number[];
+  script?: DigitScript;
 }
 
 export interface CognitionFeatures {

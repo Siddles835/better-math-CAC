@@ -15,6 +15,7 @@ import ThoughtCard from '@/components/ThoughtCard';
 import { Button } from '@/components/ui/button';
 import { Check, X, Play, RotateCcw, ArrowRight } from 'lucide-react';
 import { diagnoseTrace, LessonTrace, type Diagnosis, type DigitRead } from '@/lib/cognition';
+import { useAnswerCheck } from '@/hooks/useAnswerCheck';
 
 const AdditionEarth: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +42,8 @@ const AdditionEarth: React.FC = () => {
   const [activity2Target] = useState(6);
   const [activity2Checked, setActivity2Checked] = useState(false);
   const [showGuided, setShowGuided] = useState(false);
+  const drawCheck = useAnswerCheck();
+  const activity2TotalRef = useRef(2);
 
   const totalSteps = 4;
 
@@ -68,7 +71,7 @@ const AdditionEarth: React.FC = () => {
   const publishDiagnosis = () => {
     const result = diagnoseTrace('earth', traceRef.current);
     setDiagnosis(result);
-    void saveDiagnosis(result);
+    void saveDiagnosis(result).catch((error) => console.error(error));
   };
 
   const addPencilRight = () => {
@@ -78,12 +81,22 @@ const AdditionEarth: React.FC = () => {
     }
   };
 
+  const activity2Total = activity2Left + activity2Right;
+  activity2TotalRef.current = activity2Total;
+  const activity2Ok = activity2Checked && activity2Total === activity2Target;
+
   const addPencilActivity2 = () => {
-    if (activity2Available > 0 && !activity2Checked && activity2Left + activity2Right < 9) {
+    if (activity2Ok) return;
+    if (activity2Available > 0 && activity2Left + activity2Right < 9) {
       const next = activity2Right + 1;
       setActivity2Right(next);
       setActivity2Available(prev => prev - 1);
       traceRef.current.tap(activity2Left + next, activity2Target);
+      if (activity2Checked) {
+        setActivity2Checked(false);
+        setDiagnosis(null);
+      }
+      drawCheck.noteChange();
     }
   };
 
@@ -99,7 +112,16 @@ const AdditionEarth: React.FC = () => {
   };
 
   const handleDrawnNumber = (read: DigitRead) => {
-    traceRef.current.setDigit(read, activity2Left + activity2Right);
+    const total = activity2TotalRef.current;
+    if (read.status === 'unreadable') {
+      drawCheck.submit('unreadable');
+      return;
+    }
+    const correct = read.digit === total;
+    const next = drawCheck.submit(correct ? 'correct' : 'incorrect');
+    if (!next) return;
+    traceRef.current.setDigit(read, total);
+    traceRef.current.check(read.digit, total);
     publishDiagnosis();
   };
 
@@ -281,15 +303,15 @@ const AdditionEarth: React.FC = () => {
               </div>
             </div>
             
+            {!activity2Ok && (
+              <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto mb-8">
+                {Array.from({ length: activity2Available }).map((_, i) => (
+                  <Pencil key={i} onClick={addPencilActivity2} />
+                ))}
+              </div>
+            )}
             {!activity2Checked && (
-              <>
-                <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto mb-8">
-                  {Array.from({ length: activity2Available }).map((_, i) => (
-                    <Pencil key={i} onClick={addPencilActivity2} />
-                  ))}
-                </div>
-                <Button onClick={checkActivity2} size="lg">Check</Button>
-              </>
+              <Button onClick={checkActivity2} size="lg">Check</Button>
             )}
             
             {activity2Checked && !showGuided && (
@@ -315,8 +337,14 @@ const AdditionEarth: React.FC = () => {
                   <ThoughtCard diagnosis={diagnosis} />
                 )}
                 <NumberDraw
-                  prompt={`Write how many pencils you have (${activity2Left + activity2Right}).`}
-                  expected={activity2Left + activity2Right}
+                  key="earth-pencils"
+                  prompt="Write how many pencils you have."
+                  result={drawCheck.state.verdict}
+                  unreadableReason={drawCheck.state.verdict === 'unreadable' ? 'low_confidence' : null}
+                  checkEnabled={drawCheck.canSubmit(true)}
+                  disabled={drawCheck.state.lockedSuccess}
+                  showTypeHint={drawCheck.state.unreadableStreak >= 3}
+                  onChange={() => drawCheck.noteChange()}
                   onRead={handleDrawnNumber}
                 />
                 {activity2Left + activity2Right !== activity2Target && (
@@ -332,7 +360,7 @@ const AdditionEarth: React.FC = () => {
                 lessonType="addition"
                 num1={activity2Left}
                 num2={activity2Target - activity2Left}
-                storyHint={`Make ${activity2Target} pencils. You start with ${activity2Left}.`}
+                storyHint="Add pencils one at a time, then count what you have."
                 onClose={() => {
                   setShowGuided(false);
                   resetActivity2();

@@ -10,6 +10,7 @@ import {
   LastQuizSummary,
 } from '@/lib/classroom';
 import type { Diagnosis } from '@/lib/cognition';
+import { appendDiagnosisSnapshot } from '@/lib/cognition/history';
 import {
   getActiveStudent,
   SESSION_CHANGED,
@@ -231,20 +232,31 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLastDiagnosis(diagnosis);
       const active = activeSession ?? getActiveStudent();
       if (!active) return;
-      const clsSnap = await getClass(active.classCode);
-      const studentKey = findStudentKey(clsSnap?.students, active.nickname);
-      const existing = studentKey ? clsSnap?.students?.[studentKey] : null;
-      if (!studentKey || !existing) return;
-      await updateStudentState(
-        active.classCode,
-        {
-          ...existing,
-          lastDiagnosis: diagnosis,
-          lastUpdated: Date.now(),
-        },
-        studentKey
-
-      );
+      try {
+        const clsSnap = await getClass(active.classCode);
+        const studentKey = findStudentKey(clsSnap?.students, active.nickname);
+        const existing = studentKey ? clsSnap?.students?.[studentKey] : null;
+        if (!studentKey || !existing) return;
+        const planet = normalizePlanetId(existing.lastPlanet || existing.planet) ?? 'sun';
+        const diagnosisHistory = appendDiagnosisSnapshot(existing.diagnosisHistory, {
+          at: diagnosis.updatedAt || Date.now(),
+          planet,
+          primary: diagnosis.primary,
+          confidence: diagnosis.confidence,
+        });
+        await updateStudentState(
+          active.classCode,
+          {
+            ...existing,
+            lastDiagnosis: diagnosis,
+            diagnosisHistory,
+            lastUpdated: Date.now(),
+          },
+          studentKey
+        );
+      } catch (error) {
+        console.error('Could not save diagnosis', error);
+      }
     },
     [activeSession]
   );

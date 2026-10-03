@@ -9,7 +9,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Diagnosis } from './cognition';
+import type { Diagnosis, DiagnosisSnapshot } from './cognition';
 import {
   getClassroomUnlockPlanet,
   getFurthestProgressPlanet,
@@ -42,6 +42,12 @@ export interface StudentState {
   lastQuiz?: LastQuizSummary;
   /** Aggregated thinking signal only — drawings and raw taps stay on-device. */
   lastDiagnosis?: Diagnosis;
+  /**
+   * Recent diagnosis summaries for the teacher trend view.
+   * Older documents omit this field; readers treat that as an empty list.
+   * Deleted with the student record (see deleteStudent / deleteClassroom).
+   */
+  diagnosisHistory?: DiagnosisSnapshot[];
   lastUpdated: number;
 }
 
@@ -295,7 +301,11 @@ export const setClassDefaultStart = async (classCode: string, planet: string) =>
   await syncStudentsToClassStart(resolved, normalized);
 };
 
-/** Permanently remove one student (username + progress + quiz history) from a class. */
+/**
+ * Permanently remove one student from a class.
+ * diagnosisHistory lives on this same student field, so deleting the field
+ * deletes the history. There is no separate history collection.
+ */
 export const deleteStudent = async (classCode: string, nicknameOrKey: string): Promise<boolean> => {
   const resolved = await resolveClassCode(classCode);
   if (!resolved) return false;
@@ -312,7 +322,10 @@ export const deleteStudent = async (classCode: string, nicknameOrKey: string): P
   return true;
 };
 
-/** Permanently delete a class, its teacher PIN, roster, and all student progress. */
+/**
+ * Permanently delete a class document: teacher PIN, roster, progress, quiz
+ * summaries, and every student's diagnosisHistory.
+ */
 export const deleteClassroom = async (classCode: string): Promise<boolean> => {
   const resolved = await resolveClassCode(classCode);
   if (!resolved) return false;

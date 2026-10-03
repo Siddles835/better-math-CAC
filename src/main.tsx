@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { reconcileExclusiveSession } from "./lib/session";
+import "./i18n/setup";
 import "./index.css";
 
 const rootEl = document.getElementById("root");

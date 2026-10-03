@@ -46,7 +46,9 @@ Do **not** add `NSAllowsArbitraryLoads` to Info.plist.
 ## App Store Connect listing
 
 - Age rating: educational / kids-appropriate (answer COPPA questionnaire honestly)
-- Privacy Nutrition Labels: class code + generated username + lesson progress. No analytics. No advertising.
+- Privacy Nutrition Labels: class code + generated username + lesson progress + a short per-student history of diagnosis results (misconception type, planet, timestamp). No analytics. No advertising. Language choice and number style stay on the device only.
+- Supported languages: English, Simplified Chinese, Hindi, Spanish, and Modern Standard Arabic. Listing text should be localized for those storefronts. Translations in the app are not professionally reviewed.
+- iOS print uses UIPrintInteractionController. Test Print / Save as PDF from a class briefing on a Mac in Xcode before submission.
 - Support URL: deployed `/support`
 - Privacy Policy URL: deployed `/privacy-policy`
 - Screenshots: iPhone + iPad of Home, Join, Planets, a lesson, Teacher dashboard, Settings / delete account

@@ -15,8 +15,28 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['IBM Plex Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['IBM Plex Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: [
+          'ui-sans-serif',
+          'system-ui',
+          'PingFang SC',
+          'Noto Sans SC',
+          'Noto Sans Devanagari',
+          'Kohinoor Devanagari',
+          'Noto Sans Arabic',
+          'Geeza Pro',
+          'sans-serif',
+        ],
+        display: [
+          'ui-sans-serif',
+          'system-ui',
+          'PingFang SC',
+          'Noto Sans SC',
+          'Noto Sans Devanagari',
+          'Kohinoor Devanagari',
+          'Noto Sans Arabic',
+          'Geeza Pro',
+          'sans-serif',
+        ],
       },
       colors: {
         border: "hsl(var(--border))",

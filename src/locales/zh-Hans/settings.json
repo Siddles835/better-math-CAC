@@ -1,0 +1,14 @@
+{
+  "title": "设置",
+  "languageHelp": "这个选择只留在这台设备上，不会发给班级。",
+  "numberHelp": "这只改变数字的样子。数学本身不变。",
+  "deleteStudent": "删除我的学生账号",
+  "deleteClass": "删除这个班级",
+  "intro": "隐私、账号和班级控制。MathLift 不会把学生数据用于广告。",
+  "backHome": "返回 MathLift",
+  "signedStudent": "已作为学生登录",
+  "signedTeacher": "已作为老师登录",
+  "signOut": "退出",
+  "deleteAccount": "删除我的账号",
+  "deleteClassButton": "删除这个班级"
+}

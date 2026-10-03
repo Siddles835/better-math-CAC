@@ -8,6 +8,7 @@
 export type TextSize = 'normal' | 'large' | 'xlarge';
 export type AnswerMethod = 'any' | 'type' | 'choose' | 'draw';
 export type Pacing = 'normal' | 'relaxed';
+export type NumberStyle = 'western' | 'eastern' | 'devanagari';
 
 export interface AccessibilityPrefs {
   textSize: TextSize;
@@ -23,6 +24,7 @@ export interface AccessibilityPrefs {
   biggerButtons: boolean;
   answerMethod: AnswerMethod;
   pacing: Pacing;
+  numberStyle: NumberStyle;
   breaks: boolean;
   summaryFirst: boolean;
   workedExampleFirst: boolean;
@@ -42,6 +44,7 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   biggerButtons: false,
   answerMethod: 'any',
   pacing: 'normal',
+  numberStyle: 'western',
   breaks: false,
   summaryFirst: false,
   workedExampleFirst: false,

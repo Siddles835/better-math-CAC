@@ -121,10 +121,14 @@ const AdditionJupiter: React.FC = () => {
               {mcqOptions.map((option) => (
                 <Button
                   key={option}
-                  onClick={() => !mcqChecked && setMcqSelected(option)}
+                  onClick={() => {
+                    if (mcqChecked && mcqSelected === mcqAnswer) return;
+                    setMcqSelected(option);
+                    if (mcqChecked) setMcqChecked(false);
+                  }}
                   variant={
                     mcqChecked
-                      ? option === mcqAnswer
+                      ? mcqSelected === mcqAnswer && option === mcqAnswer
                         ? 'default'
                         : option === mcqSelected
                         ? 'destructive'
@@ -134,11 +138,11 @@ const AdditionJupiter: React.FC = () => {
                       : 'outline'
                   }
                   className={`text-2xl py-8 transition-all duration-500 ${
-                    mcqChecked && option === mcqAnswer
+                    mcqChecked && mcqSelected === mcqAnswer && option === mcqAnswer
                       ? 'bg-success hover:bg-success'
                       : ''
                   }`}
-                  disabled={mcqChecked}
+                  disabled={mcqChecked && mcqSelected === mcqAnswer}
                 >
                   {option}
                 </Button>
@@ -158,9 +162,7 @@ const AdditionJupiter: React.FC = () => {
                 }`}>
                   {mcqSelected === mcqAnswer
                     ? 'Great!'
-                    : wrongAttempts >= 2
-                      ? `The answer is ${mcqAnswer}`
-                      : "Let's practice with pencils!"}
+                    : 'Try adding one more group in your head, then pick again'}
                 </p>
                 {mcqSelected !== mcqAnswer ? (
                   <Button variant="outline" size="lg" onClick={resetMcq}>

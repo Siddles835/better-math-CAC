@@ -1,0 +1,13 @@
+{
+  "tooSmall": "I couldn't read that one. Try drawing it a little bigger.",
+  "tooFew": "I couldn't read that one. Try a slower, fuller number.",
+  "oneAtATime": "I couldn't read that one. Try one number at a time.",
+  "countAgain": "Count them again, one at a time.",
+  "tryAdding": "Try adding one more.",
+  "lookStory": "Look at the story again.",
+  "sunPrompt": "Write how many apples you have.",
+  "earthPrompt": "Write how many pencils you have.",
+  "stepBuild": "Step 1: Build the equation",
+  "stepSolve": "Step 2: Solve it",
+  "questionOf": "{{current}} of {{total}}"
+}

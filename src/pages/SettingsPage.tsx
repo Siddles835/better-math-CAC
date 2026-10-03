@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguagePicker from '@/components/LanguagePicker';
+import { useAccessibility } from '@/context/AccessibilityContext';
+import { isAppLang } from '@/lib/cognition/readingTime';
+import { numberStylesFor, type NumberStyle } from '@/lib/i18n/language';
 import {
   clearActiveStudent,
   clearActiveTeacher,
@@ -18,7 +23,11 @@ import AccessibilityPanel from '@/components/AccessibilityPanel';
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
 
 const SettingsPage: React.FC = () => {
+  const { t, i18n } = useTranslation(['settings', 'common']);
+  const { prefs, setPref } = useAccessibility();
   const navigate = useNavigate();
+  const lang = isAppLang(i18n.language) ? i18n.language : 'en';
+  const styles = numberStylesFor(lang);
   const [student, setStudent] = useState<ActiveStudent | null>(null);
   const [teacher, setTeacher] = useState<ActiveTeacher | null>(null);
   const [busy, setBusy] = useState(false);
@@ -87,12 +96,45 @@ const SettingsPage: React.FC = () => {
     <div className="min-h-screen bg-background subtle-stars text-foreground pb-[max(2rem,env(safe-area-inset-bottom))]">
       <main className="mx-auto max-w-lg px-6 py-10 animate-fade-in">
         <Link to="/" className="text-sm font-medium text-primary hover:underline">
-          Back to MathLift
+          {t('settings:backHome')}
         </Link>
-        <h1 className="text-3xl font-semibold mb-2 mt-6">Settings</h1>
-        <p className="text-muted-foreground mb-8">
-          Privacy, account, and classroom controls. MathLift never uses student data for ads.
-        </p>
+        <h1 className="text-3xl font-semibold mb-2 mt-6">{t('settings:title')}</h1>
+        <p className="text-muted-foreground mb-8">{t('settings:intro')}</p>
+
+        <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5">
+          <h2 className="text-lg font-semibold mb-2">{t('common:language')}</h2>
+          <p className="text-sm text-muted-foreground mb-3">{t('settings:languageHelp')}</p>
+          <LanguagePicker />
+          {styles.length > 1 && (
+            <div className="mt-5">
+              <h3 className="text-base font-semibold mb-2">{t('common:numberStyle')}</h3>
+              <p className="text-sm text-muted-foreground mb-3">{t('settings:numberHelp')}</p>
+              <div className="flex flex-wrap gap-2" role="group" aria-label={t('common:numberStyle')}>
+                {styles.map((style) => (
+                  <button
+                    key={style}
+                    type="button"
+                    aria-pressed={prefs.numberStyle === style}
+                    onClick={() => setPref('numberStyle', style as NumberStyle)}
+                    className={`min-h-11 px-3 py-2 rounded-xl text-sm font-semibold border ${
+                      prefs.numberStyle === style
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background border-border'
+                    }`}
+                  >
+                    {t(
+                      style === 'eastern'
+                        ? 'common:numberEastern'
+                        : style === 'devanagari'
+                          ? 'common:numberDevanagari'
+                          : 'common:numberWestern'
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
 
         <section className="mb-8 rounded-2xl border border-border bg-card/60 p-5">
           <h2 className="text-xl font-semibold mb-1">Learning preferences</h2>

@@ -13,8 +13,10 @@ import {
 } from '@/lib/planets';
 import { Button } from '@/components/ui/button';
 import ClassBriefing from '@/components/ClassBriefing';
+import ClassTrends from '@/components/ClassTrends';
 import FamilyNote from '@/components/FamilyNote';
 import { MISCONCEPTION_LABEL, TEACHER_LINE } from '@/lib/cognition';
+import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
 
 const TeacherDashboard: React.FC = () => {
   const params = useParams();
@@ -33,8 +35,13 @@ const TeacherDashboard: React.FC = () => {
     null
   );
 
+  const sample = classCode.toUpperCase() === SAMPLE_CLASS_CODE;
+
   useEffect(() => {
-    if (!classCode) return;
+    if (!classCode || sample) {
+      setLoading(false);
+      return;
+    }
 
     const existing = getActiveTeacher();
     setActiveTeacher({
@@ -64,7 +71,7 @@ const TeacherDashboard: React.FC = () => {
     );
 
     return () => unsubscribe();
-  }, [classCode]);
+  }, [classCode, sample]);
 
   if (!classCode) {
     return (
@@ -123,7 +130,11 @@ const TeacherDashboard: React.FC = () => {
     }
   };
 
-  const students = cls?.students ? Object.entries(cls.students) : [];
+  const students = sample
+    ? SAMPLE_STUDENTS.map((student) => [student.nickname, student] as const)
+    : cls?.students
+      ? Object.entries(cls.students)
+      : [];
   const roster = students.map(([, s]) => s);
   const earlyWarnings = students
     .map(([, s]) => ({ name: s.nickname, warning: s.lastDiagnosis?.earlyWarning }))
@@ -134,7 +145,14 @@ const TeacherDashboard: React.FC = () => {
       <div className="max-w-5xl mx-auto animate-fade-in">
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-semibold text-foreground">Class {classCode}</h1>
+            <h1 className="text-3xl font-semibold text-foreground">
+              {sample ? 'Sample class' : `Class ${classCode}`}
+            </h1>
+            {sample && (
+              <p className="mt-2 text-sm font-medium text-amber-200">
+                Sample data. These space names are examples for reviewers, not a real classroom.
+              </p>
+            )}
             <p className="text-muted-foreground mt-1">
               Share this code with students so they can join.
             </p>
@@ -155,7 +173,7 @@ const TeacherDashboard: React.FC = () => {
                 Methods
               </button>
             </p>
-            {teacherPin && (
+            {teacherPin && !sample && (
               <p className="text-sm text-sky-300 mt-1">
                 Teacher PIN: <span className="font-semibold tracking-widest">{teacherPin}</span>
                 {' '}(keep private)
@@ -163,6 +181,14 @@ const TeacherDashboard: React.FC = () => {
             )}
           </div>
           <div className="flex flex-wrap gap-2 print:hidden">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate(`/teacher/${classCode}/print`)}
+              className="min-h-[48px]"
+            >
+              Print / Save as PDF
+            </Button>
             <AuthNavButton onClick={handleBack} />
             <Button
               type="button"
@@ -192,7 +218,7 @@ const TeacherDashboard: React.FC = () => {
             <select
               value={defaultPlanet}
               onChange={(e) => handleDefaultChange(e.target.value)}
-              disabled={savingDefault || !!loadError}
+              disabled={savingDefault || !!loadError || sample}
               className="border border-border rounded-xl px-3 py-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px]"
             >
               <option value="sun">Sun</option>
@@ -216,6 +242,7 @@ const TeacherDashboard: React.FC = () => {
           </div>
         </section>
 
+        <ClassTrends students={roster} sample={sample} />
         {students.length > 0 && (
           <>
             <ClassBriefing students={roster} />

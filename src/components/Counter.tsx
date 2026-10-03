@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { useAccessibility } from '@/context/AccessibilityContext';
+import { formatNumberDisplay } from '@/lib/i18n/language';
 import { speak } from '@/lib/speech';
 
 interface CounterProps {
@@ -8,6 +10,7 @@ interface CounterProps {
 }
 
 const Counter: React.FC<CounterProps> = ({ count, label, className = '' }) => {
+  const { prefs } = useAccessibility();
   const prevCount = useRef(count);
 
   useEffect(() => {
@@ -24,8 +27,8 @@ const Counter: React.FC<CounterProps> = ({ count, label, className = '' }) => {
         <span className="text-sm text-muted-foreground mb-1">{label}</span>
       )}
       <div className="bg-card border border-border rounded-xl px-6 py-3 min-w-[80px] text-center">
-        <span className="text-3xl font-semibold text-foreground animate-count-pop" key={count}>
-          {count}
+        <span className="text-3xl font-semibold text-foreground animate-count-pop" dir="ltr" key={count}>
+          {formatNumberDisplay(count, prefs.numberStyle)}
         </span>
       </div>
     </div>

@@ -1,0 +1,13 @@
+{
+  "tooSmall": "我没看清。试着画得再大一点。",
+  "tooFew": "我没看清。试着慢一点，把数字写完整。",
+  "oneAtATime": "我没看清。一次只写一个数字。",
+  "countAgain": "再一个一个数一遍。",
+  "tryAdding": "试着再加一个。",
+  "lookStory": "再看一遍故事。",
+  "sunPrompt": "写下你有多少个苹果。",
+  "earthPrompt": "写下你有多少支铅笔。",
+  "stepBuild": "第1步：摆出算式",
+  "stepSolve": "第2步：算出答案",
+  "questionOf": "第 {{current}} 题，共 {{total}} 题"
+}

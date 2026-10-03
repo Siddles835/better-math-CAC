@@ -1,0 +1,17 @@
+{
+  "progress": "Progreso",
+  "progressHelp": "Cada estudiante cuenta una vez por tramo, con su última revisión. Si se saltó un tramo, se arrastra el resultado anterior.",
+  "resolved": "Resueltos este mes",
+  "resolvedEmpty": "Nadie tiene todavía dos sesiones estables después de una señal este mes.",
+  "emptyTrends": "Las tendencias aparecen cuando los estudiantes han jugado en 2 días o más.",
+  "byStudent": "Por estudiante",
+  "noSessions": "Todavía no hay sesiones.",
+  "sampleBanner": "Datos de ejemplo. Estos nombres espaciales son ejemplos para revisores, no una clase real.",
+  "showTable": "Mostrar tabla",
+  "hideTable": "Ocultar tabla",
+  "carried": "{{count}} se arrastraron desde un tramo anterior.",
+  "students_one": "{{count}} estudiante",
+  "students_other": "{{count}} estudiantes",
+  "steadyFor_one": "ahora estable por {{count}} sesión.",
+  "steadyFor_other": "ahora estable por {{count}} sesiones."
+}

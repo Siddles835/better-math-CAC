@@ -1,0 +1,13 @@
+{
+  "tooSmall": "No pude leer ese. Intenta dibujarlo un poco más grande.",
+  "tooFew": "No pude leer ese. Prueba más despacio y con el número completo.",
+  "oneAtATime": "No pude leer ese. Prueba un número a la vez.",
+  "countAgain": "Cuéntalos otra vez, de uno en uno.",
+  "tryAdding": "Prueba a agregar uno más.",
+  "lookStory": "Mira la historia otra vez.",
+  "sunPrompt": "Escribe cuántas manzanas tienes.",
+  "earthPrompt": "Escribe cuántos lápices tienes.",
+  "stepBuild": "Paso 1: Arma la ecuación",
+  "stepSolve": "Paso 2: Resuélvela",
+  "questionOf": "{{current}} de {{total}}"
+}

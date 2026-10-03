@@ -12,6 +12,7 @@
 //
 
 import SwiftUI
+import UIKit
 import WebKit
 import Network
 import Combine
@@ -593,6 +594,11 @@ private struct MathLiftWebView: UIViewRepresentable {
                         self.playHaptic(style)
                     }
                     return
+                case "print":
+                    DispatchQueue.main.async {
+                        self.presentPrint()
+                    }
+                    return
                 default:
                     return
                 }
@@ -603,6 +609,16 @@ private struct MathLiftWebView: UIViewRepresentable {
                     self.playHaptic(body)
                 }
             }
+        }
+
+        /// Uses the web view's print formatter. Must be tested on a Mac in Xcode.
+        private func presentPrint() {
+            guard let webView else { return }
+            let controller = UIPrintInteractionController.shared
+            let formatter = webView.viewPrintFormatter()
+            formatter.perPageContentInsets = UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)
+            controller.printFormatter = formatter
+            controller.present(animated: true, completionHandler: nil)
         }
 
         private func playHaptic(_ style: String) {

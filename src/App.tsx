@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -35,8 +35,12 @@ import HowItWorksPage from "./pages/HowItWorksPage";
 import MethodsPage from "./pages/MethodsPage";
 import ClassroomWalkthroughPage from "./pages/ClassroomWalkthroughPage";
 import PersonalPracticePage from "./pages/PersonalPracticePage";
+import PrintBriefingPage from "./pages/PrintBriefingPage";
 
 const queryClient = new QueryClient();
+const DigitCollectPage = import.meta.env.DEV
+  ? lazy(() => import("./pages/DigitCollectPage"))
+  : null;
 
 const lesson = (element: ReactNode) => (
   <RequireStudentSession>{element}</RequireStudentSession>
@@ -55,6 +59,16 @@ const App = () => (
             <NativeShellBridge />
             <Routes>
               <Route path="/" element={<HomePage />} />
+              {DigitCollectPage && (
+                <Route
+                  path="/dev/digits"
+                  element={
+                    <Suspense fallback={null}>
+                      <DigitCollectPage />
+                    </Suspense>
+                  }
+                />
+              )}
               <Route path="/cookie-policy" element={<CookiePolicyPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/support" element={<SupportPage />} />
@@ -71,6 +85,7 @@ const App = () => (
               <Route path="/student-login" element={<StudentLoginPage />} />
               <Route path="/teacher-register" element={<TeacherRegisterPage />} />
               <Route path="/teacher-login" element={<TeacherLoginPage />} />
+              <Route path="/teacher/:classCode/print" element={<PrintBriefingPage />} />
               <Route path="/teacher/*" element={<TeacherDashboard />} />
               <Route path="/lesson/counting/sun" element={lesson(<CountingSun />)} />
               <Route path="/lesson/counting/mercury" element={lesson(<CountingMercury />)} />

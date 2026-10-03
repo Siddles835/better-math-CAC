@@ -98,8 +98,8 @@ export const diagnoseFeatures = (
   };
 };
 
-export const diagnoseTrace = (planet: PlanetId, trace: LessonTrace): Diagnosis => {
-  return diagnoseFeatures(planet, extractFeatures(planet, trace));
+export const diagnoseTrace = (planet: PlanetId, trace: LessonTrace, lang = 'en'): Diagnosis => {
+  return diagnoseFeatures(planet, extractFeatures(planet, trace, lang));
 };
 
 const lessonCodeFor = (planet: PlanetId): LessonCode => {

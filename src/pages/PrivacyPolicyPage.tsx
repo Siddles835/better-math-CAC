@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LegalLanguageNotice from '@/components/LegalLanguageNotice';
 
 const COMPANY_NAME = 'MathLift';
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
-const LAST_UPDATED = 'September 5, 2026';
+const LAST_UPDATED = 'October 3, 2026';
 const WEBSITE_URL = 'https://better-math-lalith.vercel.app';
 
 const PrivacyPolicyPage: React.FC = () => {
+  const { t, i18n } = useTranslation('legal');
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <header className="border-b border-slate-200 bg-white sticky top-0 z-10">
@@ -21,6 +24,10 @@ const PrivacyPolicyPage: React.FC = () => {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-10 space-y-8">
+        <LegalLanguageNotice />
+        {i18n.language !== 'en' && (
+          <p className="text-[15px] leading-relaxed text-slate-700">{t('privacyLead')}</p>
+        )}
         <div>
           <h1 className="text-3xl font-semibold text-slate-900 mb-2">Privacy Policy</h1>
           <p className="text-sm text-slate-500">Last updated {LAST_UPDATED}</p>
@@ -101,6 +108,16 @@ const PrivacyPolicyPage: React.FC = () => {
                   <td className="py-2 pr-3">Student</td>
                   <td className="py-2 pr-3">Computed on the device after a checked activity or quiz</td>
                   <td className="py-2">Give the teacher a short briefing. Drawings and raw tap traces are not uploaded.</td>
+                </tr>
+                <tr className="border-b border-slate-100">
+                  <td className="py-2 pr-3">
+                    Short history of diagnosis results (misconception type, planet, and timestamp, up to 40 per student)
+                  </td>
+                  <td className="py-2 pr-3">Student</td>
+                  <td className="py-2 pr-3">Saved with the thinking summary when a new result is recorded</td>
+                  <td className="py-2">
+                    Show the teacher which patterns are shrinking. Kept and deleted with the rest of that student&apos;s progress.
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 pr-3">Class start planet</td>

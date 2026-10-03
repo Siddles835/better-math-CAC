@@ -1,4 +1,5 @@
 import { getLessonForPlanet, getPlanetIndex, type PlanetId } from '@/lib/planets';
+import { normalizeReadingSeconds } from './readingTime';
 import type { CognitionFeatures, LessonCode } from './types';
 import type { LessonTrace } from './trace';
 
@@ -16,7 +17,11 @@ const std = (values: number[]): number => {
   return Math.sqrt(varSum);
 };
 
-export const extractFeatures = (planet: PlanetId, trace: LessonTrace): CognitionFeatures => {
+export const extractFeatures = (
+  planet: PlanetId,
+  trace: LessonTrace,
+  lang = 'en'
+): CognitionFeatures => {
   const events = trace.events;
   const taps = events.filter((e) => e.kind === 'tap');
   const gaps: number[] = [];
@@ -39,13 +44,16 @@ export const extractFeatures = (planet: PlanetId, trace: LessonTrace): Cognition
       : 0;
 
   const digit = 'digit' in trace ? trace.digit : null;
-  const drawMatch = digit && target > 0 && digit.digit === target ? 1 : 0;
+  const readable = digit && digit.status !== 'unreadable' ? digit : null;
+  const drawMatch = readable && target > 0 && readable.digit === target ? 1 : 0;
+  const rawFirst = trace.timeToFirstSec();
+  const rawGap = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
 
   return {
     planetIndex: getPlanetIndex(planet),
     lessonCode: lessonCodeFor(planet),
-    timeToFirst: Math.min(30, Number(trace.timeToFirstSec().toFixed(2))),
-    avgGap: gaps.length ? Number((gaps.reduce((a, b) => a + b, 0) / gaps.length).toFixed(2)) : 0,
+    timeToFirst: Math.min(30, Number(normalizeReadingSeconds(rawFirst, lang).toFixed(2))),
+    avgGap: Number(normalizeReadingSeconds(rawGap, lang).toFixed(2)),
     gapStd: Number(std(gaps).toFixed(2)),
     tapCount: taps.length,
     removeCount: events.filter((e) => e.kind === 'remove').length,
@@ -54,8 +62,8 @@ export const extractFeatures = (planet: PlanetId, trace: LessonTrace): Cognition
     undershoot,
     correct,
     drawMatch,
-    drawReversal: digit?.reversal ? 1 : 0,
-    drawConfidence: digit ? Number(digit.confidence.toFixed(2)) : 0,
+    drawReversal: readable?.reversal ? 1 : 0,
+    drawConfidence: readable ? Number(readable.confidence.toFixed(2)) : 0,
     equationSwap: 'equationSwap' in trace ? trace.equationSwap : 0,
     restartFromOne,
   };

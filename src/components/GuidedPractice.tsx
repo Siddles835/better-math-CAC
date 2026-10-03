@@ -38,16 +38,16 @@ const GuidedPractice: React.FC<GuidedPracticeProps> = ({
 
   const instruction = useMemo(() => {
     if (lessonType === 'counting') {
-      return `Let's count together! Tap each empty pencil to fill it. We need ${num1}.`;
+      return "Let's count together. Tap each empty pencil, one at a time.";
     }
     if (lessonType === 'addition') {
       if (phase === 'first') {
-        return `Set up the equation. First tap to show ${num1} pencil${num1 === 1 ? '' : 's'}.`;
+        return 'Tap each pencil in the first group.';
       }
-      return `Great! Now tap to add ${num2} more pencil${num2 === 1 ? '' : 's'} to match ${num1} + ${num2}.`;
+      return 'Now tap each pencil in the next group.';
     }
-    return `Set up the equation ${num1} − ${num2}. Tap ${num2} pencil${num2 === 1 ? '' : 's'} to take away.`;
-  }, [lessonType, num1, num2, phase]);
+    return 'Tap pencils to take some away, one at a time.';
+  }, [lessonType, phase]);
 
   const isDone =
     lessonType === 'counting'
@@ -70,7 +70,7 @@ const GuidedPractice: React.FC<GuidedPracticeProps> = ({
       const next = secondFilled + 1;
       hapticTap();
       setSecondFilled(next);
-      speak(String(lessonType === 'counting' ? next : num1 + next));
+      speak(String(next));
     }
   };
 
@@ -168,8 +168,10 @@ const GuidedPractice: React.FC<GuidedPracticeProps> = ({
               </div>
             </div>
             <p className="text-3xl font-bold text-primary mb-6" aria-live="polite">
-              {firstFilled} + {secondFilled}
-              {isDone ? ` = ${num1 + num2}` : ''}
+              <span dir="ltr">
+                {firstFilled} + {secondFilled}
+                {isDone ? ` = ${num1 + num2}` : ''}
+              </span>
             </p>
           </>
         )}
@@ -204,9 +206,11 @@ const GuidedPractice: React.FC<GuidedPracticeProps> = ({
               ))}
             </div>
             <p className="text-3xl font-bold text-primary mb-6" aria-live="polite">
-              {crossedCount < num2
-                ? `Took away ${crossedCount} of ${num2}`
-                : `${num1} − ${num2} = ${num1 - num2}`}
+              {crossedCount < num2 ? (
+                <span dir="ltr">{`Took away ${crossedCount}`}</span>
+              ) : (
+                <span dir="ltr">{`${num1} - ${num2} = ${num1 - num2}`}</span>
+              )}
             </p>
           </>
         )}
