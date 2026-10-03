@@ -54,6 +54,10 @@ export function useLessonStep(planetId: PlanetId) {
       }
 
       setReady(true);
+    }).catch((err) => {
+      // if the user is offline the app still saves it
+      console.error('Could not load saved lesson step:', err);
+      if (!cancelled) setReady(true);
     });
 
     return () => {
