@@ -94,6 +94,15 @@ const SettingsPage: React.FC = () => {
           Privacy, account, and classroom controls. MathLift never uses student data for ads.
         </p>
 
+        <section className="mb-8 rounded-2xl border border-border bg-card/60 p-5">
+          <h2 className="text-xl font-semibold mb-1">Learning preferences</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Choose how lessons are shown, read, and answered. Everyone learns the same maths —
+            these settings only change how it reaches you. You can change them any time.
+          </p>
+          <AccessibilityPanel />
+        </section>
+
         {student && (
           <section className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
             <p className="text-sm text-emerald-200/80">Signed in as student</p>
