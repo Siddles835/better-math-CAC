@@ -5,6 +5,16 @@ const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
 let voicesPrimed = false;
 let speakTimer: ReturnType<typeof setTimeout> | null = null;
 
+let speechMuted = false;
+
+/** Student preference: when muted, nothing is spoken (text stays on screen). */
+export const setSpeechMuted = (muted: boolean) => {
+  speechMuted = muted;
+  if (muted) stopSpeaking();
+};
+
+export const isSpeechMuted = () => speechMuted;
+
 export const isSpeechSupported = () =>
   typeof window !== 'undefined' && 'speechSynthesis' in window;
 
