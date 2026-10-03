@@ -1,6 +1,7 @@
 import { PLANET_META, type PlanetId } from '@/lib/planets';
 import type { StudentState } from '@/lib/classroom';
-import { MISCONCEPTION_LABEL, NEXT_PLANET, PRACTICE_TITLE, TEACHER_LINE } from './catalog';
+import i18n from '@/i18n/setup';
+import { misconceptionLabel, NEXT_PLANET, practiceTitleFor, teacherLineFor } from './catalog';
 import type { MisconceptionCode } from './types';
 
 export interface BriefingAction {
@@ -53,10 +54,10 @@ export const buildClassBriefing = (students: StudentState[]): ClassBriefing => {
       const planet = NEXT_PLANET[code];
       return {
         code,
-        title: PRACTICE_TITLE[code],
-        detail: TEACHER_LINE[code],
+        title: practiceTitleFor(code),
+        detail: teacherLineFor(code),
         planet,
-        planetName: PLANET_META[planet].name,
+        planetName: i18n.t(`ui:planet_${planet}`),
         students: groups.get(code) ?? [],
       };
     })
@@ -73,17 +74,11 @@ export const buildClassBriefing = (students: StudentState[]): ClassBriefing => {
 };
 
 export const briefingHeadline = (briefing: ClassBriefing): string => {
-  if (briefing.total === 0) return 'No students have joined yet.';
-  if (briefing.withSignal === 0) {
-    return 'Students have joined. Signals appear after a checked activity or quiz.';
-  }
-  if (briefing.actions.length === 0) {
-    return 'The class is on track. Keep the current unlock planet.';
-  }
+  if (briefing.total === 0) return i18n.t('ui:briefEmpty');
+  if (briefing.withSignal === 0) return i18n.t('ui:briefWaiting');
+  if (briefing.actions.length === 0) return i18n.t('ui:briefOnTrack');
   const first = briefing.actions[0];
-  const n = first.students.length;
-  const verb = n === 1 ? 'needs' : 'need';
-  return `${n} student${n === 1 ? '' : 's'} ${verb} practice with ${MISCONCEPTION_LABEL[first.code].toLowerCase()}.`;
+  return i18n.t('ui:briefNeed', { count: first.students.length, pattern: misconceptionLabel(first.code) });
 };
 
 export const briefingToText = (briefing: ClassBriefing): string => {
@@ -102,7 +97,7 @@ export const briefingToText = (briefing: ClassBriefing): string => {
       lines.push(
         '',
         action.title,
-        `${action.planetName} · ${MISCONCEPTION_LABEL[action.code]}`,
+        `${action.planetName} · ${misconceptionLabel(action.code)}`,
         action.detail,
         action.students.join(', ')
       );

@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
@@ -15,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import ClassBriefing from '@/components/ClassBriefing';
 import ClassTrends from '@/components/ClassTrends';
 import FamilyNote from '@/components/FamilyNote';
-import { MISCONCEPTION_LABEL, TEACHER_LINE } from '@/lib/cognition';
+import { misconceptionLabel, teacherLineFor } from '@/lib/cognition';
 import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
 
 const TeacherDashboard: React.FC = () => {
@@ -76,7 +77,7 @@ const TeacherDashboard: React.FC = () => {
   if (!classCode) {
     return (
       <div className="min-h-screen bg-background subtle-stars flex items-center justify-center p-8">
-        <p className="text-xl text-foreground">No class code provided</p>
+        <p className="text-xl text-foreground">{tx('ui:s_03e7ac66cf')}</p>
       </div>
     );
   }
@@ -118,7 +119,7 @@ const TeacherDashboard: React.FC = () => {
     try {
       const removed = await deleteStudent(classCode, studentKey);
       if (!removed) {
-        setRemoveError(`Could not remove ${nickname}. They may already be gone — refresh and try again.`);
+        setRemoveError(tx('ui:removeFailed', { name: nickname }));
         return;
       }
       setPendingRemove(null);
@@ -149,33 +150,24 @@ const TeacherDashboard: React.FC = () => {
               {sample ? 'Sample class' : `Class ${classCode}`}
             </h1>
             {sample && (
-              <p className="mt-2 text-sm font-medium text-amber-200">
-                Sample data. These space names are examples for reviewers, not a real classroom.
-              </p>
+              <p className="mt-2 text-sm font-medium text-amber-200">{tx('ui:s_90999c1939')}</p>
             )}
-            <p className="text-muted-foreground mt-1">
-              Share this code with students so they can join.
-            </p>
+            <p className="text-muted-foreground mt-1">{tx('ui:s_d179dda4c4')}</p>
             <p className="text-sm text-muted-foreground mt-1 print:hidden">
               <button
                 type="button"
                 onClick={() => navigate('/how-it-works')}
                 className="underline underline-offset-2 hover:text-foreground"
-              >
-                How it works
-              </button>
+              >{tx('ui:s_1dd6a17cb4')}</button>
               {' · '}
               <button
                 type="button"
                 onClick={() => navigate('/methods')}
                 className="underline underline-offset-2 hover:text-foreground"
-              >
-                Methods
-              </button>
+              >{tx('ui:s_7e4ac6803c')}</button>
             </p>
             {teacherPin && !sample && (
-              <p className="text-sm text-sky-300 mt-1">
-                Teacher PIN: <span className="font-semibold tracking-widest">{teacherPin}</span>
+              <p className="text-sm text-sky-300 mt-1">{tx('ui:s_d3f6dc1626')}<span className="font-semibold tracking-widest">{teacherPin}</span>
                 {' '}(keep private)
               </p>
             )}
@@ -186,9 +178,7 @@ const TeacherDashboard: React.FC = () => {
               variant="outline"
               onClick={() => navigate(`/teacher/${classCode}/print`)}
               className="min-h-[48px]"
-            >
-              Print / Save as PDF
-            </Button>
+            >{tx('ui:s_e39c15d303')}</Button>
             <AuthNavButton onClick={handleBack} />
             <Button
               type="button"
@@ -197,7 +187,7 @@ const TeacherDashboard: React.FC = () => {
               className="inline-flex items-center gap-2 border-border bg-card text-foreground hover:bg-muted shadow-sm min-h-[48px]"
             >
               <LogOut className="h-5 w-5 shrink-0 text-foreground" strokeWidth={2.25} aria-hidden />
-              <span>Sign Out</span>
+              <span>{tx('ui:s_61fd08ff5c')}</span>
             </Button>
           </div>
         </div>
@@ -209,11 +199,8 @@ const TeacherDashboard: React.FC = () => {
         )}
 
         <section className="mb-8 bg-card/95 p-6 rounded-2xl border border-border print:hidden">
-          <h2 className="text-xl font-semibold mb-2">Starting planet</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Students begin at this planet. Raising it updates the roster live so you see where each
-            student currently is.
-          </p>
+          <h2 className="text-xl font-semibold mb-2">{tx('ui:s_8d52e3c61c')}</h2>
+          <p className="text-sm text-muted-foreground mb-4">{tx('ui:s_97cd0e54d7')}</p>
           <div className="flex flex-wrap gap-4 items-center">
             <select
               value={defaultPlanet}
@@ -222,21 +209,21 @@ const TeacherDashboard: React.FC = () => {
               className="border border-border rounded-xl px-3 py-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px]"
             >
               <option value="sun">Sun</option>
-              <option value="mercury">Mercury</option>
-              <option value="venus">Venus</option>
-              <option value="earth">Earth</option>
-              <option value="mars">Mars</option>
-              <option value="jupiter">Jupiter</option>
-              <option value="saturn">Saturn</option>
-              <option value="uranus">Uranus</option>
-              <option value="neptune">Neptune</option>
+              <option value="mercury">{tx('ui:s_606cb109e2')}</option>
+              <option value="venus">{tx('ui:s_7106897246')}</option>
+              <option value="earth">{tx('ui:s_a074430f35')}</option>
+              <option value="mars">{tx('ui:s_1778011d76')}</option>
+              <option value="jupiter">{tx('ui:s_88d1577dcc')}</option>
+              <option value="saturn">{tx('ui:s_7c14ab20f3')}</option>
+              <option value="uranus">{tx('ui:s_e4458dd128')}</option>
+              <option value="neptune">{tx('ui:s_125186d5ff')}</option>
             </select>
             <span className="text-sm font-medium text-sky-300 capitalize px-2">
               Lesson: {derivedLesson}
             </span>
-            {savingDefault && <span className="text-sm text-muted-foreground">Saving…</span>}
+            {savingDefault && <span className="text-sm text-muted-foreground">{tx('ui:s_56a2285c5b')}</span>}
             {defaultSaved && !savingDefault && (
-              <span className="text-sm text-emerald-400 font-medium">Saved</span>
+              <span className="text-sm text-emerald-400 font-medium">{tx('ui:s_c0ae8f6ea8')}</span>
             )}
             {saveError && <span className="text-sm text-destructive">{saveError}</span>}
           </div>
@@ -248,7 +235,7 @@ const TeacherDashboard: React.FC = () => {
             <ClassBriefing students={roster} />
             {earlyWarnings.length > 0 && (
               <section className="mb-8 rounded-2xl border border-border bg-card/95 p-6 print:break-inside-avoid">
-                <h2 className="text-xl font-semibold mb-3">Watch before the next unit</h2>
+                <h2 className="text-xl font-semibold mb-3">{tx('ui:s_970e3adc92')}</h2>
                 <div className="space-y-2">
                   {earlyWarnings.map((row) => (
                     <p key={row.name} className="text-sm text-muted-foreground">
@@ -262,22 +249,18 @@ const TeacherDashboard: React.FC = () => {
         )}
 
         <section className="bg-card/95 p-6 rounded-2xl border border-border">
-          <h2 className="text-xl font-semibold mb-4">Roster</h2>
+          <h2 className="text-xl font-semibold mb-4">{tx('ui:s_e55198aca4')}</h2>
           {removeError && <p className="mb-3 text-sm text-destructive">{removeError}</p>}
           {loading ? (
-            <div className="p-4 text-muted-foreground rounded-xl text-center border border-dashed border-border">
-              Loading students…
-            </div>
+            <div className="p-4 text-muted-foreground rounded-xl text-center border border-dashed border-border">{tx('ui:s_522ba51bcc')}</div>
           ) : students.length === 0 ? (
             <div className="p-4 text-muted-foreground rounded-xl text-center border border-dashed border-border">
-              No students have joined this class yet. Have them open MathLift → Join Class and enter{' '}
-              <strong className="text-foreground">{classCode}</strong>.
+              {tx('ui:s_emptyroster', { code: classCode })}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {students.map(([key, s]) => {
                 const currentPlanet = getTeacherVisiblePlanet(s, classUnlock);
-                const planetName = PLANET_META[currentPlanet].name;
                 const lesson = getLessonForPlanet(currentPlanet);
                 return (
                   <div
@@ -286,14 +269,14 @@ const TeacherDashboard: React.FC = () => {
                   >
                     <div className="text-lg font-semibold text-foreground">{s.nickname}</div>
                     <div className="text-sm font-medium text-sky-300 mt-1">
-                      {planetName} — {lesson}
+                      {tx(`ui:planet_${currentPlanet}`)} · {tx(`ui:topic_${lesson}`)}
                     </div>
                     {s.lastDiagnosis && (
                       <div className="mt-2 text-sm text-muted-foreground">
                         <p className="font-medium text-foreground">
-                          {MISCONCEPTION_LABEL[s.lastDiagnosis.primary]}
+                          {misconceptionLabel(s.lastDiagnosis.primary)}
                         </p>
-                        <p className="mt-1 text-xs">{TEACHER_LINE[s.lastDiagnosis.primary]}</p>
+                        <p className="mt-1 text-xs">{teacherLineFor(s.lastDiagnosis.primary)}</p>
                       </div>
                     )}
                     {s.lastQuiz && (
@@ -337,9 +320,7 @@ const TeacherDashboard: React.FC = () => {
                               setRemoveError('');
                             }}
                             className="flex-1 min-h-[44px]"
-                          >
-                            Cancel
-                          </Button>
+                          >{tx('ui:s_77dfd2135f')}</Button>
                         </div>
                       </div>
                     ) : (
@@ -353,9 +334,7 @@ const TeacherDashboard: React.FC = () => {
                           setPendingRemove({ key, nickname: s.nickname });
                         }}
                         className="mt-3 w-full border-destructive/40 text-destructive hover:bg-destructive/10 min-h-[44px]"
-                      >
-                        Remove student
-                      </Button>
+                      >{tx('ui:s_4fb18541ef')}</Button>
                     )}
                   </div>
                 );

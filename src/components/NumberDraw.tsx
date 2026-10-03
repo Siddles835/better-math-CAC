@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { readDrawing } from '@/lib/cognition';
+import { needsConfirm, readDrawing } from '@/lib/cognition';
 import type { DigitRead, UnreadableReason } from '@/lib/cognition';
 import type { Point, Stroke } from '@/lib/cognition/strokes';
 import { useAccessibility } from '@/context/AccessibilityContext';
@@ -52,20 +52,48 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
     prefs.answerMethod === 'type' || prefs.answerMethod === 'choose'
   );
   const [typed, setTyped] = useState('');
+  const [pending, setPending] = useState<DigitRead | null>(null);
   const busy = useRef(false);
+
+  const contentBox = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const style = window.getComputedStyle(canvas);
+    const left = Number.parseFloat(style.borderLeftWidth) || 0;
+    const right = Number.parseFloat(style.borderRightWidth) || 0;
+    const top = Number.parseFloat(style.borderTopWidth) || 0;
+    const bottom = Number.parseFloat(style.borderBottomWidth) || 0;
+    return {
+      width: Math.max(1, rect.width - left - right),
+      height: Math.max(1, rect.height - top - bottom),
+      left,
+      top,
+      rect,
+    };
+  };
 
   const paintAll = useCallback((next: Stroke[]) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (!ctx || !canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const style = window.getComputedStyle(canvas);
+    const left = Number.parseFloat(style.borderLeftWidth) || 0;
+    const right = Number.parseFloat(style.borderRightWidth) || 0;
+    const top = Number.parseFloat(style.borderTopWidth) || 0;
+    const bottom = Number.parseFloat(style.borderBottomWidth) || 0;
+    const width = Math.max(1, rect.width - left - right);
+    const height = Math.max(1, rect.height - top - bottom);
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    const css = 220;
-    if (canvas.width !== Math.round(css * dpr)) {
-      canvas.width = Math.round(css * dpr);
-      canvas.height = Math.round(css * dpr);
+    const bitmapW = Math.round(width * dpr);
+    const bitmapH = Math.round(height * dpr);
+    if (canvas.width !== bitmapW || canvas.height !== bitmapH) {
+      canvas.width = bitmapW;
+      canvas.height = bitmapH;
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, css, css);
+    ctx.clearRect(0, 0, width, height);
     ctx.strokeStyle = '#e8eef8';
     ctx.lineWidth = 8;
     ctx.lineCap = 'round';
@@ -81,20 +109,35 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
 
   useEffect(() => {
     paintAll(strokesRef.current);
+    const canvas = canvasRef.current;
+    if (!canvas || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => paintAll(strokesRef.current));
+    observer.observe(canvas);
+    return () => observer.disconnect();
   }, [paintAll]);
 
   const pointFromEvent = (event: React.PointerEvent<HTMLCanvasElement>): Point | null => {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
+    const box = contentBox();
+    if (!box) return null;
+    const x = event.clientX - box.rect.left - box.left;
+    const y = event.clientY - box.rect.top - box.top;
+    if (x < -2 || y < -2 || x > box.width + 2 || y > box.height + 2) return null;
+    return { x: Math.min(box.width, Math.max(0, x)), y: Math.min(box.height, Math.max(0, y)) };
+  };
+
+  const commitStroke = (stroke: Stroke) => {
+    if (stroke.length < 2) return;
+    const next = [...strokesRef.current, stroke];
+    strokesRef.current = next;
+    setStrokes(next);
+    setPending(null);
+    onChange();
   };
 
   const onPointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (disabled) return;
+    event.preventDefault();
+    if (drawing.current) commitStroke(drawing.current);
     event.currentTarget.setPointerCapture(event.pointerId);
     const point = pointFromEvent(event);
     if (!point) return;
@@ -126,32 +169,47 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    if (drawing.current && drawing.current.length > 1) {
-      const next = [...strokesRef.current, drawing.current];
-      strokesRef.current = next;
-      setStrokes(next);
-      onChange();
-    }
+    const stroke = drawing.current;
     drawing.current = null;
+    if (stroke) commitStroke(stroke);
   };
 
   const clear = () => {
     strokesRef.current = [];
     setStrokes([]);
     drawing.current = null;
+    setPending(null);
     paintAll([]);
     onChange();
   };
 
   const submit = () => {
-    if (!checkEnabled || busy.current) return;
+    if (!checkEnabled || busy.current || pending) return;
     busy.current = true;
-    const pending = drawing.current && drawing.current.length > 1 ? [drawing.current] : [];
-    const all = [...strokesRef.current, ...pending];
-    onRead(readDrawing(all));
+    const open = drawing.current && drawing.current.length > 1 ? [drawing.current] : [];
+    const all = [...strokesRef.current, ...open];
+    const read = readDrawing(all);
+    if (needsConfirm(read)) {
+      setPending(read);
+      busy.current = false;
+      return;
+    }
+    onRead(read);
     window.setTimeout(() => {
       busy.current = false;
     }, 250);
+  };
+
+  const acceptPending = () => {
+    if (!pending) return;
+    const read = pending;
+    setPending(null);
+    onRead(read);
+  };
+
+  const rejectPending = () => {
+    setPending(null);
+    clear();
   };
 
   const submitTyped = () => {
@@ -211,20 +269,41 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
             onPointerMove={onPointerMove}
             onPointerUp={finishStroke}
             onPointerCancel={finishStroke}
-            className="w-[220px] h-[220px] rounded-2xl bg-card border-2 border-border touch-none cursor-crosshair"
+            className="w-[220px] h-[220px] max-w-full rounded-2xl bg-card border-2 border-border touch-none cursor-crosshair"
+            style={{ touchAction: 'none' }}
             role="img"
             tabIndex={0}
             aria-label={t('common:drawNumber')}
           />
+          {pending && (
+            <div className="w-full rounded-2xl border-2 border-border bg-card p-4 text-center">
+              <p className="text-2xl font-semibold mb-4" dir="ltr">
+                {t('common:didYouWrite', { digit: pending.digit })}
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button type="button" className="min-h-[56px] min-w-[96px] text-lg" onClick={acceptPending}>
+                  {t('common:yes')}
+                </Button>
+                <Button type="button" variant="outline" className="min-h-[56px] min-w-[96px] text-lg" onClick={rejectPending}>
+                  {t('common:no')}
+                </Button>
+                {onTyped && (
+                  <Button type="button" variant="outline" className="min-h-[56px]" onClick={() => { setPending(null); setTyping(true); }}>
+                    {t('common:typeIt')}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap justify-center gap-2">
             <Button type="button" variant="outline" className="min-h-[44px]" onClick={clear} disabled={disabled}>
-              {t('common:clear')}
+              {pending ? t('common:redraw') : t('common:clear')}
             </Button>
             <Button
               type="button"
               className="min-h-[44px]"
               onClick={submit}
-              disabled={disabled || !checkEnabled || strokes.length === 0}
+              disabled={disabled || !checkEnabled || strokes.length === 0 || pending !== null}
             >
               {t('common:check')}
             </Button>
@@ -249,7 +328,7 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
             value={typed}
             disabled={disabled}
             onChange={(event) => {
-              setTyped(event.target.value.replace(/[^\d]/g, '').slice(0, 2));
+              setTyped(event.target.value.replace(/[^\d]/g, '').slice(0, 3));
               onChange();
             }}
             aria-label={t('common:typeIt')}

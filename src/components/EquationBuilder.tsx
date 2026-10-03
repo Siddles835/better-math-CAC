@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -99,18 +100,14 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
   };
 
   return (
-    <div className="bg-card rounded-xl p-6 border border-border mb-6 animate-fade-in w-full max-w-lg mx-auto text-left">
+    <div className="bg-card rounded-xl p-6 border border-border mb-6 animate-fade-in w-full max-w-lg mx-auto text-start">
       <div className="flex items-center justify-between gap-3 mb-4">
-        <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
-          Step 1: Build the equation
-        </span>
+        <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">{tx('ui:s_b000371ada')}</span>
         <ReadAloudButton text={questionText} />
       </div>
 
       <p className="text-lg text-foreground mb-2">{questionText}</p>
-      <p className="text-sm text-muted-foreground mb-6">
-        Tap the numbers from the story to set up the problem first.
-      </p>
+      <p className="text-sm text-muted-foreground mb-6">{tx('ui:s_8ae19f31d7')}</p>
 
       <div className="flex items-center justify-center gap-3 mb-8">
         {slots.map((chipId, i) => (
@@ -160,27 +157,20 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
 
       {checked && correct && (
         <div className="text-center space-y-4 animate-fade-in">
-          <p className="text-xl font-semibold text-success">
-            You built the equation! <span dir="ltr">{num1} {operator} {num2} = ?</span>
+          <p className="text-xl font-semibold text-success">{tx('ui:s_4a20db053e')}<span dir="ltr">{num1} {operator} {num2} = ?</span>
           </p>
-          <Button type="button" onClick={onComplete} size="lg">
-            Now Solve It
-            <ChevronRight className="w-5 h-5 ml-1" />
+          <Button type="button" onClick={onComplete} size="lg">{tx('ui:s_895ad57fee')}<ChevronRight className="w-5 h-5 ms-1" />
           </Button>
         </div>
       )}
 
       {checked && !correct && (
         <div className="text-center space-y-4 animate-fade-in">
-          <p className="text-lg text-destructive font-semibold">Not quite! Look at the story again.</p>
+          <p className="text-lg text-destructive font-semibold">{tx('ui:s_695a304ed3')}</p>
           {attempts >= 2 && (
-            <p className="text-muted-foreground">
-              Hint: look at the story again.
-            </p>
+            <p className="text-muted-foreground">{tx('ui:s_75c60bce79')}</p>
           )}
-          <Button type="button" onClick={retry} variant="outline" size="lg">
-            Try Again
-          </Button>
+          <Button type="button" onClick={retry} variant="outline" size="lg">{tx('ui:s_cef2fe093b')}</Button>
         </div>
       )}
 
@@ -191,9 +181,7 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
             onClick={checkEquation}
             size="lg"
             disabled={slots.some((s) => s === null)}
-          >
-            Check Equation
-          </Button>
+          >{tx('ui:s_5c56786450')}</Button>
         </div>
       )}
     </div>

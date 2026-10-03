@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useState } from 'react';
 import Apple from './Apple';
 import Pencil from './Pencil';
@@ -10,30 +11,30 @@ interface ConceptVisualProps {
 
 const countingStepNarration = (step: number) => {
   const parts: string[] = [];
-  if (step >= 1) parts.push('Counting means finding out how many things there are.');
-  if (step >= 2) parts.push('We say one for the first apple.');
-  if (step >= 3) parts.push('We count: one, two, three. That is 3 apples!');
-  if (step >= 4) parts.push('Numbers tell us how many.');
-  if (step >= 5) parts.push('The last number we say is how many there are in total!');
-  return parts.join(' ') || 'Counting means finding out how many things there are.';
+  if (step >= 1) parts.push(tx('ui:s_cb8902b07b'));
+  if (step >= 2) parts.push(tx('ui:s_2f53930f76'));
+  if (step >= 3) parts.push(tx('ui:s_b596df22fd'));
+  if (step >= 4) parts.push(tx('ui:s_0eacc6e9fb'));
+  if (step >= 5) parts.push(tx('ui:s_73e91eb264'));
+  return parts.join(' ');
 };
 
 const additionStepNarration = (step: number) => {
   const parts: string[] = [];
-  if (step >= 1) parts.push('Addition means putting things together.');
-  if (step >= 2) parts.push('If you have 2 pencils and get 1 more, count them all together.');
-  if (step >= 3) parts.push('2 plus 1 equals 3. The plus sign means add.');
-  if (step >= 4) parts.push('The answer is called the sum.');
-  return parts.join(' ') || 'Addition means putting things together.';
+  if (step >= 1) parts.push(tx('ui:s_b07f849704'));
+  if (step >= 2) parts.push(tx('ui:s_f6a49b3395'));
+  if (step >= 3) parts.push(tx('ui:s_d3ee33cb94'));
+  if (step >= 4) parts.push(tx('ui:s_sumName'));
+  return parts.join(' ');
 };
 
 const subtractionStepNarration = (step: number) => {
   const parts: string[] = [];
-  if (step >= 1) parts.push('Subtraction means taking things away.');
-  if (step >= 2) parts.push('If you have 4 pencils and give 1 away, count how many are left.');
-  if (step >= 3) parts.push('4 minus 1 equals 3. The minus sign means subtract.');
-  if (step >= 4) parts.push('The answer is called the difference.');
-  return parts.join(' ') || 'Subtraction means taking things away.';
+  if (step >= 1) parts.push(tx('ui:s_6478f15af9'));
+  if (step >= 2) parts.push(tx('ui:s_c187e37438'));
+  if (step >= 3) parts.push(tx('ui:s_3774b73753'));
+  if (step >= 4) parts.push(tx('ui:s_diffName'));
+  return parts.join(' ');
 };
 
 const HearLessonPrompt: React.FC<{ text: string }> = ({ text }) => {
@@ -55,27 +56,26 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         {step >= 1 && (
           <div className="animate-concept text-center">
             <p className="text-xl text-foreground/90 mb-4">
-              <span className="font-semibold text-primary">Counting</span> means finding out how many things there are.
-            </p>
+              {tx('ui:s_cb8902b07b')}</p>
           </div>
         )}
         
         {step >= 2 && (
           <div className="animate-concept-delay-1 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">Let's count these apples together:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_701531d5d8')}</p>
             <div className="flex justify-center gap-4 mb-4">
               <div className="flex flex-col items-center">
                 <Apple size="lg" className="pointer-events-none" />
                 <span className="text-2xl font-bold text-primary mt-2">1</span>
               </div>
             </div>
-            <p className="text-center text-foreground">We say "one" for the first apple</p>
+            <p className="text-center text-foreground">{tx('ui:s_2f53930f76')}</p>
           </div>
         )}
         
         {step >= 3 && (
           <div className="animate-concept-delay-2 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">Now let's count more:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_899e3dcb7b')}</p>
             <div className="flex justify-center gap-4 mb-4">
               {[1, 2, 3].map(num => (
                 <div key={num} className="flex flex-col items-center">
@@ -84,13 +84,13 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
                 </div>
               ))}
             </div>
-            <p className="text-center text-foreground">We count: "one, two, three" - that's 3 apples!</p>
+            <p className="text-center text-foreground">{tx('ui:s_b596df22fd')}</p>
           </div>
         )}
         
         {step >= 4 && (
           <div className="animate-concept-delay-3 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">Numbers tell us "how many":</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_0eacc6e9fb')}</p>
             <div className="flex justify-center gap-6 flex-wrap">
               {[1, 2, 3, 4, 5].map(num => (
                 <div key={num} className="flex flex-col items-center">
@@ -109,14 +109,13 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         {step >= 5 && (
           <div className="animate-concept-delay-4 text-center">
             <p className="text-lg text-foreground/90">
-              The <span className="font-semibold text-accent">last number</span> we say is how many there are in total!
-            </p>
+              {tx('ui:s_73e91eb264')}</p>
           </div>
         )}
 
         {step >= 6 && (
           <div className="animate-concept-delay-5 bg-card rounded-xl p-3 sm:p-6 border border-border w-full max-w-md">
-            <p className="text-muted-foreground mb-4 text-center">Circle diagrams help us visualize counting:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_c102eccbe8')}</p>
             <div className="flex justify-center gap-8">
               <div className="flex flex-col items-center">
                 <div className="flex flex-wrap justify-center gap-2 max-w-[120px]">
@@ -148,14 +147,13 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         {step >= 1 && (
           <div className="animate-concept text-center">
             <p className="text-xl text-foreground/90">
-              <span className="font-semibold text-venus">Addition</span> means putting things together.
-            </p>
+              {tx('ui:s_b07f849704')}</p>
           </div>
         )}
         
         {step >= 2 && (
           <div className="animate-concept-delay-1 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">Imagine you have 2 pencils:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_d1a30123a7')}</p>
             <div className="flex justify-center gap-3 mb-4">
               <Pencil size="lg" className="pointer-events-none" />
               <Pencil size="lg" className="pointer-events-none" />
@@ -165,7 +163,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         
         {step >= 3 && (
           <div className="animate-concept-delay-2 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">Your friend gives you 1 more:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_67d346279e')}</p>
             <div className="flex justify-center items-center gap-4 mb-4">
               <div className="flex gap-3">
                 <Pencil size="lg" className="pointer-events-none" />
@@ -179,7 +177,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         
         {step >= 4 && (
           <div className="animate-concept-delay-3 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">Now count them all together:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_f6a49b3395')}</p>
             <div className="flex justify-center gap-3 mb-4">
               {[1, 2, 3].map(num => (
                 <div key={num} className="flex flex-col items-center">
@@ -197,10 +195,8 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         {step >= 5 && (
           <div className="animate-concept-delay-4 text-center">
             <p className="text-lg text-foreground/90">
-              The <span className="text-2xl text-venus font-bold">+</span> sign means "add" or "plus"
-            </p>
-            <p className="text-muted-foreground mt-2">
-              The answer is called the <span className="font-semibold text-accent">sum</span>
+              <span className="text-2xl text-venus font-bold" dir="ltr">+</span> {tx('ui:s_d3ee33cb94')}</p>
+            <p className="text-muted-foreground mt-2">{tx('ui:s_sumName')}
             </p>
           </div>
         )}
@@ -215,14 +211,13 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         {step >= 1 && (
           <div className="animate-concept text-center">
             <p className="text-xl text-foreground/90">
-              <span className="font-semibold text-earth">Subtraction</span> means taking things away.
-            </p>
+              {tx('ui:s_6478f15af9')}</p>
           </div>
         )}
         
         {step >= 2 && (
           <div className="animate-concept-delay-1 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">Imagine you have 4 pencils:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_ac6f9848be')}</p>
             <div className="flex justify-center gap-3 mb-4">
               {[1, 2, 3, 4].map(num => (
                 <div key={num} className="flex flex-col items-center">
@@ -236,7 +231,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         
         {step >= 3 && (
           <div className="animate-concept-delay-2 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">You give 1 pencil to a friend:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_f0b93f50ea')}</p>
             <div className="flex justify-center items-center gap-4 mb-4">
               <div className="flex gap-3">
                 <Pencil size="lg" className="pointer-events-none" />
@@ -253,7 +248,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         
         {step >= 4 && (
           <div className="animate-concept-delay-3 bg-card rounded-xl p-6 border border-border">
-            <p className="text-muted-foreground mb-4 text-center">Now count how many you have left:</p>
+            <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_c187e37438')}</p>
             <div className="flex justify-center gap-3 mb-4">
               {[1, 2, 3].map(num => (
                 <div key={num} className="flex flex-col items-center">
@@ -271,10 +266,8 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
         {step >= 5 && (
           <div className="animate-concept-delay-4 text-center">
             <p className="text-lg text-foreground/90">
-              The <span className="text-2xl text-earth font-bold">−</span> sign means "subtract" or "minus"
-            </p>
-            <p className="text-muted-foreground mt-2">
-              The answer is called the <span className="font-semibold text-accent">difference</span>
+              <span className="text-2xl text-earth font-bold" dir="ltr">−</span> {tx('ui:s_3774b73753')}</p>
+            <p className="text-muted-foreground mt-2">{tx('ui:s_diffName')}
             </p>
           </div>
         )}

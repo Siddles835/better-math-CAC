@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import { useRef, useState, type PointerEvent } from 'react';
 import type { Stroke } from '@/lib/cognition/strokes';
 
@@ -42,8 +43,8 @@ const DigitCollectPage = () => {
 
   return (
     <main className="min-h-screen bg-white text-black p-6 max-w-lg mx-auto">
-      <h1 className="text-2xl font-semibold mb-2">Collect digits</h1>
-      <p className="text-sm mb-4">This page is for local training data. Nothing is uploaded.</p>
+      <h1 className="text-2xl font-semibold mb-2">{tx('ui:s_9045455f66')}</h1>
+      <p className="text-sm mb-4">{tx('ui:s_89a43d24af')}</p>
       <canvas
         ref={canvasRef}
         width={280}
@@ -67,13 +68,9 @@ const DigitCollectPage = () => {
         }}
       />
       <div className="flex flex-wrap gap-2 my-4">
-        <label>
-          Digit
-          <input className="ms-2 w-16 border px-2" type="number" min={0} max={9} value={digit} onChange={(event) => setDigit(Number(event.target.value))} />
+        <label>{tx('ui:s_2f093cef7e')}<input className="ms-2 w-16 border px-2" type="number" min={0} max={9} value={digit} onChange={(event) => setDigit(Number(event.target.value))} />
         </label>
-        <label>
-          Script
-          <select className="ms-2 border px-2" value={script} onChange={(event) => setScript(event.target.value as Sample['script'])}>
+        <label>{tx('ui:s_ee6d6afa9f')}<select className="ms-2 border px-2" value={script} onChange={(event) => setScript(event.target.value as Sample['script'])}>
             <option value="western">western</option>
             <option value="arabic">arabic</option>
             <option value="devanagari">devanagari</option>
@@ -81,7 +78,7 @@ const DigitCollectPage = () => {
         </label>
       </div>
       <div className="flex gap-2">
-        <button type="button" className="border px-3 py-2" onClick={() => { setStrokes([]); paint([]); }}>Clear</button>
+        <button type="button" className="border px-3 py-2" onClick={() => { setStrokes([]); paint([]); }}>{tx('ui:s_719ea396ad')}</button>
         <button
           type="button"
           className="border px-3 py-2"
@@ -106,9 +103,7 @@ const DigitCollectPage = () => {
             link.click();
             URL.revokeObjectURL(url);
           }}
-        >
-          Download JSON
-        </button>
+        >{tx('ui:s_d296a30a06')}</button>
       </div>
     </main>
   );

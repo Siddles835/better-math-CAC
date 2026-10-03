@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -137,103 +138,78 @@ const SettingsPage: React.FC = () => {
         </section>
 
         <section className="mb-8 rounded-2xl border border-border bg-card/60 p-5">
-          <h2 className="text-xl font-semibold mb-1">Learning preferences</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Choose how lessons are shown, read, and answered. Everyone learns the same maths —
-            these settings only change how it reaches you. You can change them any time.
-          </p>
+          <h2 className="text-xl font-semibold mb-1">{tx('ui:s_d8f9cb9790')}</h2>
+          <p className="text-sm text-muted-foreground mb-4">{tx('ui:s_a37b07078c')}</p>
           <AccessibilityPanel />
         </section>
 
         {student && (
           <section className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
-            <p className="text-sm text-emerald-200/80">Signed in as student</p>
+            <p className="text-sm text-emerald-200/80">{tx('ui:s_f7b63f030b')}</p>
             <p className="text-lg font-semibold mt-1">
               {getStudentDisplayName(student)}
               <span className="text-muted-foreground font-normal"> · {student.classCode}</span>
             </p>
             <div className="flex flex-wrap gap-2 mt-4">
-              <Button type="button" variant="outline" onClick={handleStudentSignOut}>
-                Sign Out
-              </Button>
+              <Button type="button" variant="outline" onClick={handleStudentSignOut}>{tx('ui:s_61fd08ff5c')}</Button>
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => setConfirmDelete('student')}
-              >
-                Delete My Account
-              </Button>
+              >{tx('ui:s_26cc101ce0')}</Button>
             </div>
           </section>
         )}
 
         {teacher && (
           <section className="mb-6 rounded-2xl border border-sky-500/30 bg-sky-500/10 p-5">
-            <p className="text-sm text-sky-200/80">Signed in as teacher</p>
+            <p className="text-sm text-sky-200/80">{tx('ui:s_fc25735286')}</p>
             <p className="text-lg font-semibold mt-1">Class {teacher.classCode}</p>
             <div className="flex flex-wrap gap-2 mt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate(`/teacher/${teacher.classCode}`)}
-              >
-                Open Dashboard
-              </Button>
-              <Button type="button" variant="outline" onClick={handleTeacherSignOut}>
-                Sign Out
-              </Button>
+              >{tx('ui:s_b9e922ebbb')}</Button>
+              <Button type="button" variant="outline" onClick={handleTeacherSignOut}>{tx('ui:s_61fd08ff5c')}</Button>
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => setConfirmDelete('class')}
-              >
-                Delete This Class
-              </Button>
+              >{tx('ui:s_b38135a837')}</Button>
             </div>
           </section>
         )}
 
         {!student && !teacher && (
           <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5">
-            <p className="text-muted-foreground mb-3">You are not signed in on this device.</p>
-            <Button type="button" onClick={() => navigate('/')}>
-              Go Home
-            </Button>
+            <p className="text-muted-foreground mb-3">{tx('ui:s_252bb976b9')}</p>
+            <Button type="button" onClick={() => navigate('/')}>{tx('ui:s_19445d7286')}</Button>
           </section>
         )}
 
         {confirmDelete === 'student' && (
           <div className="mb-6 rounded-2xl border border-destructive/40 bg-destructive/10 p-5">
-            <p className="font-semibold mb-2">Delete this student account?</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              This permanently removes the space name, planet progress, and quiz history from the
-              class. It cannot be undone.
-            </p>
+            <p className="font-semibold mb-2">{tx('ui:s_790ba564c1')}</p>
+            <p className="text-sm text-muted-foreground mb-4">{tx('ui:s_12be218899')}</p>
             <div className="flex gap-2">
               <Button type="button" variant="destructive" disabled={busy} onClick={handleDeleteStudent}>
                 {busy ? 'Deleting…' : 'Yes, delete my account'}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setConfirmDelete(null)}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setConfirmDelete(null)}>{tx('ui:s_77dfd2135f')}</Button>
             </div>
           </div>
         )}
 
         {confirmDelete === 'class' && (
           <div className="mb-6 rounded-2xl border border-destructive/40 bg-destructive/10 p-5">
-            <p className="font-semibold mb-2">Delete this entire class?</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              This permanently removes the class code, teacher PIN, student roster, and all progress.
-              Students will no longer be able to log in with this code.
-            </p>
+            <p className="font-semibold mb-2">{tx('ui:s_6564ef1713')}</p>
+            <p className="text-sm text-muted-foreground mb-4">{tx('ui:s_923432333f')}</p>
             <div className="flex gap-2">
               <Button type="button" variant="destructive" disabled={busy} onClick={handleDeleteClass}>
                 {busy ? 'Deleting…' : 'Yes, delete this class'}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setConfirmDelete(null)}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setConfirmDelete(null)}>{tx('ui:s_77dfd2135f')}</Button>
             </div>
           </div>
         )}
@@ -244,21 +220,11 @@ const SettingsPage: React.FC = () => {
 
         <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5 space-y-3">
           <h2 className="text-xl font-semibold">Privacy &amp; data</h2>
-          <p className="text-sm text-muted-foreground">
-            MathLift stores a generated space name, class code, lesson progress, and a short
-            thinking summary. Drawings stay on the device. We do not sell data, run ads, or build
-            advertising profiles.
-          </p>
+          <p className="text-sm text-muted-foreground">{tx('ui:s_cc52584fd6')}</p>
           <div className="flex flex-col gap-2">
-            <Link to="/privacy-policy" className="text-primary font-medium hover:underline min-h-[44px] flex items-center">
-              Privacy Policy
-            </Link>
-            <Link to="/cookie-policy" className="text-primary font-medium hover:underline min-h-[44px] flex items-center">
-              Cookie Policy
-            </Link>
-            <Link to="/support" className="text-primary font-medium hover:underline min-h-[44px] flex items-center">
-              Support
-            </Link>
+            <Link to="/privacy-policy" className="text-primary font-medium hover:underline min-h-[44px] flex items-center">{tx('ui:s_9db108ba6b')}</Link>
+            <Link to="/cookie-policy" className="text-primary font-medium hover:underline min-h-[44px] flex items-center">{tx('ui:s_e6e178ccc8')}</Link>
+            <Link to="/support" className="text-primary font-medium hover:underline min-h-[44px] flex items-center">{tx('ui:s_f32d5a3b17')}</Link>
             {!teacher && (
               <a
                 href={`mailto:${SUPPORT_EMAIL}?subject=MathLift%20data%20deletion%20request`}

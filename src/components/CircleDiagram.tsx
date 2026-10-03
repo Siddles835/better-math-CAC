@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 
 type Planet = {
@@ -34,7 +35,7 @@ const CircleDiagram: React.FC<Props> = ({ planets, size = 360, onSelect, selecte
       overflow="visible"
       className="mx-auto block overflow-visible"
       role="img"
-      aria-label="Planet selection diagram"
+      aria-label={tx('ui:s_b6136f83cf')}
     >
       <circle
         cx={cx}

@@ -1,6 +1,6 @@
 import type { DigitRead, DigitScript, UnreadableReason } from './types';
 import { rasterizeStrokes, startQuadrant, type Stroke } from './strokes';
-import { segmentIntoDigits, strokePointCount, strokeSpan } from './segment';
+import { densifyStrokes, segmentIntoDigits, strokePointCount, strokeSpan } from './segment';
 import weights from './models/digit_mlp.json';
 import thresholds from './models/digit_thresholds.json';
 
@@ -22,6 +22,7 @@ interface ThresholdFile {
   minMargin: number;
   minPoints: number;
   minSize: number;
+  confirmConfidence?: number;
 }
 
 const model = weights as MlpWeights;
@@ -231,9 +232,19 @@ const classifyGroup = (strokes: Stroke[]): OneDigit => {
   };
 };
 
-/** Read one or two digits. Unreadable drawings are not scored as wrong. */
+/** High confidence skips the "Did you write this?" question. */
+export const confirmConfidence = (): number => {
+  if (typeof limits.confirmConfidence === 'number') return limits.confirmConfidence;
+  return Math.min(0.97, limits.minConfidence + 0.12);
+};
+
+export const needsConfirm = (read: DigitRead): boolean =>
+  read.status === 'ok' && read.confidence < confirmConfidence();
+
+/** Read up to three digits. Unreadable drawings are not scored as wrong. */
 export const readDrawing = (strokes: Stroke[]): DigitRead => {
-  if (strokePointCount(strokes) < limits.minPoints) return unreadable('too_few_points', strokes);
+  const counted = densifyStrokes(strokes);
+  if (strokePointCount(counted) < limits.minPoints) return unreadable('too_few_points', strokes);
   if (strokeSpan(strokes) < limits.minSize) return unreadable('too_small', strokes);
   const segmented = segmentIntoDigits(strokes);
   if (segmented.tooMany) return unreadable('too_many_parts', strokes);
@@ -245,7 +256,7 @@ export const readDrawing = (strokes: Stroke[]): DigitRead => {
     return unreadable(failed.reason ?? 'low_confidence', strokes, { confidence: failed.confidence });
   }
   const digits = parts.map((part) => part.digit);
-  const value = digits.length === 1 ? digits[0] : digits[0] * 10 + digits[1];
+  const value = digits.reduce((total, digit) => total * 10 + digit, 0);
   return {
     status: 'ok',
     digit: value,

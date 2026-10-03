@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -59,7 +60,7 @@ const CookiePolicyPage: React.FC = () => {
         {i18n.language !== 'en' && (
           <p className="text-[15px] leading-relaxed text-slate-700">{t('cookieLead')}</p>
         )}
-        <h1 className="text-3xl font-semibold text-slate-900 mb-2">Cookie Policy</h1>
+        <h1 className="text-3xl font-semibold text-slate-900 mb-2">{tx('ui:s_e6e178ccc8')}</h1>
         <p className="text-sm text-slate-500 mb-10">Last updated {LAST_UPDATED}</p>
 
         <div className="space-y-4 text-[15px] leading-relaxed text-slate-600 mb-10">
@@ -78,18 +79,11 @@ const CookiePolicyPage: React.FC = () => {
             (&quot;Website&quot;). It explains what these technologies are and why we use them, as
             well as your rights to control our use of them.
           </p>
-          <p>
-            In some cases we may use cookies to collect personal information, or that becomes
-            personal information if we combine it with other information.
-          </p>
+          <p>{tx('ui:s_a7efbb187c')}</p>
         </div>
 
-        <Section title="What are cookies?">
-          <p>
-            Cookies are small data files that are placed on your computer or mobile device when you
-            visit a website. Cookies are widely used by website owners in order to make their
-            websites work, or to work more efficiently, as well as to provide reporting information.
-          </p>
+        <Section title={tx('ui:s_74e6eb3aeb')}>
+          <p>{tx('ui:s_de38b64418')}</p>
           <p>
             Cookies set by the website owner (in this case, {COMPANY_NAME}) are called
             &quot;first-party cookies.&quot; Cookies set by parties other than the website owner are
@@ -101,38 +95,23 @@ const CookiePolicyPage: React.FC = () => {
           </p>
         </Section>
 
-        <Section title="Why do we use cookies?">
-          <p>
-            We use first-party storage only as needed for the app to work (remembering the last
-            class code and the most recent student or teacher session on this device). MathLift does
-            not use advertising cookies, marketing pixels, or third-party analytics cookies.
-          </p>
+        <Section title={tx('ui:s_b7475e1102')}>
+          <p>{tx('ui:s_9c40e21376')}</p>
         </Section>
 
-        <Section title="How can I control cookies?">
-          <p>
-            MathLift does not currently show an in-app cookie preference banner. You can control
-            cookies through your browser or device settings (block or clear cookies, or use private
-            browsing).
-          </p>
-          <p>
-            Classroom progress is stored in Firebase using your class code and generated student
-            space name — that is app functionality, not advertising cookies.
-          </p>
-          <p>
-            MathLift does <strong>not</strong> use Google Analytics, advertising cookies, or
-            marketing pixels. We do not set <code>_ga</code> or similar third-party analytics
-            cookies.
-          </p>
+        <Section title={tx('ui:s_bc66158e03')}>
+          <p>{tx('ui:s_752c366a25')}</p>
+          <p>{tx('ui:s_1c41657863')}</p>
+          <p>{tx('ui:s_936f7282c0')}<strong>not</strong>{tx('ui:s_f28990170e')}<code>_ga</code>{tx('ui:s_bb8ce0d35c')}</p>
         </Section>
 
-        <Section title="How can I control cookies on my browser?">
+        <Section title={tx('ui:s_bdae3b4d57')}>
           <p>
             As the means by which you can refuse cookies through your web browser controls vary from
             browser to browser, you should visit your browser&apos;s help menu for more information.
             The following is information about how to manage cookies on the most popular browsers:
           </p>
-          <ul className="list-disc pl-6 space-y-2 marker:text-slate-400">
+          <ul className="list-disc ps-6 space-y-2 marker:text-slate-400">
             {browserLinks.map((link) => (
               <li key={link.label}>
                 <a
@@ -148,7 +127,7 @@ const CookiePolicyPage: React.FC = () => {
           </ul>
         </Section>
 
-        <Section title="Do you use advertising, analytics, or tracking pixels?">
+        <Section title={tx('ui:s_33440fdc8b')}>
           <p>
             No. MathLift does not serve targeted advertising, does not use web beacons or marketing
             pixels, and does not use Flash cookies. Hosting logs from Vercel may briefly include an
@@ -156,21 +135,13 @@ const CookiePolicyPage: React.FC = () => {
           </p>
         </Section>
 
-        <Section title="How often will you update this Cookie Policy?">
-          <p>
-            We may update this Cookie Policy from time to time in order to reflect, for example,
-            changes to the cookies we use or for other operational, legal, or regulatory reasons.
-            Please therefore revisit this Cookie Policy regularly to stay informed about our use of
-            cookies and related technologies.
-          </p>
-          <p>The date at the top of this Cookie Policy indicates when it was last updated.</p>
+        <Section title={tx('ui:s_b25c97c96d')}>
+          <p>{tx('ui:s_3a028d5a3a')}</p>
+          <p>{tx('ui:s_dd7d715afb')}</p>
         </Section>
 
-        <Section title="Where can I get further information?">
-          <p>
-            If you have any questions about our use of cookies or other technologies, please contact
-            us at:
-          </p>
+        <Section title={tx('ui:s_efa454d76a')}>
+          <p>{tx('ui:s_53a76727c9')}</p>
           <p className="font-medium text-slate-800">{COMPANY_NAME}</p>
           <p>
             <a href={WEBSITE_URL} className="text-blue-700 hover:underline break-all">
@@ -187,9 +158,7 @@ const CookiePolicyPage: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-700 hover:underline"
-            >
-              Cookie Consent Manager
-            </a>
+            >{tx('ui:s_986572b841')}</a>
             .
           </p>
         </footer>

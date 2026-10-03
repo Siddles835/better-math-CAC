@@ -1,8 +1,14 @@
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
+import { tx } from '@/i18n/tx';
 // Addition Lesson - Mars (Concept + Word Problem)
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import ConceptVisual from '@/components/ConceptVisual';
 import Pencil from '@/components/Pencil';
 import Counter from '@/components/Counter';
@@ -18,7 +24,8 @@ import { diagnoseTrace, LessonTrace, type Diagnosis } from '@/lib/cognition';
 
 const AdditionMars: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet, saveDiagnosis } = useGame();
+  const { saveDiagnosis } = useGame();
+  const { leave } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('mars');
   const [conceptStep, setConceptStep] = useState(1);
   const [showTransition, setShowTransition] = useState(false);
@@ -38,7 +45,9 @@ const AdditionMars: React.FC = () => {
   const wordStoryText =
     `Emma has ${wordLeft} pencils. She wants ${wordTarget} pencils total. How many more does she need?`;
 
-  const totalSteps = 2;
+  const [drillReady, setDrillReady] = useState(false);
+  const coreSteps = 2;
+  const totalSteps = coreSteps + insertedCount;
 
   useEffect(() => {
     if (step === 0 && conceptStep < 6) {
@@ -52,7 +61,7 @@ const AdditionMars: React.FC = () => {
   const publishDiagnosis = () => {
     const result = diagnoseTrace('mars', traceRef.current);
     setDiagnosis(result);
-    void saveDiagnosis(result);
+    saveDiagnosisSafely(saveDiagnosis, result);
   };
 
   const addPencilWord = () => {
@@ -84,13 +93,15 @@ const AdditionMars: React.FC = () => {
     traceRef.current.reset();
   };
 
+  const practiceAgain = () => {
+    resetWord();
+    setWordPhase('equation');
+    setDiagnosis(null);
+    setStep(totalSteps - 1);
+  };
+
   const goToNextPlanet = () => {
-    completePlanet('mars');
-    setShowRocketTransition(true);
-    setTimeout(() => {
-      navigate('/lesson/addition/jupiter');
-      setShowRocketTransition(false);
-    }, 1600);
+    leave('mars', '/lesson/addition/jupiter');
   };
 
   if (showTransition) {
@@ -107,27 +118,24 @@ const AdditionMars: React.FC = () => {
   }
 
   const renderStep = () => {
+    if (step >= coreSteps - 1 && step < totalSteps - 1) {
+      return <LessonDrill planet="mars" index={step - (coreSteps - 1)} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center max-w-3xl mx-auto flex flex-col items-center justify-center flex-1 py-8">
-            <h2 className="text-3xl font-semibold text-foreground mb-10">
-              What is Addition?
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-10">{tx('ui:s_eb8ab7b804')}</h2>
             <ConceptVisual type="addition" step={conceptStep} />
           </div>
         );
 
-      case 1:
+      case totalSteps - 1:
         if (wordPhase === 'equation') {
           return (
             <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-              <h2 className="text-3xl font-semibold text-foreground mb-4">
-                The Art Shop
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                First build the equation, then solve with pencils!
-              </p>
+              <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_ca7ec0a715')}</h2>
+              <p className="text-muted-foreground mb-6">{tx('ui:s_24b7bf6cdf')}</p>
               <EquationBuilder
                 num1={wordLeft}
                 num2={wordNeed}
@@ -149,30 +157,22 @@ const AdditionMars: React.FC = () => {
 
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              The Art Shop
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_ca7ec0a715')}</h2>
             <div className="bg-card rounded-xl p-8 border border-border mb-6 max-w-lg mx-auto">
               <div className="flex items-start justify-between gap-3">
-                <div className="text-left flex-1">
-                  <p className="text-lg text-foreground">
-                    Emma has <span className="font-bold text-mars">{wordLeft} pencils</span>.
+                <div className="text-start flex-1">
+                  <p className="text-lg text-foreground">{tx('ui:s_b6b0de9779')}<span className="font-bold text-mars">{wordLeft} pencils</span>.
                   </p>
-                  <p className="text-lg text-foreground mt-3">
-                    She wants <span className="font-bold text-mars">{wordTarget} pencils</span> total.
+                  <p className="text-lg text-foreground mt-3">{tx('ui:s_774f021d13')}<span className="font-bold text-mars">{wordTarget} pencils</span> total.
                   </p>
-                  <p className="text-muted-foreground mt-4 text-base">
-                    How many more does she need?
-                  </p>
+                  <p className="text-muted-foreground mt-4 text-base">{tx('ui:s_b741c8fa0f')}</p>
                 </div>
                 <ReadAloudButton text={wordStoryText} className="shrink-0" />
               </div>
             </div>
 
             <div className="rounded-xl bg-mars/10 border border-mars/20 px-4 py-3 mb-6 max-w-sm mx-auto">
-              <p className="text-xs text-muted-foreground mb-2">
-                The first two numbers are already filled in. You find the missing one.
-              </p>
+              <p className="text-xs text-muted-foreground mb-2">{tx('ui:s_3e5c74ec88')}</p>
               <div className="flex items-center justify-center gap-2 text-2xl sm:text-3xl font-bold">
                 <span className="inline-flex items-center justify-center min-w-11 h-11 rounded-xl bg-mars/20 text-mars border-2 border-mars">
                   {wordLeft}
@@ -189,8 +189,8 @@ const AdditionMars: React.FC = () => {
             </div>
             
             <div className="flex justify-center gap-8 mb-8">
-              <Counter count={wordLeft + wordRight} label="You have" />
-              <Counter count={wordTarget} label="You need" />
+              <Counter count={wordLeft + wordRight} label={tx('ui:youHave')} />
+              <Counter count={wordTarget} label={tx('ui:youNeed')} />
             </div>
             
             <div className="bg-card rounded-xl p-6 sm:p-8 border border-border mb-8 w-full max-w-lg">
@@ -219,7 +219,7 @@ const AdditionMars: React.FC = () => {
               </div>
             )}
             {!wordChecked && (
-              <Button onClick={checkWord} size="lg">Check</Button>
+              <Button onClick={checkWord} size="lg">{tx('ui:s_4b5e84be0e')}</Button>
             )}
             
             {wordChecked && !showGuided && (
@@ -230,26 +230,25 @@ const AdditionMars: React.FC = () => {
                   {wordLeft + wordRight === wordTarget ? (
                     <>
                       <Check className="w-8 h-8" />
-                      <span className="text-xl font-semibold">Great! Emma can draw now!</span>
+                      <span className="text-xl font-semibold">{tx('ui:s_ba121c4060')}</span>
                     </>
                   ) : (
                     <>
                       <X className="w-8 h-8" />
-                      <span className="text-xl font-semibold">
-                        Let's practice with pencils!
-                      </span>
+                      <span className="text-xl font-semibold">{tx('ui:s_ff703fdb54')}</span>
                     </>
                   )}
                 </div>
-                {diagnosis && <ThoughtCard diagnosis={diagnosis} />}
+                {diagnosis && (
+                  <ThoughtCard diagnosis={diagnosis} onPractice={practiceAgain} practiceLabel={tx('ui:practiceAgain')} />
+                )}
                 {wordLeft + wordRight !== wordTarget ? (
-                  <Button onClick={resetWord} variant="outline" size="lg">
-                    Try Again
-                  </Button>
+                  <Button onClick={resetWord} variant="outline" size="lg">{tx('ui:s_cef2fe093b')}</Button>
                 ) : (
-                  <Button onClick={() => setShowTransition(true)} size="lg">
-                    Go to Jupiter
-                  </Button>
+                  <>
+                    <PracticeAgainButton onClick={practiceAgain} />
+                    <Button onClick={() => setShowTransition(true)} size="lg">{tx('ui:s_7c45b0b733')}</Button>
+                  </>
                 )}
               </div>
             )}
@@ -291,8 +290,8 @@ const AdditionMars: React.FC = () => {
             }
           : () => navigate('/planets')
       }
-      onNext={step < totalSteps - 1 ? () => setStep(step + 1) : undefined}
-      showNext={step < totalSteps - 1}
+      onNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady) ? () => setStep(step + 1) : undefined}
+      showNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady)}
     >
       {renderStep()}
     </LessonShell>

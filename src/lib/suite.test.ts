@@ -194,14 +194,15 @@ describe('drawing', () => {
     const samples = JSON.parse(fs.readFileSync(path.resolve('src/lib/cognition/models/digit_samples.json'), 'utf8')) as Array<{
       value: number;
       strokes: number[][][];
+      groups?: number;
     }>;
     for (const sample of samples) {
       const strokes = sample.strokes.map((stroke) => stroke.map(([x, y]) => ({ x, y })));
       const groups = segmentIntoDigits(strokes);
       expect(groups.tooMany).toBe(false);
-      expect(groups.groups).toHaveLength(2);
+      expect(groups.groups).toHaveLength(sample.groups ?? 2);
       const read = readDrawing(strokes);
-      expect(read.status).toBe('ok');
+      expect(read.status, `${sample.value} ${read.reason}`).toBe('ok');
       expect(read.digit).toBe(sample.value);
     }
     const single = segmentIntoDigits([[{ x: 10, y: 10 }, { x: 10, y: 80 }, { x: 40, y: 80 }]]);

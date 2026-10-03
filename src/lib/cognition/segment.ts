@@ -7,9 +7,9 @@ export interface DigitGroup {
 }
 
 /**
- * Cluster strokes into at most two left-to-right digits.
- * Strokes that overlap in x (a 4 or a 5 drawn in pieces) stay in one digit.
- * More than two separated groups is too many parts.
+ * Cluster strokes into at most three left-to-right digits.
+ * Strokes that overlap in x (a 4, 5, or 7 drawn in pieces) stay in one digit.
+ * More than three separated groups is too many parts.
  */
 export const segmentIntoDigits = (
   strokes: Stroke[]
@@ -51,9 +51,26 @@ export const segmentIntoDigits = (
       minX: Math.min(...group.map((item) => item.minX)),
       maxX: Math.max(...group.map((item) => item.maxX)),
     })),
-    tooMany: clustered.length > 2,
+    tooMany: clustered.length > 3,
   };
 };
+
+export const densifyStrokes = (strokes: Stroke[], step = 4): Stroke[] =>
+  strokes.map((stroke) => {
+    if (stroke.length < 2) return stroke;
+    const dense: Stroke = [stroke[0]];
+    for (let i = 1; i < stroke.length; i++) {
+      const prev = stroke[i - 1];
+      const next = stroke[i];
+      const dist = Math.hypot(next.x - prev.x, next.y - prev.y);
+      const pieces = Math.max(1, Math.round(dist / step));
+      for (let p = 1; p <= pieces; p++) {
+        const t = p / pieces;
+        dense.push({ x: prev.x + (next.x - prev.x) * t, y: prev.y + (next.y - prev.y) * t });
+      }
+    }
+    return dense;
+  });
 
 export const strokePointCount = (strokes: Stroke[]): number =>
   strokes.reduce((sum, stroke) => sum + stroke.length, 0);

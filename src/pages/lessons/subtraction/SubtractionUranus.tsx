@@ -1,10 +1,14 @@
+import { tx } from '@/i18n/tx';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
 // Subtraction Lesson - Uranus (Concept + Word Problem)
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGame } from '@/context/GameContext';
 import ThoughtCard from '@/components/ThoughtCard';
 import { useCognitionSession } from '@/hooks/useCognitionSession';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import ConceptVisual from '@/components/ConceptVisual';
 import Pencil from '@/components/Pencil';
 import Counter from '@/components/Counter';
@@ -19,8 +23,8 @@ import { Check, X } from 'lucide-react';
 
 const SubtractionUranus: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet } = useGame();
-  const { trace, diagnosis, publish } = useCognitionSession('uranus');
+  const { trace, diagnosis, publish, setDiagnosis } = useCognitionSession('uranus');
+  const { leave } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('uranus');
   const [conceptStep, setConceptStep] = useState(1);
   const [showTransition, setShowTransition] = useState(false);
@@ -38,7 +42,9 @@ const SubtractionUranus: React.FC = () => {
   const wordStoryText =
     `Mr. Chen has ${wordStart} pencils. He wants to keep ${wordTarget} pencils. How many can he give away?`;
 
-  const totalSteps = 2;
+  const [drillReady, setDrillReady] = useState(false);
+  const coreSteps = 2;
+  const totalSteps = coreSteps + insertedCount;
 
   useEffect(() => {
     if (step === 0 && conceptStep < 6) {
@@ -78,13 +84,16 @@ const SubtractionUranus: React.FC = () => {
     setShowGuided(false);
   };
 
+  const practiceAgain = () => {
+    resetWord();
+    setWordPhase('equation');
+    setDiagnosis(null);
+    trace.reset();
+    setStep(totalSteps - 1);
+  };
+
   const goToNextPlanet = () => {
-    completePlanet('uranus');
-    setShowRocketTransition(true);
-    setTimeout(() => {
-      navigate('/lesson/subtraction/neptune');
-      setShowRocketTransition(false);
-    }, 1600);
+    leave('uranus', '/lesson/subtraction/neptune');
   };
 
   if (showTransition) {
@@ -101,27 +110,24 @@ const SubtractionUranus: React.FC = () => {
   }
 
   const renderStep = () => {
+    if (step >= coreSteps - 1 && step < totalSteps - 1) {
+      return <LessonDrill planet="uranus" index={step - (coreSteps - 1)} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center max-w-3xl mx-auto flex flex-col items-center justify-center flex-1 py-8">
-            <h2 className="text-3xl font-semibold text-foreground mb-10">
-              What is Subtraction?
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-10">{tx('ui:s_0620306c4e')}</h2>
             <ConceptVisual type="subtraction" step={conceptStep} />
           </div>
         );
 
-      case 1:
+      case totalSteps - 1:
         if (wordPhase === 'equation') {
           return (
             <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-              <h2 className="text-3xl font-semibold text-foreground mb-4">
-                The Classroom
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                First build the equation, then solve with pencils!
-              </p>
+              <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_917198f3ac')}</h2>
+              <p className="text-muted-foreground mb-6">{tx('ui:s_24b7bf6cdf')}</p>
               <EquationBuilder
                 num1={wordStart}
                 num2={wordGiveAway}
@@ -143,36 +149,30 @@ const SubtractionUranus: React.FC = () => {
 
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              The Classroom
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_917198f3ac')}</h2>
             <div className="bg-card rounded-xl p-8 border border-border mb-6 max-w-lg mx-auto">
               <div className="flex items-start justify-between gap-3">
-                <div className="text-left flex-1">
-                  <p className="text-lg text-foreground">
-                    Mr. Chen has <span className="font-bold text-uranus">{wordStart} pencils</span>.
+                <div className="text-start flex-1">
+                  <p className="text-lg text-foreground">{tx('ui:s_f2ff43810c')}<span className="font-bold text-uranus">{wordStart} pencils</span>.
                   </p>
-                  <p className="text-lg text-foreground mt-3">
-                    He wants to keep <span className="font-bold text-uranus">{wordTarget} pencils</span>.
+                  <p className="text-lg text-foreground mt-3">{tx('ui:s_e3c8484d53')}<span className="font-bold text-uranus">{wordTarget} pencils</span>.
                   </p>
-                  <p className="text-muted-foreground mt-4 text-base">
-                    How many can he give away?
-                  </p>
+                  <p className="text-muted-foreground mt-4 text-base">{tx('ui:s_78d44e2435')}</p>
                 </div>
                 <ReadAloudButton text={wordStoryText} className="shrink-0" />
               </div>
             </div>
 
             <div className="rounded-xl bg-uranus/10 border border-uranus/20 px-4 py-3 mb-6 max-w-sm mx-auto">
-              <p className="text-xs text-muted-foreground mb-1">Your equation</p>
+              <p className="text-xs text-muted-foreground mb-1">{tx('ui:s_907176c55c')}</p>
               <p className="text-2xl font-bold text-uranus">
                 {wordStart} − {wordGiveAway} = ?
               </p>
             </div>
             
             <div className="flex justify-center gap-8 mb-8">
-              <Counter count={wordPencils} label="You have" />
-              <Counter count={wordTarget} label="You need" />
+              <Counter count={wordPencils} label={tx('ui:youHave')} />
+              <Counter count={wordTarget} label={tx('ui:youNeed')} />
             </div>
             
             <div className="bg-card rounded-xl p-4 sm:p-8 border border-border mb-8 w-full max-w-lg">
@@ -214,7 +214,7 @@ const SubtractionUranus: React.FC = () => {
             </div>
             
             {!wordChecked && (
-              <Button onClick={checkWord} size="lg">Check</Button>
+              <Button onClick={checkWord} size="lg">{tx('ui:s_4b5e84be0e')}</Button>
             )}
             
             {wordChecked && !showGuided && (
@@ -230,22 +230,19 @@ const SubtractionUranus: React.FC = () => {
                   ) : (
                     <>
                       <X className="w-8 h-8" />
-                      <span className="text-xl font-semibold">
-                        Let's practice with pencils!
-                      </span>
+                      <span className="text-xl font-semibold">{tx('ui:s_ff703fdb54')}</span>
                     </>
                   )}
                 </div>
                 {wordPencils !== wordTarget ? (
-                  <Button onClick={resetWord} variant="outline" size="lg">
-                    Try Again
-                  </Button>
+                  <Button onClick={resetWord} variant="outline" size="lg">{tx('ui:s_cef2fe093b')}</Button>
                 ) : (
-                  <Button onClick={() => setShowTransition(true)} size="lg">
-                    Go to Neptune
-                  </Button>
+                  <Button onClick={() => setShowTransition(true)} size="lg">{tx('ui:s_26615441b1')}</Button>
                 )}
-                {diagnosis && <ThoughtCard diagnosis={diagnosis} />}
+                {diagnosis && (
+                  <ThoughtCard diagnosis={diagnosis} onPractice={practiceAgain} practiceLabel={tx('ui:practiceAgain')} />
+                )}
+                <PracticeAgainButton onClick={practiceAgain} />
               </div>
             )}
 
@@ -286,8 +283,8 @@ const SubtractionUranus: React.FC = () => {
             }
           : () => navigate('/planets')
       }
-      onNext={step < totalSteps - 1 ? () => setStep(step + 1) : undefined}
-      showNext={step < totalSteps - 1}
+      onNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady) ? () => setStep(step + 1) : undefined}
+      showNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady)}
     >
       {renderStep()}
     </LessonShell>

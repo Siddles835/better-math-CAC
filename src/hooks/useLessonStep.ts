@@ -7,6 +7,16 @@ import type { PlanetId } from '@/lib/planets';
 
 type LessonLocationState = { initialStep?: number; replay?: boolean };
 
+/** Dev-only jump used by end-to-end tests. Production builds ignore it. */
+function devStep(search: string): number | null {
+  if (!import.meta.env.DEV) return null;
+  const raw = new URLSearchParams(search).get('mlstep');
+  if (raw == null || raw === '') return null;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Math.floor(value);
+}
+
 /** Lesson step index persisted to Firebase per planet. */
 export function useLessonStep(planetId: PlanetId) {
   const { getPlanetStep, savePlanetStep, planetSteps, markPlanetVisited } = useGame();
@@ -14,8 +24,12 @@ export function useLessonStep(planetId: PlanetId) {
   const navState = location.state as LessonLocationState | null;
   const navStep = navState?.initialStep;
   const isReplay = navState?.replay === true;
+  const forced = devStep(location.search ?? '');
+  // Furthest saved step is applied once. After the child moves, this step wins.
+  const locked = useRef(isReplay || forced != null);
   const [step, setStepState] = useState(() => {
     if (isReplay) return 0;
+    if (forced != null) return forced;
     if (navStep != null && navStep >= 0) return navStep;
     return 0;
   });
@@ -23,12 +37,14 @@ export function useLessonStep(planetId: PlanetId) {
   const stepRef = useRef(step);
   stepRef.current = step;
 
-  // Apply saved steps from context once Firebase hydration lands
+  // Hydrate the saved furthest step once. Later planetSteps echoes must not
+  // pull a child who went back (Practice again, Back) forward again.
   useEffect(() => {
-    if (isReplay) return;
+    if (isReplay || locked.current) return;
     const fromContext = getPlanetStep(planetId);
-    if (fromContext > 0 || Object.keys(planetSteps).length > 0) {
-      setStepState((prev) => Math.max(prev, fromContext));
+    if (fromContext > 0) {
+      locked.current = true;
+      setStepState(fromContext);
     }
   }, [planetId, getPlanetStep, planetSteps, isReplay]);
 
@@ -49,8 +65,9 @@ export function useLessonStep(planetId: PlanetId) {
       if (cancelled) return;
       const key = findStudentKey(cls?.students, active.nickname);
       const saved = key ? cls?.students?.[key]?.planetSteps?.[planetId] : undefined;
-      if (saved != null && saved >= 0) {
-        setStepState((prev) => Math.max(prev, saved));
+      if (!locked.current && saved != null && saved > 0) {
+        locked.current = true;
+        setStepState(saved);
       }
 
       setReady(true);
@@ -84,6 +101,7 @@ export function useLessonStep(planetId: PlanetId) {
 
   const setStep = useCallback(
     (value: React.SetStateAction<number>) => {
+      locked.current = true;
       const next = typeof value === 'function' ? value(stepRef.current) : value;
       stepRef.current = next;
       setStepState(next);

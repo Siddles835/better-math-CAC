@@ -1,16 +1,17 @@
 import * as React from 'react';
 import {
   subscribeToClass,
-  getClass,
   applyClassStartIfNeeded,
   findStudentKey,
-  updateStudentState,
+  nicknameKey,
+  patchStudentFields,
   LessonType,
   StudentState,
   LastQuizSummary,
 } from '@/lib/classroom';
 import type { Diagnosis } from '@/lib/cognition';
-import { appendDiagnosisSnapshot } from '@/lib/cognition/history';
+import { appendDiagnosisSnapshot, type DiagnosisSnapshot } from '@/lib/cognition/history';
+import { createStudentWriter, type ProgressView, type StudentWriter } from '@/lib/studentWrites';
 import {
   getActiveStudent,
   SESSION_CHANGED,
@@ -19,10 +20,8 @@ import {
 import {
   PlanetId,
   PLANET_ORDER,
-  getLessonForPlanet,
   getPlanetIndex,
   buildCompletedMap,
-  getFurthestProgressPlanet,
   getClassroomUnlockPlanet,
   normalizePlanetId,
 } from '@/lib/planets';
@@ -60,6 +59,22 @@ const emptyCompleted = (): Record<PlanetId, boolean> =>
     {} as Record<PlanetId, boolean>
   );
 
+const mergeHistory = (
+  local: DiagnosisSnapshot[],
+  remote: DiagnosisSnapshot[] | undefined
+): DiagnosisSnapshot[] => {
+  const all = [...local, ...(remote ?? [])].sort((a, b) => a.at - b.at);
+  const seen = new Set<string>();
+  const out: DiagnosisSnapshot[] = [];
+  for (const item of all) {
+    const key = `${item.at}:${item.planet}:${item.primary}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out.slice(-40);
+};
+
 const GameContext = React.createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -74,6 +89,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeSession, setActiveSession] = React.useState<ActiveStudent | null>(() =>
     getActiveStudent()
   );
+  const writerRef = React.useRef<StudentWriter | null>(null);
+  const writerKeyRef = React.useRef('');
+  const visitedLocally = React.useRef(false);
+  const historyRef = React.useRef<DiagnosisSnapshot[]>([]);
+  const diagnosisRef = React.useRef<Diagnosis | null>(null);
+  const quizRef = React.useRef<LastQuizSummary | null>(null);
 
   const resetLocalProgress = React.useCallback(() => {
     setCurrentLesson(null);
@@ -84,7 +105,41 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLastPlanetId(null);
     setLastDiagnosis(null);
     setShowRocketTransition(false);
+    writerRef.current = null;
+    writerKeyRef.current = '';
+    visitedLocally.current = false;
+    historyRef.current = [];
+    diagnosisRef.current = null;
+    quizRef.current = null;
   }, []);
+
+  const applyView = React.useCallback((view: ProgressView) => {
+    setCurrentLesson(view.lesson);
+    setProgressPlanetId(view.planet);
+    setLastPlanetId(view.lastPlanet);
+    setCompletedPlanets(buildCompletedMap(view.planet, view.completedPlanets));
+    setPlanetSteps(view.planetSteps);
+  }, []);
+
+  const writerFor = React.useCallback((active: ActiveStudent) => {
+    const key = `${active.classCode}:${nicknameKey(active.nickname)}`;
+    if (!writerRef.current || writerKeyRef.current !== key) {
+      writerKeyRef.current = key;
+      writerRef.current = createStudentWriter({
+        write: (fields) => patchStudentFields(active.classCode, nicknameKey(active.nickname), fields),
+      });
+    }
+    return writerRef.current;
+  }, []);
+
+  const localWriter = React.useCallback((active: ActiveStudent | null) => {
+    if (active) return writerFor(active);
+    if (!writerRef.current) {
+      writerRef.current = createStudentWriter({ write: async () => {} });
+      writerKeyRef.current = 'local';
+    }
+    return writerRef.current;
+  }, [writerFor]);
 
   React.useEffect(() => {
     const syncSession = () => {
@@ -108,16 +163,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [resetLocalProgress]);
 
   const hydrateFromStudent = React.useCallback((student: StudentState) => {
-    const progressPlanet = getFurthestProgressPlanet(student);
-    setCurrentLesson(student.lesson);
-    setProgressPlanetId(progressPlanet);
-    setLastPlanetId((prev) => normalizePlanetId(student.lastPlanet) ?? prev);
-    setCompletedPlanets(
-      buildCompletedMap(progressPlanet, student.completedPlanets ?? [])
-    );
-    setPlanetSteps(student.planetSteps ?? {});
-    if (student.lastDiagnosis) setLastDiagnosis(student.lastDiagnosis);
-  }, []);
+    const active = activeSession ?? getActiveStudent();
+    const writer = localWriter(active);
+    writer.seed(student, visitedLocally.current);
+    historyRef.current = mergeHistory(historyRef.current, student.diagnosisHistory);
+    applyView(writer.view());
+    if (student.lastDiagnosis) {
+      diagnosisRef.current = student.lastDiagnosis;
+      setLastDiagnosis(student.lastDiagnosis);
+    }
+  }, [activeSession, applyView, localWriter]);
 
   const hydrateClassMax = React.useCallback((maxPlanetId?: string) => {
     const normalized = normalizePlanetId(maxPlanetId);
@@ -133,132 +188,72 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const savePlanetStep = React.useCallback(
     async (planetId: PlanetId, step: number) => {
-      // Never move a saved step backwards, user has to replay a finished lesson (or
-      // unmounting before the saved step loaded) used to wipe progress
-      setPlanetSteps((prev) => ({
-        ...prev,
-        [planetId]: Math.max(prev[planetId] ?? 0, step),
-      }));
-
       const active = activeSession ?? getActiveStudent();
+      const writer = localWriter(active);
+      const pending = writer.savePlanetStep(planetId, step);
+      setPlanetSteps(writer.view().planetSteps);
       if (!active) return;
-
-      const clsSnap = await getClass(active.classCode);
-      const studentKey = findStudentKey(clsSnap?.students, active.nickname);
-      const existing = studentKey ? clsSnap?.students?.[studentKey] : null;
-      if (!studentKey || !existing) return;
-
-      await updateStudentState(
-        active.classCode,
-        {
-          ...existing,
-          planetSteps: {
-            ...(existing.planetSteps ?? {}),
-            [planetId]: Math.max(existing.planetSteps?.[planetId] ?? 0, step),
-          },
-          lastUpdated: Date.now(),
-        },
-        studentKey
-      );
+      await pending;
     },
-    [activeSession]
+    [activeSession, localWriter]
   );
 
 
   const markPlanetVisited = React.useCallback(
     async (planetId: PlanetId) => {
-      setLastPlanetId(planetId);
-      setProgressPlanetId((prev) =>
-        getPlanetIndex(planetId) >= getPlanetIndex(prev) ? planetId : prev
-      );
-      setCurrentLesson(getLessonForPlanet(planetId));
-
+      visitedLocally.current = true;
       const active = activeSession ?? getActiveStudent();
+      const writer = localWriter(active);
+      const pending = writer.markVisited(planetId);
+      const view = writer.view();
+      setLastPlanetId(view.lastPlanet);
+      setProgressPlanetId(view.planet);
+      setCurrentLesson(view.lesson);
       if (!active) return;
-
-      const clsSnap = await getClass(active.classCode);
-      const studentKey = findStudentKey(clsSnap?.students, active.nickname);
-      const existing = studentKey ? clsSnap?.students?.[studentKey] : null;
-      if (!studentKey || !existing) return;
-
-
-      const current = getFurthestProgressPlanet(existing);
-      const nextPlanet =
-        getPlanetIndex(planetId) >= getPlanetIndex(current) ? planetId : current;
-
-      await updateStudentState(
-        active.classCode,
-        {
-          ...existing,
-          planet: nextPlanet,
-          lesson: getLessonForPlanet(nextPlanet),
-          lastPlanet: planetId,
-          lastUpdated: Date.now(),
-        },
-        studentKey
-
-      );
+      await pending;
     },
-    [activeSession]
+    [activeSession, localWriter]
   );
 
   const saveLastQuiz = React.useCallback(
     async (summary: LastQuizSummary) => {
+      quizRef.current = summary;
       const active = activeSession ?? getActiveStudent();
       if (!active) return;
-
-      const clsSnap = await getClass(active.classCode);
-      const studentKey = findStudentKey(clsSnap?.students, active.nickname);
-      const existing = studentKey ? clsSnap?.students?.[studentKey] : null;
-      if (!studentKey || !existing) return;
-
-
-      await updateStudentState(
-        active.classCode,
-        {
-          ...existing,
-          lastQuiz: summary,
-          lastUpdated: Date.now(),
-        },
-        studentKey
-
-      );
+      try {
+        const writer = writerFor(active);
+        await writer.enqueueFields(() => ({ lastQuiz: quizRef.current }));
+      } catch (error) {
+        console.error('Could not save quiz', error);
+      }
     },
-    [activeSession]
+    [activeSession, writerFor]
   );
 
   const saveDiagnosis = React.useCallback(
     async (diagnosis: Diagnosis) => {
+      diagnosisRef.current = diagnosis;
       setLastDiagnosis(diagnosis);
       const active = activeSession ?? getActiveStudent();
       if (!active) return;
       try {
-        const clsSnap = await getClass(active.classCode);
-        const studentKey = findStudentKey(clsSnap?.students, active.nickname);
-        const existing = studentKey ? clsSnap?.students?.[studentKey] : null;
-        if (!studentKey || !existing) return;
-        const planet = normalizePlanetId(existing.lastPlanet || existing.planet) ?? 'sun';
-        const diagnosisHistory = appendDiagnosisSnapshot(existing.diagnosisHistory, {
+        const writer = writerFor(active);
+        const planet = writer.view().lastPlanet;
+        historyRef.current = appendDiagnosisSnapshot(historyRef.current, {
           at: diagnosis.updatedAt || Date.now(),
           planet,
           primary: diagnosis.primary,
           confidence: diagnosis.confidence,
         });
-        await updateStudentState(
-          active.classCode,
-          {
-            ...existing,
-            lastDiagnosis: diagnosis,
-            diagnosisHistory,
-            lastUpdated: Date.now(),
-          },
-          studentKey
-        );
+        await writer.enqueueFields(() => ({
+          lastDiagnosis: diagnosisRef.current,
+          diagnosisHistory: historyRef.current,
+        }));
       } catch (error) {
         console.error('Could not save diagnosis', error);
       }
     },
-    [activeSession]
+    [activeSession, writerFor]
   );
 
   React.useEffect(() => {
@@ -277,63 +272,38 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const adjusted = applyClassStartIfNeeded(student, cls);
       hydrateFromStudent(adjusted);
 
-      const needsWrite =
-        adjusted.planet !== student.planet ||
-        adjusted.lesson !== student.lesson ||
-        (adjusted.completedPlanets?.length ?? 0) !== (student.completedPlanets?.length ?? 0);
-
-      if (needsWrite && !writeInFlight) {
+      const writer = writerFor(activeSession);
+      const view = writer.view();
+      const remotePlanet = normalizePlanetId(student.planet) ?? 'sun';
+      const missingComplete = view.completedPlanets.some(
+        (id) => !(student.completedPlanets ?? []).includes(id)
+      );
+      const ahead =
+        getPlanetIndex(view.planet) > getPlanetIndex(remotePlanet) || missingComplete;
+      if (ahead && !writeInFlight) {
         writeInFlight = true;
-        void updateStudentState(activeSession.classCode, adjusted, subKey).finally(
-
-          () => {
-            writeInFlight = false;
-          }
-        );
+        void writer.persistProgress().finally(() => {
+          writeInFlight = false;
+        });
       }
     });
 
     return () => unsubscribe();
-  }, [activeSession, hydrateFromStudent, hydrateClassMax]);
+  }, [activeSession, hydrateFromStudent, hydrateClassMax, writerFor]);
 
   const completePlanet = async (planetId: PlanetId) => {
     hapticMedium();
+    visitedLocally.current = true;
     const active = activeSession ?? getActiveStudent();
+    const writer = localWriter(active);
+    const pending = writer.completePlanet(planetId);
+    const view = writer.view();
+    setCompletedPlanets(buildCompletedMap(view.planet, view.completedPlanets));
+    setProgressPlanetId(view.planet);
+    setLastPlanetId(view.lastPlanet);
+    setCurrentLesson(view.lesson);
     if (!active) return;
-
-    const clsSnap = await getClass(active.classCode);
-    const studentKey = findStudentKey(clsSnap?.students, active.nickname) ?? active.nickname;
-    const existing = clsSnap?.students?.[studentKey];
-    const completedList = [...(existing?.completedPlanets ?? [])];
-    if (!completedList.includes(planetId)) {
-      completedList.push(planetId);
-    }
-
-    const currentIndex = getPlanetIndex(planetId);
-    const nextIndex = Math.min(currentIndex + 1, PLANET_ORDER.length - 1);
-    const nextPlanet = PLANET_ORDER[nextIndex];
-    const nextLesson = getLessonForPlanet(nextPlanet);
-
-    setCompletedPlanets((prev) => ({ ...prev, [planetId]: true }));
-    setProgressPlanetId(nextPlanet);
-    setLastPlanetId(nextPlanet);
-    setCurrentLesson(nextLesson);
-
-    if (!existing) return;
-
-    await updateStudentState(
-      active.classCode,
-      {
-        ...existing,
-        planet: nextPlanet,
-        lesson: nextLesson,
-        lastPlanet: nextPlanet,
-        completedPlanets: completedList,
-        planetSteps: { ...(existing.planetSteps ?? {}) },
-        lastUpdated: Date.now(),
-      },
-      studentKey
-    );
+    await pending;
   };
 
   const getOrderedSequence = () => {

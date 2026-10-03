@@ -1,8 +1,14 @@
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
+import { tx } from '@/i18n/tx';
 // Counting Lesson - Sun (Activity/Practice with apples + Concept Explanation)
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import NumberDraw from '@/components/NumberDraw';
 import ThoughtCard from '@/components/ThoughtCard';
 import { diagnoseTrace, LessonTrace, type Diagnosis, type DigitRead } from '@/lib/cognition';
@@ -21,7 +27,8 @@ import { Volume2 } from 'lucide-react';
 
 const CountingSun: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet, saveDiagnosis } = useGame();
+  const { saveDiagnosis } = useGame();
+  const { leave } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('sun');
   const [basketCount, setBasketCount] = useState(0);
   const [availableApples, setAvailableApples] = useState(7);
@@ -33,7 +40,9 @@ const CountingSun: React.FC = () => {
   const [showTransition, setShowTransition] = useState(false);
   const [conceptStep, setConceptStep] = useState(1);
 
-  const totalSteps = 4;
+  const [drillReady, setDrillReady] = useState(false);
+  const coreSteps = 4;
+  const totalSteps = coreSteps + insertedCount;
 
   useEffect(() => {
     if (step === 1 && conceptStep < 7) {
@@ -70,11 +79,11 @@ const CountingSun: React.FC = () => {
     if (next.lockedSuccess && correct) {
       const result = diagnoseTrace('sun', traceRef.current);
       setDiagnosis(result);
-      void saveDiagnosis(result).catch((error) => console.error(error));
+      saveDiagnosisSafely(saveDiagnosis, result);
     } else if (!correct) {
       const result = diagnoseTrace('sun', traceRef.current);
       setDiagnosis(result);
-      void saveDiagnosis(result).catch((error) => console.error(error));
+      saveDiagnosisSafely(saveDiagnosis, result);
     }
   };
 
@@ -82,13 +91,17 @@ const CountingSun: React.FC = () => {
     recordReadable(read);
   };
 
+  const practiceAgain = () => {
+    setBasketCount(0);
+    setAvailableApples(7);
+    setDiagnosis(null);
+    drawCheck.reset();
+    traceRef.current.reset();
+    setStep(0);
+  };
+
   const goToNextPlanet = () => {
-    completePlanet('sun');
-    setShowRocketTransition(true);
-    setTimeout(() => {
-      navigate('/lesson/counting/mercury');
-      setShowRocketTransition(false);
-    }, 1600);
+    leave('sun', '/lesson/counting/mercury');
   };
 
   if (showTransition) {
@@ -105,22 +118,21 @@ const CountingSun: React.FC = () => {
   }
 
   const renderStep = () => {
+    if (step >= coreSteps - 1 && step < totalSteps - 1) {
+      return <LessonDrill planet="sun" index={step - (coreSteps - 1)} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1 py-2">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-3 sm:mb-6 px-2">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground">
-                Put Apples in the Basket
-              </h2>
-              <ReadAloudButton text="Put apples in the basket. Tap an apple to add it." />
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground">{tx('ui:s_6461f3f1fd')}</h2>
+              <ReadAloudButton text={tx('ui:s_24238e6a24')} />
             </div>
-            <p className="text-muted-foreground mb-4 sm:mb-6 text-base sm:text-lg">
-              Tap an apple to add it
-            </p>
+            <p className="text-muted-foreground mb-4 sm:mb-6 text-base sm:text-lg">{tx('ui:s_18ae96f6bb')}</p>
             
             <div className="flex flex-col items-center gap-4 sm:gap-6">
-              <Counter count={basketCount} label="Apples" />
+              <Counter count={basketCount} label={tx('ui:applesLabel')} />
               
               <Basket>
                 {Array.from({ length: basketCount }).map((_, i) => (
@@ -137,7 +149,7 @@ const CountingSun: React.FC = () => {
                 <div className="mt-6 w-full">
                   <NumberDraw
                     key="sun-apples"
-                    prompt="Write how many apples are in the basket."
+                    prompt={tx('ui:s_66aceef017')}
                     result={drawCheck.state.verdict}
                     checkEnabled={drawCheck.canSubmit(true)}
                     disabled={drawCheck.state.lockedSuccess}
@@ -172,9 +184,7 @@ const CountingSun: React.FC = () => {
       case 1:
         return (
           <div className="text-center max-w-3xl mx-auto flex flex-col items-center justify-center flex-1 py-2 sm:py-6">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-4 sm:mb-8 px-2">
-              What is Counting?
-            </h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-4 sm:mb-8 px-2">{tx('ui:s_f199de7ab4')}</h2>
             <ConceptVisual type="counting" step={conceptStep} />
           </div>
         );
@@ -183,14 +193,10 @@ const CountingSun: React.FC = () => {
         return (
           <div className="text-center max-w-3xl mx-auto flex flex-col items-center justify-center flex-1 py-2 sm:py-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-3 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground px-2">
-                Count from 1 to 9!
-              </h2>
-              <ReadAloudButton text="one, two, three, four, five, six, seven, eight, nine" />
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground px-2">{tx('ui:s_ce29945246')}</h2>
+              <ReadAloudButton text={tx('ui:s_23c5027eb3')} />
             </div>
-            <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-lg px-2">
-              Each number tells us how many. Tap the speaker to hear them all, or tap a number to hear it.
-            </p>
+            <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-lg px-2">{tx('ui:s_1daabbf5ce')}</p>
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 w-full max-w-2xl mb-4">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => {
                 const word = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][num - 1];
@@ -225,23 +231,20 @@ const CountingSun: React.FC = () => {
           </div>
         );
 
-      case 3:
+      case totalSteps - 1:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              Great Work on the Sun!
-            </h2>
-            <p className="text-xl text-muted-foreground mb-10">
-              You learned how to count. Celebrate what you learned:
-            </p>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_a9874cf12a')}</h2>
+            <p className="text-xl text-muted-foreground mb-10">{tx('ui:s_65f2099501')}</p>
             
             <div className="mb-10 w-full px-2">
               <LessonCelebration lessonType="counting" />
             </div>
             
-            <Button onClick={() => setShowTransition(true)} size="lg">
-              Go to Mercury
-            </Button>
+            <div className="flex flex-col items-center gap-3">
+              <PracticeAgainButton onClick={practiceAgain} />
+              <Button onClick={() => setShowTransition(true)} size="lg">{tx('ui:s_f9daa67d13')}</Button>
+            </div>
           </div>
         );
 
@@ -256,8 +259,8 @@ const CountingSun: React.FC = () => {
       totalSteps={totalSteps}
       step={step}
       onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-      onNext={step < 3 ? () => setStep(step + 1) : undefined}
-      showNext={step < 3}
+      onNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady) ? () => setStep(step + 1) : undefined}
+      showNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady)}
     >
       {renderStep()}
     </LessonShell>

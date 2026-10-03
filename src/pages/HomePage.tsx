@@ -84,7 +84,7 @@ const HomePage: React.FC = () => {
         <div className="w-full max-w-2xl mb-6 space-y-3 animate-fade-in">
           {studentSession && (
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10">
-              <div className="flex-1 text-left">
+              <div className="flex-1 text-start">
                 <p className="text-sm text-emerald-200/80">{t('signedStudent')}</p>
                 <p className="text-lg font-semibold text-foreground">
                   {getStudentDisplayName(studentSession)}
@@ -111,7 +111,7 @@ const HomePage: React.FC = () => {
           )}
           {teacherSession && (
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4 rounded-2xl border border-sky-500/30 bg-sky-500/10">
-              <div className="flex-1 text-left">
+              <div className="flex-1 text-start">
                 <p className="text-sm text-sky-200/80">{t('signedTeacher')}</p>
                 <p className="text-lg font-semibold text-foreground">
                   {t('classWord', { code: teacherSession.classCode })}

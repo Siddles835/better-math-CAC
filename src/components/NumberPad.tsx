@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { Delete } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -73,7 +74,7 @@ const NumberPad: React.FC<NumberPadProps> = ({
           variant="outline"
           onClick={backspace}
           disabled={disabled || value.length === 0}
-          aria-label="Delete last digit"
+          aria-label={tx('ui:s_82e9232cab')}
           className="h-14 w-[72px] transition-transform active:scale-95"
         >
           <Delete className="w-6 h-6" />

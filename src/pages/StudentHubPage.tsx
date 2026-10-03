@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PlanetSelectPage from '@/pages/PlanetSelectPage';
@@ -11,7 +12,7 @@ const StudentHubPage: React.FC = () => {
   if (isMobile === undefined) {
     return (
       <div className="min-h-screen bg-background subtle-stars flex items-center justify-center">
-        <div className="text-muted-foreground animate-fade-in">Loading your solar system…</div>
+        <div className="text-muted-foreground animate-fade-in">{tx('ui:s_a981d720b9')}</div>
       </div>
     );
   }

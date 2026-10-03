@@ -1,8 +1,9 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PLANET_META } from '@/lib/planets';
-import { type Diagnosis } from '@/lib/cognition';
+import { kidLineFor, type Diagnosis } from '@/lib/cognition';
 
 interface ThoughtCardProps {
   diagnosis: Diagnosis;
@@ -17,10 +18,10 @@ const ThoughtCard: React.FC<ThoughtCardProps> = ({ diagnosis, onPractice, practi
   return (
     <div
       data-secondary="true"
-      className="bg-card rounded-xl p-5 border border-border max-w-xl text-left w-full"
+      className="bg-card rounded-xl p-5 border border-border max-w-xl text-start w-full"
     >
-      <p className="text-xs font-medium tracking-wide text-muted-foreground mb-1">Your practice</p>
-      <p className="text-lg font-semibold text-foreground mb-2">{diagnosis.kidLine}</p>
+      <p className="text-xs font-medium tracking-wide text-muted-foreground mb-1">{tx('ui:s_e6825d79e8')}</p>
+      <p className="text-lg font-semibold text-foreground mb-2">{kidLineFor(diagnosis.primary)}</p>
       <p className="text-sm text-muted-foreground mb-4">
         Three problems built for you
         {diagnosis.primary !== 'STEADY' ? ` · then ${planet.name} if it is unlocked` : ''}

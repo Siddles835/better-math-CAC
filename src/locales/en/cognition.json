@@ -22,5 +22,16 @@
   "teacher_DIGIT_REV": "Written digits may be reversed (6/9, 2/5). On-device drawing check.",
   "teacher_WORD_GAP": "Number-word and quantity may not match. Use read-aloud on story planets.",
   "teacher_PLACE_SPLIT": "May split tens and ones. Watch Jupiter to Saturn transition.",
-  "teacher_STEADY": "No strong misconception signal. Ready for the next unlocked planet."
+  "teacher_STEADY": "No strong misconception signal. Ready for the next unlocked planet.",
+  "practice_COUNT_ALL": "Count on from a number you already have",
+  "practice_OVERSHOOT": "Make the exact number",
+  "practice_SUB_FLIP": "Take away the number the story asks for",
+  "practice_COMMUTE": "Same total, two orders",
+  "practice_DIGIT_REV": "Write the number, starting at the top",
+  "practice_WORD_GAP": "Hear the number, then build it",
+  "practice_PLACE_SPLIT": "Tens and ones as one number",
+  "practice_STEADY": "A short stretch from last time",
+  "confidenceHigh": "High confidence",
+  "confidenceMid": "Moderate confidence",
+  "confidenceLow": "Low confidence, still gathering"
 }

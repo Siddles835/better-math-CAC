@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import HomeButton from '@/components/HomeButton';
 import NavigationArrows from '@/components/NavigationArrows';
@@ -42,22 +43,20 @@ const LessonShell: React.FC<LessonShellProps> = ({
 }) => {
   const dots = PLANET_DOT[planet];
   const { prefs } = useAccessibility();
-  const stepLabel = `Step ${Math.min(step + 1, totalSteps)} of ${totalSteps}`;
+  const stepLabel = tx('ui:stepOf', { step: Math.min(step + 1, totalSteps), total: totalSteps });
 
   return (
     <div className={`lesson-shell bg-background ${prefs.calmBackground ? '' : 'subtle-stars'} flex flex-col overflow-hidden`}>
       <a href="#lesson-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:left-2 focus:top-2 focus:rounded-lg focus:bg-card focus:px-4 focus:py-2 focus:ring-2 focus:ring-primary">
-        Skip to lesson
-      </a>
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:start-2 focus:top-2 focus:rounded-lg focus:bg-card focus:px-4 focus:py-2 focus:ring-2 focus:ring-primary">{tx('ui:s_3a35b15820')}</a>
 
       <header className="relative flex items-center justify-center min-h-14 shrink-0 px-16 py-2">
-        <div className="absolute left-2 top-1/2 -translate-y-1/2">
+        <div className="absolute start-2 top-1/2 -translate-y-1/2">
           <HomeButton embedded />
         </div>
 
         <div className="flex flex-col items-center gap-1">
-          <div className="flex justify-center gap-2" aria-hidden>
+          <div className="flex max-w-[210px] flex-wrap justify-center gap-2" aria-hidden>
             {Array.from({ length: totalSteps }).map((_, i) => (
               <div key={i}
                 className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-colors ${
@@ -69,7 +68,7 @@ const LessonShell: React.FC<LessonShellProps> = ({
           <p className="text-xs font-medium text-muted-foreground">{stepLabel}</p>
         </div>
 
-        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+        <div className="absolute end-2 top-1/2 -translate-y-1/2">
           <AccessibilityQuickButton />
         </div>
       </header>

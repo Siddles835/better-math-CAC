@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { hapticTap } from '@/lib/haptics';
 
@@ -5,9 +6,10 @@ interface PencilProps {
   onClick?: () => void;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  testId?: string;
 }
 
-const Pencil: React.FC<PencilProps> = ({ onClick, className = '', size = 'md' }) => {
+const Pencil: React.FC<PencilProps> = ({ onClick, className = '', size = 'md', testId }) => {
   const sizeClasses = {
     sm: 'w-6 h-16',
     md: 'w-8 h-20',
@@ -24,9 +26,10 @@ const Pencil: React.FC<PencilProps> = ({ onClick, className = '', size = 'md' })
   return (
     <button
       type="button"
+      data-testid={testId}
       onClick={handleClick}
       className={`${sizeClasses[size]} rounded-lg transition-transform duration-200 hover:scale-110 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className}`}
-      aria-label="Pencil"
+      aria-label={tx('ui:s_5136ae1b5b')}
     >
       <svg viewBox="0 0 20 60" fill="none" className="w-full h-full">
         {/* Pencil tip */}

@@ -33,7 +33,7 @@ const NavigationArrows: React.FC<NavigationArrowsProps> = ({
       className={
         embedded
           ? 'flex justify-between gap-3 px-3 sm:px-6 py-3 pointer-events-none'
-          : 'fixed left-0 right-0 flex justify-between px-4 sm:px-8 z-20 pointer-events-none'
+          : 'fixed start-0 end-0 flex justify-between px-4 sm:px-8 z-20 pointer-events-none'
       }
       style={
         embedded

@@ -1,6 +1,8 @@
 # Translation review
 
-These translations are AI-generated and have not been reviewed by a native speaker. Do not describe them as professionally translated. The English text is the source of truth. On Privacy, Cookie, and Support pages, the English version is the authoritative one.
+These translations are AI-generated and have not been reviewed by a native speaker. Do not describe them as professionally translated, validated, or checked by a translator. The English text is the source of truth. On Privacy, Cookie, and Support pages, the English version is the authoritative one.
+
+The large `ui.json` files (lesson pages, teacher screens, practice, and shared components) were extracted from the interface and translated by a model in the same pass. They are unreviewed. Kid-facing wording should be read aloud by a native speaker of each language before a release.
 
 ## Worth a native-speaker review first
 

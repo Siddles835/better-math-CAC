@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Target, AlertCircle } from 'lucide-react';
@@ -55,9 +56,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
 
   return (
     <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1 py-4">
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-3 sm:mb-4 px-2">
-        Quiz complete
-      </h2>
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-3 sm:mb-4 px-2">{tx('ui:s_f2ca42cbf1')}</h2>
       <p className="text-base sm:text-xl text-muted-foreground mb-6 sm:mb-8 px-2">
         You finished the {lessonType} check.
       </p>
@@ -73,9 +72,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
           variant="outline"
           size="lg"
           className="min-h-[48px] cursor-pointer touch-manipulation"
-        >
-          View score
-        </Button>
+        >{tx('ui:s_586d016cf9')}</Button>
         <Button
           type="button"
           onClick={onFinish}
@@ -101,14 +98,14 @@ const QuizResults: React.FC<QuizResultsProps> = ({
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-card rounded-2xl border border-border max-w-lg w-full p-8 animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-semibold text-foreground mb-2">Your score</h3>
+              <h3 className="text-2xl font-semibold text-foreground mb-2">{tx('ui:s_545ca2303f')}</h3>
               <p className="text-muted-foreground">{getPerformanceMessage()}</p>
             </div>
 
             <div className="bg-muted/50 rounded-xl p-6 mb-6">
               <div className="flex items-center justify-center gap-4">
                 <Target className="w-8 h-8 text-primary" />
-                <div className="text-left">
+                <div className="text-start">
                   <p className="text-3xl font-bold text-foreground">
                     {score} / {totalQuestions}
                   </p>
@@ -119,18 +116,14 @@ const QuizResults: React.FC<QuizResultsProps> = ({
 
             {perfectFirstTry && (
               <div className="mb-6 bg-success/10 rounded-xl p-4">
-                <p className="text-success font-medium">Perfect score! No areas need improvement.</p>
+                <p className="text-success font-medium">{tx('ui:s_c097acb25d')}</p>
               </div>
             )}
 
             {percentage === 100 && extraTryCount > 0 && (
               <div className="mb-6 bg-accent/10 rounded-xl p-4">
-                <p className="text-foreground font-medium">
-                  You got every question! Some took more than one try.
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Your teacher can see which questions needed extra practice.
-                </p>
+                <p className="text-foreground font-medium">{tx('ui:s_8a15e6fd62')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{tx('ui:s_ba8fad377d')}</p>
               </div>
             )}
 
@@ -138,7 +131,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <AlertCircle className="w-5 h-5 text-accent" />
-                  <h4 className="font-medium text-foreground">Areas to Practice</h4>
+                  <h4 className="font-medium text-foreground">{tx('ui:s_3de789464b')}</h4>
                 </div>
                 <ul className="space-y-2">
                   {areasToImprove.map((topic, i) => (
@@ -157,7 +150,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <AlertCircle className="w-5 h-5 text-accent" />
-                  <h4 className="font-medium text-foreground">Areas to Practice</h4>
+                  <h4 className="font-medium text-foreground">{tx('ui:s_3de789464b')}</h4>
                 </div>
                 <p className="bg-accent/10 text-accent-foreground px-4 py-2 rounded-lg text-sm">
                   {getTopicLabel(lessonType)}
@@ -166,9 +159,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
             )}
 
             <div className="flex gap-3">
-              <Button type="button" onClick={() => setShowResults(false)} variant="outline" className="flex-1 min-h-[48px]">
-                Close
-              </Button>
+              <Button type="button" onClick={() => setShowResults(false)} variant="outline" className="flex-1 min-h-[48px]">{tx('ui:s_bbfa773e5a')}</Button>
               <Button type="button" onClick={onFinish} className="flex-1 min-h-[48px]">
                 {finishLabel}
               </Button>

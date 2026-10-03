@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,22 +9,10 @@ type BoolKey = {
   [K in keyof AccessibilityPrefs]: AccessibilityPrefs[K] extends boolean ? K : never;
 }[keyof AccessibilityPrefs];
 
-interface ToggleRowProps { id: BoolKey; label: string; hint: string }
-
-const TOGGLES: ToggleRowProps[] = [
-  { id: 'easyReadSpacing', label: 'Easy-read spacing', hint: 'More space between letters and lines.' },
-  { id: 'highContrast', label: 'High contrast', hint: 'Stronger contrast between text and background.' },
-  { id: 'colorSafeLabels', label: 'Words with colours', hint: 'Right and wrong always show a word and a symbol, never colour alone.' },
-  { id: 'reduceMotion', label: 'Less movement', hint: 'Turns off animations and moving decoration.' },
-  { id: 'calmBackground', label: 'Calm background', hint: 'A plain background with no stars.' },
-  { id: 'focusMode', label: 'One thing at a time', hint: 'Hides extra side notes so only the task is on screen.' },
-  { id: 'autoReadAloud', label: 'Read pages aloud', hint: 'Each page is read out when it opens. The speaker button still works.' },
-  { id: 'soundAsText', label: 'Show sounds as text', hint: 'Anything said or played is written on screen too.' },
-  { id: 'muteSounds', label: 'Mute sound', hint: 'No speech or sound effects.' },
-  { id: 'biggerButtons', label: 'Bigger buttons', hint: 'Larger targets that are easier to tap or click.' },
-  { id: 'breaks', label: 'Break button', hint: 'Adds a Take a break button inside lessons.' },
-  { id: 'summaryFirst', label: 'Summary first', hint: 'A short overview before the full explanation.' },
-  { id: 'workedExampleFirst', label: 'Worked example first', hint: 'See one solved example before you practise.' },
+const TOGGLE_IDS: BoolKey[] = [
+  'easyReadSpacing', 'highContrast', 'colorSafeLabels', 'reduceMotion', 'calmBackground',
+  'focusMode', 'autoReadAloud', 'soundAsText', 'muteSounds', 'biggerButtons', 'breaks',
+  'summaryFirst', 'workedExampleFirst',
 ];
 
 const AccessibilityPanel: React.FC<{ className?: string }> = ({ className = '' }) => {
@@ -38,67 +27,65 @@ const AccessibilityPanel: React.FC<{ className?: string }> = ({ className = '' }
   return (
     <div className={`space-y-6 ${className}`}>
       <div>
-        <h3 className="text-lg font-semibold">Text size</h3>
-        <p className="text-sm text-muted-foreground mb-3">Pick the size that is easiest to read.</p>
+        <h3 className="text-lg font-semibold">{tx('ui:s_3cc6e124a8')}</h3>
+        <p className="text-sm text-muted-foreground mb-3">{tx('ui:s_aa1d292f81')}</p>
         <div className="flex flex-wrap gap-2">
           {(['normal', 'large', 'xlarge'] as const).map((size) => (
             <Button key={size} type="button"
               variant={prefs.textSize === size ? 'default' : 'outline'}
               className="min-h-[48px]" aria-pressed={prefs.textSize === size}
               onClick={() => { setPref('textSize', size); announce(`Text size ${size}`); }}>
-              {prefs.textSize === size ? <Check className="w-4 h-4 mr-2" aria-hidden /> : null}
-              {size === 'normal' ? 'Normal' : size === 'large' ? 'Large' : 'Extra large'}
+              {prefs.textSize === size ? <Check className="w-4 h-4 me-2" aria-hidden /> : null}
+              {tx(`ui:size_${size}`)}
             </Button>
           ))}
         </div>
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold">How I answer</h3>
-        <p className="text-sm text-muted-foreground mb-3">
-          Every way is accepted. This is just the one offered to you first.
-        </p>
+        <h3 className="text-lg font-semibold">{tx('ui:s_3fb4420273')}</h3>
+        <p className="text-sm text-muted-foreground mb-3">{tx('ui:s_192c760d71')}</p>
         <div className="flex flex-wrap gap-2">
-          {([['any','Any way'],['type','Typing'],['choose','Choosing'],['draw','Drawing']] as const).map(([value, label]) => (
+          {(['any', 'type', 'choose', 'draw'] as const).map((value) => (
             <Button key={value} type="button"
               variant={prefs.answerMethod === value ? 'default' : 'outline'}
               className="min-h-[48px]" aria-pressed={prefs.answerMethod === value}
-              onClick={() => { setPref('answerMethod', value); announce(`Answer method ${label}`); }}>
-              {prefs.answerMethod === value ? <Check className="w-4 h-4 mr-2" aria-hidden /> : null}
-              {label}
+              onClick={() => { setPref('answerMethod', value); announce(tx(`ui:answer_${value}`)); }}>
+              {prefs.answerMethod === value ? <Check className="w-4 h-4 me-2" aria-hidden /> : null}
+              {tx(`ui:answer_${value}`)}
             </Button>
           ))}
         </div>
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold">Pace</h3>
-        <p className="text-sm text-muted-foreground mb-3">
-          Relaxed pace removes any hurry and gives extra time to think.
-        </p>
+        <h3 className="text-lg font-semibold">{tx('ui:s_7a9a622659')}</h3>
+        <p className="text-sm text-muted-foreground mb-3">{tx('ui:s_77063ac325')}</p>
         <div className="flex flex-wrap gap-2">
-          {([['normal','Normal pace'],['relaxed','Relaxed pace']] as const).map(([value, label]) => (
+          {(['normal', 'relaxed'] as const).map((value) => (
             <Button key={value} type="button"
               variant={prefs.pacing === value ? 'default' : 'outline'}
               className="min-h-[48px]" aria-pressed={prefs.pacing === value}
-              onClick={() => { setPref('pacing', value); announce(label); }}>
-              {prefs.pacing === value ? <Check className="w-4 h-4 mr-2" aria-hidden /> : null}
-              {label}
+              onClick={() => { setPref('pacing', value); announce(tx(`ui:pace_${value}`)); }}>
+              {prefs.pacing === value ? <Check className="w-4 h-4 me-2" aria-hidden /> : null}
+              {tx(`ui:pace_${value}`)}
             </Button>
           ))}
         </div>
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold">Screen and sound</h3>
+        <h3 className="text-lg font-semibold">{tx('ui:s_3b5d9db120')}</h3>
         <ul className="mt-3 space-y-2">
-          {TOGGLES.map(({ id, label, hint }) => {
+          {TOGGLE_IDS.map((id) => {
             const on = prefs[id];
+            const label = tx(`ui:toggle_${id}`);
+            const hint = tx(`ui:toggle_${id}_hint`);
             return (
               <li key={id}>
                 <button type="button" role="switch" aria-checked={on}
                   onClick={() => toggle(id, label)}
-                  className="w-full text-left flex items-start gap-3 rounded-2xl border border-border bg-card p-4 min-h-[56px] hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  className="w-full text-start flex items-start gap-3 rounded-2xl border border-border bg-card p-4 min-h-[56px] hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                   <span aria-hidden className="mt-0.5 inline-flex w-6 h-6 shrink-0 items-center justify-center rounded-md border-2 border-foreground/50">
                     {on ? <Check className="w-4 h-4" /> : null}
                   </span>
@@ -107,7 +94,7 @@ const AccessibilityPanel: React.FC<{ className?: string }> = ({ className = '' }
                     <span className="block text-sm text-muted-foreground">{hint}</span>
                   </span>
                   {/* Words carry the state */}
-                  <span className="text-sm font-semibold">{on ? 'On' : 'Off'}</span>
+                  <span className="text-sm font-semibold">{on ? tx('ui:switchOn') : tx('ui:switchOff')}</span>
                 </button>
               </li>
             );
@@ -116,9 +103,7 @@ const AccessibilityPanel: React.FC<{ className?: string }> = ({ className = '' }
       </div>
 
       <Button type="button" variant="outline" className="min-h-[48px]"
-        onClick={() => { resetPrefs(); announce('Learning preferences reset'); }}>
-        Reset to default
-      </Button>
+        onClick={() => { resetPrefs(); announce('Learning preferences reset'); }}>{tx('ui:s_39c90eb758')}</Button>
     </div>
   );
 };

@@ -1,3 +1,5 @@
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
+import { tx } from '@/i18n/tx';
 import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LessonShell from '@/components/LessonShell';
@@ -9,6 +11,9 @@ import { SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
 import {
   adaptPath,
   buildPersonalPath,
+  itemSignature,
+  loadPracticeMemory,
+  savePracticeMemory,
   type ItemOutcome,
   type PersonalPath,
 } from '@/lib/cognition/personalPath';
@@ -27,8 +32,16 @@ const PersonalPracticePage: React.FC<PersonalPracticePageProps> = ({ demo = fals
   const nickname = demo ? SAMPLE_STUDENTS[0].nickname : student?.nickname ?? 'student';
   const diagnosis = demo ? SAMPLE_STUDENTS[0].lastDiagnosis ?? null : lastDiagnosis;
 
+  const memory = useRef(loadPracticeMemory());
+  const [round, setRound] = useState(demo ? 0 : memory.current.round);
   const [path, setPath] = useState<PersonalPath>(() =>
-    buildPersonalPath(nickname, diagnosis, demo ? 'sample' : undefined)
+    buildPersonalPath(nickname, diagnosis, demo ? 'sample' : undefined, {
+      round: demo ? 0 : memory.current.round,
+      entropy: demo ? 0 : Date.now(),
+      recent: memory.current.recent,
+      accuracy: memory.current.accuracy,
+      demo,
+    })
   );
   const [step, setStep] = useState(-1);
   const [done, setDone] = useState(false);
@@ -54,9 +67,24 @@ const PersonalPracticePage: React.FC<PersonalPracticePageProps> = ({ demo = fals
   );
 
   const restart = () => {
+    const nextRound = round + 1;
+    const recent = [...memory.current.recent, ...path.items.map(itemSignature)].slice(-18);
+    const checksEvents = traceRef.current.events.filter((event) => event.kind === 'check');
+    const correct = checksEvents.filter((event) => event.value === event.target).length;
+    const checks = checksEvents.length;
+    const accuracy = checks ? correct / checks : memory.current.accuracy;
+    memory.current = { recent, accuracy, round: nextRound };
+    if (!demo) savePracticeMemory(recent, accuracy, nextRound);
     traceRef.current = new LessonTrace();
-    setPath(buildPersonalPath(nickname, diagnosis, demo ? 'sample' : undefined));
-    setStep(-1);
+    setRound(nextRound);
+    setPath(buildPersonalPath(nickname, diagnosis, demo ? 'sample' : undefined, {
+      round: nextRound,
+      entropy: demo ? nextRound : Date.now(),
+      recent,
+      accuracy,
+      demo,
+    }));
+    setStep(0);
     setDone(false);
     setReady(false);
     setResult(null);
@@ -66,7 +94,7 @@ const PersonalPracticePage: React.FC<PersonalPracticePageProps> = ({ demo = fals
     const next = diagnoseTrace(planet, traceRef.current);
     setResult(next);
     setDone(true);
-    if (!demo) void saveDiagnosis(next);
+    if (!demo) saveDiagnosisSafely(saveDiagnosis, next);
   };
 
   const itemBase = useRef(path);
@@ -111,29 +139,25 @@ const PersonalPracticePage: React.FC<PersonalPracticePageProps> = ({ demo = fals
       onBack={goHub}
       onNext={done ? goHub : handleNext}
       showNext={done || (step >= 0 && ready)}
-      nextLabel={done ? (demo ? 'Sample classroom' : 'Back to planets') : step >= path.items.length - 1 ? 'Finish' : 'Next'}
-      backLabel={demo ? 'Sample classroom' : 'Planets'}
+      nextLabel={done ? (demo ? tx('ui:sampleClassroom') : tx('ui:backPlanets')) : step >= path.items.length - 1 ? tx('ui:finishPractice') : tx('common:next')}
+      backLabel={demo ? tx('ui:sampleClassroom') : tx('ui:planetsWord')}
     >
       {step < 0 && (
         <div className="flex-1 flex flex-col items-center justify-center text-center max-w-lg mx-auto py-8">
           {demo && (
             <p className="text-sm text-muted-foreground mb-3">
-              Sample practice for {displayName} — not a live student
+              {tx('ui:sampleFor', { name: displayName })}
             </p>
           )}
           {!demo && (
-            <p className="text-sm text-muted-foreground mb-3">Practice for {displayName}</p>
+            <p className="text-sm text-muted-foreground mb-3">{tx('ui:practiceFor', { name: displayName })}</p>
           )}
           <h1 className="text-2xl sm:text-3xl font-semibold mb-3">{intro.title}</h1>
           <p className="text-[16px] text-muted-foreground leading-relaxed mb-6">{intro.why}</p>
           <p className="text-sm text-muted-foreground mb-8">
-            {demo
-              ? 'Three short problems, built on this device from how this student worked. Numbers change by child and by day. If one is missed, the next one can tighten.'
-              : 'Three short problems. Start when you are ready.'}
+            {demo ? tx('ui:demoRoundNote') : tx('ui:liveRoundNote')}
           </p>
-          <Button type="button" size="lg" onClick={handleNext}>
-            Start
-          </Button>
+          <Button type="button" size="lg" onClick={handleNext}>{tx('ui:s_952f375412')}</Button>
         </div>
       )}
 
@@ -155,8 +179,8 @@ const PersonalPracticePage: React.FC<PersonalPracticePageProps> = ({ demo = fals
 
       {done && result && (
         <div className="flex-1 flex flex-col items-center justify-center py-8">
-          <h2 className="text-2xl font-semibold mb-4">Practice complete</h2>
-          <ThoughtCard diagnosis={result} practiceLabel="Practice again" onPractice={restart} />
+          <h2 className="text-2xl font-semibold mb-4">{tx('ui:s_199ab5537a')}</h2>
+          <ThoughtCard diagnosis={result} practiceLabel={tx('ui:practiceAgain')} onPractice={restart} />
         </div>
       )}
     </LessonShell>

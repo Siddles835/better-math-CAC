@@ -1,8 +1,14 @@
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
+import { tx } from '@/i18n/tx';
 // Addition Lesson - Earth (Activity/Practice with pencils)
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import Pencil from '@/components/Pencil';
 import Counter from '@/components/Counter';
 import PlanetTransition from '@/components/PlanetTransition';
@@ -19,7 +25,8 @@ import { useAnswerCheck } from '@/hooks/useAnswerCheck';
 
 const AdditionEarth: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet, saveDiagnosis } = useGame();
+  const { saveDiagnosis } = useGame();
+  const { leave } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('earth');
   const [showTransition, setShowTransition] = useState(false);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
@@ -28,7 +35,9 @@ const AdditionEarth: React.FC = () => {
   // Animation state
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'initial' | 'animating' | 'final'>('idle');
   const [displayCount, setDisplayCount] = useState(3);
-  const [showNewPencils, setShowNewPencils] = useState(false);
+  const [arrivedPencils, setArrivedPencils] = useState(0);
+  const [landing, setLanding] = useState(false);
+  const timers = useRef<number[]>([]);
   
   // Activity state
   const [leftPencils] = useState(3);
@@ -45,39 +54,62 @@ const AdditionEarth: React.FC = () => {
   const drawCheck = useAnswerCheck();
   const activity2TotalRef = useRef(2);
 
-  const totalSteps = 4;
+  const [drillReady, setDrillReady] = useState(false);
+  const coreSteps = 4;
+  const totalSteps = coreSteps + insertedCount;
+
+  const clearTimers = () => {
+    timers.current.forEach((id) => window.clearTimeout(id));
+    timers.current = [];
+  };
+
+  const later = (fn: () => void, ms: number) => {
+    const id = window.setTimeout(fn, ms);
+    timers.current.push(id);
+  };
+
+  useEffect(() => clearTimers, []);
 
   const startAnimation = () => {
+    clearTimers();
     setAnimationPhase('initial');
-    setShowNewPencils(false);
+    setArrivedPencils(0);
     // Drop to 0 first so the counter actually announces "3" on the first play too.
     setDisplayCount(0);
-    window.setTimeout(() => setDisplayCount(3), 50);
-
-    setTimeout(() => {
+    later(() => setDisplayCount(3), 400);
+    // Each new pencil lands on its own, slowly enough to see.
+    later(() => {
       setAnimationPhase('animating');
-      setShowNewPencils(true);
-    }, 1000);
-
-    setTimeout(() => {
+      setArrivedPencils(1);
+      setDisplayCount(4);
+    }, 1800);
+    later(() => {
+      setArrivedPencils(2);
       setDisplayCount(5);
-    }, 2000);
+    }, 3600);
+    later(() => setAnimationPhase('final'), 5400);
+  };
 
-    setTimeout(() => {
-      setAnimationPhase('final');
-    }, 3000);
+  const landThen = (fn: () => void) => {
+    if (landing) return;
+    setLanding(true);
+    fn();
+    later(() => setLanding(false), 1200);
   };
 
   const publishDiagnosis = () => {
     const result = diagnoseTrace('earth', traceRef.current);
     setDiagnosis(result);
-    void saveDiagnosis(result).catch((error) => console.error(error));
+    saveDiagnosisSafely(saveDiagnosis, result);
   };
 
   const addPencilRight = () => {
+    if (landing) return;
     if (availablePencils > 0 && leftPencils + rightPencils < 9) {
-      setRightPencils(prev => prev + 1);
-      setAvailablePencils(prev => prev - 1);
+      landThen(() => {
+        setRightPencils(prev => prev + 1);
+        setAvailablePencils(prev => prev - 1);
+      });
     }
   };
 
@@ -86,8 +118,9 @@ const AdditionEarth: React.FC = () => {
   const activity2Ok = activity2Checked && activity2Total === activity2Target;
 
   const addPencilActivity2 = () => {
-    if (activity2Ok) return;
+    if (activity2Ok || landing) return;
     if (activity2Available > 0 && activity2Left + activity2Right < 9) {
+      landThen(() => {
       const next = activity2Right + 1;
       setActivity2Right(next);
       setActivity2Available(prev => prev - 1);
@@ -97,6 +130,7 @@ const AdditionEarth: React.FC = () => {
         setDiagnosis(null);
       }
       drawCheck.noteChange();
+      });
     }
   };
 
@@ -125,33 +159,36 @@ const AdditionEarth: React.FC = () => {
     publishDiagnosis();
   };
 
-  const resetActivity2 = () => {
+  const resetDraw = drawCheck.reset;
+  const resetActivity2 = useCallback(() => {
     setActivity2Right(0);
     setActivity2Available(6);
     setActivity2Checked(false);
     setShowGuided(false);
+    setDiagnosis(null);
+    resetDraw();
     traceRef.current.reset();
+  }, [resetDraw]);
+
+  const practiceAgain = () => {
+    resetActivity2();
+    setStep(2);
   };
 
-  const resetPractice = () => {
+  const resetPractice = useCallback(() => {
     setRightPencils(0);
     setAvailablePencils(5);
-  };
+  }, []);
 
   useEffect(() => {
     if (step === 1) resetPractice();
     if (step === 2) resetActivity2();
     // Reset practice/target activities whenever the student returns to them.
-  }, [step]);
+  }, [step, resetPractice, resetActivity2]);
 
 
   const goToNextPlanet = () => {
-    completePlanet('earth');
-    setShowRocketTransition(true);
-    setTimeout(() => {
-      navigate('/lesson/addition/mars');
-      setShowRocketTransition(false);
-    }, 1600);
+    leave('earth', '/lesson/addition/mars');
   };
 
   if (showTransition) {
@@ -168,13 +205,14 @@ const AdditionEarth: React.FC = () => {
   }
 
   const renderStep = () => {
+    if (step >= coreSteps - 1 && step < totalSteps - 1) {
+      return <LessonDrill planet="earth" index={step - (coreSteps - 1)} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-8">
-              Watch: Adding Pencils
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-8">{tx('ui:s_83f48b439a')}</h2>
             
             <div className="bg-card rounded-xl p-10 border border-border mb-8 w-full max-w-md">
               <div className="flex justify-center items-end gap-2 sm:gap-3 mb-6 min-h-[120px] flex-wrap max-w-[16rem] sm:max-w-none mx-auto">
@@ -183,22 +221,17 @@ const AdditionEarth: React.FC = () => {
                     <Pencil className="pointer-events-none" size="lg" />
                   </div>
                 ))}
-                {showNewPencils && (
-                  <>
-                    <div className="animate-pencil-appear">
-                      <Pencil className="pointer-events-none" size="lg" />
-                    </div>
-                    <div className="animate-pencil-appear" style={{ animationDelay: '0.3s' }}>
-                      <Pencil className="pointer-events-none" size="lg" />
-                    </div>
-                  </>
-                )}
+                {Array.from({ length: arrivedPencils }).map((_, i) => (
+                  <div key={`new-${i}`} className="animate-pencil-appear">
+                    <Pencil className="pointer-events-none" size="lg" />
+                  </div>
+                ))}
               </div>
               <Counter count={displayCount} />
               
               {animationPhase === 'final' && (
                 <p className="mt-6 text-muted-foreground text-lg animate-fade-in">
-                  3 + 2 = 5 pencils!
+                  <span dir="ltr">3 + 2 = 5</span>
                 </p>
               )}
             </div>
@@ -206,15 +239,11 @@ const AdditionEarth: React.FC = () => {
             <div className="flex justify-center gap-4">
               {animationPhase === 'idle' && (
                 <Button onClick={startAnimation} size="lg">
-                  <Play className="w-5 h-5 mr-2" />
-                  Watch
-                </Button>
+                  <Play className="w-5 h-5 me-2" />{tx('ui:s_d91ebf5887')}</Button>
               )}
               {animationPhase === 'final' && (
                 <Button onClick={startAnimation} variant="outline" size="lg">
-                  <RotateCcw className="w-5 h-5 mr-2" />
-                  Watch Again
-                </Button>
+                  <RotateCcw className="w-5 h-5 me-2" />{tx('ui:s_180e2f4a3e')}</Button>
               )}
             </div>
           </div>
@@ -224,14 +253,10 @@ const AdditionEarth: React.FC = () => {
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-6">
-              <h2 className="text-3xl font-semibold text-foreground">
-                Add Pencils
-              </h2>
-              <ReadAloudButton text="Tap pencils to add them. Start with 3, then add more." />
+              <h2 className="text-3xl font-semibold text-foreground">{tx('ui:s_a3bea1c401')}</h2>
+              <ReadAloudButton text={tx('ui:s_b67c39e1b8')} />
             </div>
-            <p className="text-lg text-muted-foreground mb-10">
-              Tap pencils to add them
-            </p>
+            <p className="text-lg text-muted-foreground mb-10">{tx('ui:s_1475df6691')}</p>
             
             <div className="bg-card rounded-xl p-6 sm:p-10 border border-border mb-8 w-full max-w-lg">
               <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
@@ -253,7 +278,7 @@ const AdditionEarth: React.FC = () => {
               </div>
               
               <div className="mt-8">
-                <Counter count={leftPencils + rightPencils} label="Total" />
+                <Counter count={leftPencils + rightPencils} label={tx('ui:totalLabel')} />
               </div>
             </div>
             
@@ -267,7 +292,7 @@ const AdditionEarth: React.FC = () => {
 
       case 2:
         return (
-          <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
+          <div data-testid="practice-activity" className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-4">
               <h2 className="text-3xl font-semibold text-foreground">
                 Make {activity2Target} Pencils
@@ -279,8 +304,8 @@ const AdditionEarth: React.FC = () => {
             </p>
             
             <div className="flex justify-center gap-8 mb-8">
-              <Counter count={activity2Left + activity2Right} label="You have" />
-              <Counter count={activity2Target} label="You need" />
+              <Counter count={activity2Left + activity2Right} label={tx('ui:youHave')} />
+              <Counter count={activity2Target} label={tx('ui:youNeed')} />
             </div>
             
             <div className="bg-card rounded-xl p-6 sm:p-10 border border-border mb-8 w-full max-w-lg">
@@ -306,12 +331,12 @@ const AdditionEarth: React.FC = () => {
             {!activity2Ok && (
               <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto mb-8">
                 {Array.from({ length: activity2Available }).map((_, i) => (
-                  <Pencil key={i} onClick={addPencilActivity2} />
+                  <Pencil key={i} onClick={addPencilActivity2} testId="add-pencil" />
                 ))}
               </div>
             )}
             {!activity2Checked && (
-              <Button onClick={checkActivity2} size="lg">Check</Button>
+              <Button onClick={checkActivity2} size="lg">{tx('ui:s_4b5e84be0e')}</Button>
             )}
             
             {activity2Checked && !showGuided && (
@@ -322,14 +347,12 @@ const AdditionEarth: React.FC = () => {
                   {activity2Left + activity2Right === activity2Target ? (
                     <>
                       <Check className="w-8 h-8" />
-                      <span className="text-xl font-semibold">Great!</span>
+                      <span className="text-xl font-semibold">{tx('ui:s_91bb266617')}</span>
                     </>
                   ) : (
                     <>
                       <X className="w-8 h-8" />
-                      <span className="text-xl font-semibold">
-                        Let's practice with pencils!
-                      </span>
+                      <span className="text-xl font-semibold">{tx('ui:s_ff703fdb54')}</span>
                     </>
                   )}
                 </div>
@@ -338,7 +361,7 @@ const AdditionEarth: React.FC = () => {
                 )}
                 <NumberDraw
                   key="earth-pencils"
-                  prompt="Write how many pencils you have."
+                  prompt={tx('ui:s_58d5dc6735')}
                   result={drawCheck.state.verdict}
                   unreadableReason={drawCheck.state.verdict === 'unreadable' ? 'low_confidence' : null}
                   checkEnabled={drawCheck.canSubmit(true)}
@@ -348,9 +371,7 @@ const AdditionEarth: React.FC = () => {
                   onRead={handleDrawnNumber}
                 />
                 {activity2Left + activity2Right !== activity2Target && (
-                  <Button onClick={resetActivity2} variant="outline" size="lg">
-                    Try Again
-                  </Button>
+                  <Button onClick={resetActivity2} variant="outline" size="lg">{tx('ui:s_cef2fe093b')}</Button>
                 )}
               </div>
             )}
@@ -370,15 +391,11 @@ const AdditionEarth: React.FC = () => {
           </div>
         );
 
-      case 3:
+      case totalSteps - 1:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              Great Work on Earth!
-            </h2>
-            <p className="text-xl text-muted-foreground mb-10">
-              You learned how to add. Celebrate what you learned:
-            </p>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_c95e71fc29')}</h2>
+            <p className="text-xl text-muted-foreground mb-10">{tx('ui:s_1fb7fd4aad')}</p>
             
             <div className="mb-10 w-full px-2">
               <LessonCelebration lessonType="addition" />
@@ -388,25 +405,16 @@ const AdditionEarth: React.FC = () => {
               <div className="mb-6 flex justify-center">
                 <ThoughtCard
                   diagnosis={diagnosis}
-                  onPractice={
-                    diagnosis.primary !== 'STEADY'
-                      ? () => {
-                          setStep(2);
-                          setActivity2Checked(false);
-                          setShowGuided(false);
-                        }
-                      : undefined
-                  }
-                  practiceLabel="Practice this again"
+                  onPractice={practiceAgain}
+                  practiceLabel={tx('ui:practiceAgain')}
                 />
               </div>
             )}
 
             <div className="flex flex-col items-center gap-3">
+              <PracticeAgainButton onClick={practiceAgain} />
               <Button onClick={() => setShowTransition(true)} size="lg">
-                <ArrowRight className="w-5 h-5 mr-2" />
-                Go to Mars
-              </Button>
+                <ArrowRight className="w-5 h-5 me-2" />{tx('ui:s_8c24362f19')}</Button>
             </div>
           </div>
         );
@@ -422,8 +430,8 @@ const AdditionEarth: React.FC = () => {
       totalSteps={totalSteps}
       step={step}
       onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-      onNext={step < 3 ? () => setStep(step + 1) : undefined}
-      showNext={step < 3}
+      onNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady) ? () => setStep(step + 1) : undefined}
+      showNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady)}
     >
       {renderStep()}
     </LessonShell>
