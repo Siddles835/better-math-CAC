@@ -295,3 +295,77 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* 
+   Accessibility preferences
+   Driven by data-* attributes set on <html> by src/lib/accessibility.ts.
+   These only change presentation of the question, never the math or the objective.
+   */
+
+html[data-text-size='large'] { font-size: 112.5%; }
+html[data-text-size='xlarge'] { font-size: 131.25%; }
+
+html[data-easy-read] body {
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+  line-height: 1.75;
+}
+
+html[data-high-contrast] {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 100%;
+  --muted: 0 0% 18%;
+  --muted-foreground: 0 0% 88%;
+  --border: 0 0% 70%;
+  --input: 0 0% 70%;
+  --primary: 205 100% 72%;
+  --primary-foreground: 0 0% 4%;
+  --ring: 205 100% 72%;
+}
+
+html[data-calm] .subtle-stars,
+html[data-calm] body {
+  background-image: none !important;
+}
+
+html[data-calm] .planet-glow {
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+html[data-reduce-motion] *,
+html[data-reduce-motion] *::before,
+html[data-reduce-motion] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* One thing at a time: side notes step out of the way. */
+html[data-focus-mode] [data-secondary='true'] {
+  display: none !important;
+}
+
+/* Bigger, easier targets — no precise pointing required. */
+html[data-big-targets] button,
+html[data-big-targets] a[role='button'],
+html[data-big-targets] [role='switch'],
+html[data-big-targets] input,
+html[data-big-targets] select {
+  min-height: 56px;
+  min-width: 56px;
+}
+
+/* Relaxed pace: nothing counts down or rushes the student. */
+html[data-relaxed-pacing] [data-timed='true'] {
+  display: none !important;
+}
+
+/* A focus ring is always visible for keyboard and switch users. */
+:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
