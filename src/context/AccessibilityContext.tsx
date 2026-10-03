@@ -36,7 +36,11 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     }, []);
 
   const resetPrefs = useCallback(() => setPrefs(DEFAULT_PREFS), []);
-  const announce = useCallback((next: string) => setMessage(next), []);
+  const announce = useCallback((next: string) => {
+    // Clear first so the same message is read out again if repeated
+    setMessage('');
+    window.setTimeout(() => setMessage(next), 50);
+  }, []);
 
   const value = useMemo(
     () => ({ prefs, setPref, resetPrefs, announce }),
