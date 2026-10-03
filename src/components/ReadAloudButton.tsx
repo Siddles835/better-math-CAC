@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Volume2 } from 'lucide-react';
 import { speak, stopSpeaking, isSpeechSupported } from '@/lib/speech';
+import { useAccessibility } from '@/context/AccessibilityContext';
 
 interface ReadAloudButtonProps {
   /** The text to read aloud when tapped. */
