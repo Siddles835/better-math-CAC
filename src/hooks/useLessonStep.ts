@@ -84,11 +84,10 @@ export function useLessonStep(planetId: PlanetId) {
 
   const setStep = useCallback(
     (value: React.SetStateAction<number>) => {
-      setStepState((prev) => {
-        const next = typeof value === 'function' ? value(prev) : value;
-        void savePlanetStep(planetId, next);
-        return next;
-      });
+      const next = typeof value === 'function' ? value(stepRef.current) : value;
+      stepRef.current = next;
+      setStepState(next);
+      void savePlanetStep(planetId, next);
     },
     [planetId, savePlanetStep]
   );
