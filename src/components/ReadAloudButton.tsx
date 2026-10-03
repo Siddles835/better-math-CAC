@@ -91,7 +91,7 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
     []
   );
 
-  if (!isSpeechSupported()) return null;
+  if (!isSpeechSupported() || prefs.muteSounds) return null;
 
   const handleClick = () => {
     if (isSpeaking) {
