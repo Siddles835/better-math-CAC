@@ -15,7 +15,10 @@ const ThoughtCard: React.FC<ThoughtCardProps> = ({ diagnosis, onPractice, practi
   const planet = PLANET_META[diagnosis.nextPlanet];
 
   return (
-    <div className="bg-card rounded-xl p-5 border border-border max-w-xl text-left w-full">
+    <div
+      data-secondary="true"
+      className="bg-card rounded-xl p-5 border border-border max-w-xl text-left w-full"
+    >
       <p className="text-xs font-medium tracking-wide text-muted-foreground mb-1">Your practice</p>
       <p className="text-lg font-semibold text-foreground mb-2">{diagnosis.kidLine}</p>
       <p className="text-sm text-muted-foreground mb-4">
