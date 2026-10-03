@@ -342,6 +342,11 @@ export const subscribeToClass = (
         callback(null);
       }
     );
+  }).catch((error: Error) => {
+    if (cancelled) return;
+    console.error('Class lookup error:', error);
+    onError?.(error);
+    callback(null);
   });
 
   return () => {
