@@ -9,7 +9,9 @@ export type PathKind =
   | 'same_sum'
   | 'write_digit'
   | 'hear_build'
-  | 'tens_ones';
+  | 'tens_ones'
+  | 'compare'
+  | 'neighbor';
 
 export interface PathItem {
   id: string;
@@ -28,6 +30,7 @@ export interface PersonalPath {
   title: string;
   why: string;
   seed: number;
+  round: number;
   items: PathItem[];
 }
 
@@ -47,24 +50,6 @@ const TITLES: Record<MisconceptionCode, string> = {
   PLACE_SPLIT: 'Tens and ones as one number',
   STEADY: 'A short stretch from last time',
 };
-
-const NUMBER_WORDS = [
-  'zero',
-  'one',
-  'two',
-  'three',
-  'four',
-  'five',
-  'six',
-  'seven',
-  'eight',
-  'nine',
-  'ten',
-  'eleven',
-  'twelve',
-  'thirteen',
-  'fourteen',
-];
 
 const hashSeed = (text: string): number => {
   let h = 2166136261;
@@ -108,243 +93,137 @@ const item = (
   ...extra,
 });
 
-const buildItems = (code: MisconceptionCode, rng: () => number): PathItem[] => {
+const signature = (entry: PathItem) => `${entry.kind}:${entry.start}:${entry.add}:${entry.target}`;
+
+const rangeFor = (accuracy: number, round: number): [number, number] => {
+  const lift = Math.max(0, Math.min(4, Math.round(accuracy * 4) + Math.floor(round / 3)));
+  const hi = [20, 40, 60, 80, 100][lift] ?? 20;
+  return [1, hi];
+};
+
+const buildItems = (
+  code: MisconceptionCode,
+  rng: () => number,
+  band: [number, number],
+  blocked: Set<string>
+): PathItem[] => {
+  const hi = Math.max(10, band[1]);
+  const small = Math.min(12, hi);
+  const fresh = (entry: PathItem) => {
+    if (!blocked.has(signature(entry))) return entry;
+    return { ...entry, id: `${entry.id}b`, target: Math.min(hi, entry.target + 1) };
+  };
+  const pack = (entries: PathItem[]) => entries.map(fresh);
+
   if (code === 'COUNT_ALL') {
-    const start = pickInt(rng, 3, 6);
-    const add = pickInt(rng, 1, Math.min(3, 9 - start));
-    const start2 = pickInt(rng, 4, 6);
-    const add2 = pickInt(rng, 2, Math.min(3, 9 - start2));
-    return [
-      item(
-        'c1',
-        'count_on',
-        `You already have ${start}. Tap to add ${add} more. Do not start over at one.`,
-        `You already have ${start}. Add ${add} more.`,
-        start,
-        add
-      ),
-      item(
-        'c2',
-        'count_on',
-        `Start from ${start2}. Count on ${add2}.`,
-        `Start from ${start2}. Count on ${add2}.`,
-        start2,
-        add2
-      ),
-      item(
-        'c3',
-        'exact_total',
-        `Make exactly ${start + add}. Stop when you get there.`,
-        `Make exactly ${start + add}.`,
-        0,
-        start + add,
-        { target: start + add, hardStop: true }
-      ),
-    ];
+    const start = pickInt(rng, 2, Math.min(8, small));
+    const add = pickInt(rng, 1, Math.min(4, hi - start));
+    return pack([
+      item('c1', 'count_on', '', '', start, add),
+      item('c2', 'exact_total', '', '', 0, Math.min(small, start + add), { target: Math.min(small, start + add), hardStop: true }),
+      item('c3', 'hear_build', '', '', 0, 0, { target: pickInt(rng, 1, small) }),
+      item('c4', 'count_on', '', '', pickInt(rng, 3, Math.min(15, hi - 1)), pickInt(rng, 1, 3)),
+      item('c5', 'neighbor', '', '', pickInt(rng, 1, hi - 1), 1, { target: 0 }),
+      item('c6', 'compare', '', '', pickInt(rng, 1, hi), pickInt(rng, 1, hi)),
+    ]).map((entry) =>
+      entry.kind === 'neighbor' ? { ...entry, target: entry.start + 1 } : entry.kind === 'compare'
+        ? { ...entry, target: Math.max(entry.start, entry.add) }
+        : entry
+    );
   }
 
   if (code === 'OVERSHOOT') {
-    const t1 = pickInt(rng, 4, 7);
-    const t2 = pickInt(rng, 5, 8);
-    const t3 = pickInt(rng, 4, 6);
-    return [
-      item('o1', 'exact_total', `Make exactly ${t1}. Not one more.`, `Make exactly ${t1}.`, 0, t1, {
-        target: t1,
-      }),
-      item('o2', 'exact_total', `Make exactly ${t2}. Stop on ${t2}.`, `Make exactly ${t2}.`, 0, t2, {
-        target: t2,
-        hardStop: true,
-      }),
-      item(
-        'o3',
-        'count_on',
-        `You have ${t3 - 2}. Add only what you need to reach ${t3}.`,
-        `You have ${t3 - 2}. Reach ${t3}.`,
-        t3 - 2,
-        2,
-        { target: t3 }
-      ),
-    ];
+    const targets = [0, 1, 2, 3, 4, 5].map(() => pickInt(rng, 3, Math.min(20, hi)));
+    return pack([
+      item('o1', 'exact_total', '', '', 0, targets[0], { target: targets[0], hardStop: true }),
+      item('o2', 'exact_total', '', '', 0, targets[1], { target: targets[1], hardStop: true }),
+      item('o3', 'count_on', '', '', Math.max(1, targets[2] - 2), 2, { target: targets[2] }),
+      item('o4', 'tens_ones', '', '', 10 * pickInt(rng, 1, Math.max(1, Math.floor(hi / 10))), pickInt(rng, 0, 9)),
+      item('o5', 'neighbor', '', '', pickInt(rng, 1, hi - 1), 1),
+      item('o6', 'compare', '', '', pickInt(rng, 1, hi), pickInt(rng, 1, hi)),
+    ]).map((entry) => {
+      if (entry.kind === 'tens_ones') return { ...entry, target: entry.start + entry.add };
+      if (entry.kind === 'neighbor') return { ...entry, target: entry.start + 1 };
+      if (entry.kind === 'compare') return { ...entry, target: Math.max(entry.start, entry.add) };
+      return entry;
+    });
   }
 
   if (code === 'SUB_FLIP') {
-    const have = pickInt(rng, 6, 9);
-    const take = pickInt(rng, 1, 3);
-    const have2 = pickInt(rng, 5, 8);
-    const take2 = pickInt(rng, 1, Math.min(3, have2 - 2));
-    return [
-      item(
-        's1',
-        'take_away',
-        `You have ${have}. Take away ${take}.`,
-        `You have ${have}. Take away ${take}.`,
-        have,
-        take,
-        { target: have - take }
-      ),
-      item(
-        's2',
-        'take_away',
-        `The story says take away ${take2} from ${have2}.`,
-        `Take away ${take2} from ${have2}.`,
-        have2,
-        take2,
-        { target: have2 - take2 }
-      ),
-      item(
-        's3',
-        'take_away',
-        `Start with ${have}. Take away ${take}. Check what is left.`,
-        `Start with ${have}. Take away ${take}.`,
-        have,
-        take,
-        { target: have - take }
-      ),
-    ];
+    const have = pickInt(rng, 5, Math.min(20, hi));
+    const take = pickInt(rng, 1, Math.min(4, have - 1));
+    return pack([
+      item('s1', 'take_away', '', '', have, take, { target: have - take }),
+      item('s2', 'take_away', '', '', pickInt(rng, 6, Math.min(18, hi)), pickInt(rng, 1, 3)),
+      item('s3', 'exact_total', '', '', 0, pickInt(rng, 2, small), { target: pickInt(rng, 2, small) }),
+      item('s4', 'neighbor', '', '', pickInt(rng, 2, hi), -1),
+      item('s5', 'compare', '', '', pickInt(rng, 1, hi), pickInt(rng, 1, hi)),
+      item('s6', 'write_digit', '', '', 0, 0, { digit: pickInt(rng, 0, 9), target: 0 }),
+    ]).map((entry) => {
+      if (entry.kind === 'take_away') return { ...entry, target: entry.start - entry.add };
+      if (entry.kind === 'neighbor') return { ...entry, target: Math.max(0, entry.start + entry.add) };
+      if (entry.kind === 'compare') return { ...entry, target: Math.max(entry.start, entry.add) };
+      if (entry.kind === 'write_digit') return { ...entry, target: entry.digit ?? 0 };
+      return entry;
+    });
   }
 
   if (code === 'COMMUTE') {
-    const a = pickInt(rng, 2, 4);
-    let b = pickInt(rng, 2, 5);
-    if (b === a) b = a + 1;
-    return [
-      item(
-        'm1',
-        'same_sum',
-        `Put ${a}, then ${b}. The total is the same as ${b} then ${a}.`,
-        `${a} plus ${b} is the same as ${b} plus ${a}.`,
-        a,
-        b,
-        { target: a + b }
-      ),
-      item(
-        'm2',
-        'same_sum',
-        `Now start with the bigger group. Put ${b}, then ${a}.`,
-        `Put ${b}, then ${a}.`,
-        b,
-        a,
-        { target: a + b }
-      ),
-      item(
-        'm3',
-        'exact_total',
-        `Build ${a + b} any way you like.`,
-        `Build ${a + b}.`,
-        0,
-        a + b,
-        { target: a + b }
-      ),
-    ];
+    const a = pickInt(rng, 1, Math.min(9, small));
+    let b = pickInt(rng, 1, Math.min(9, small));
+    if (b === a) b = Math.min(small, a + 1);
+    return pack([
+      item('m1', 'same_sum', '', '', a, b, { target: a + b }),
+      item('m2', 'same_sum', '', '', b, a, { target: a + b }),
+      item('m3', 'exact_total', '', '', 0, a + b, { target: a + b }),
+      item('m4', 'count_on', '', '', a, b),
+      item('m5', 'compare', '', '', a + b, b + a, { target: a + b }),
+      item('m6', 'neighbor', '', '', a + b, 1, { target: a + b + 1 }),
+    ]);
   }
 
   if (code === 'DIGIT_REV') {
-    const digits = [6, 9, 2, 5];
-    const d1 = digits[pickInt(rng, 0, 3)];
-    const pair: Record<number, number> = { 6: 9, 9: 6, 2: 5, 5: 2 };
-    const d2 = pair[d1];
-    const d3 = digits[pickInt(rng, 0, 3)];
-    return [
-      item('d1', 'write_digit', `Write ${d1}. Start at the top.`, `Write ${d1}.`, 0, 0, {
-        target: d1,
-        digit: d1,
-      }),
-      item('d2', 'write_digit', `Now write ${d2}.`, `Write ${d2}.`, 0, 0, {
-        target: d2,
-        digit: d2,
-      }),
-      item('d3', 'write_digit', `Write ${d3} once more.`, `Write ${d3}.`, 0, 0, {
-        target: d3,
-        digit: d3,
-      }),
-    ];
+    const digits = [2, 5, 6, 9, pickInt(rng, 0, 9), pickInt(rng, 10, Math.min(99, hi))];
+    return digits.map((digit, index) =>
+      fresh(item(`d${index + 1}`, 'write_digit', '', '', 0, 0, { digit, target: digit }))
+    );
   }
 
   if (code === 'WORD_GAP') {
-    const n1 = pickInt(rng, 3, 7);
-    const n2 = pickInt(rng, 4, 8);
-    const n3 = pickInt(rng, 3, 6);
-    return [
-      item(
-        'w1',
-        'hear_build',
-        `Listen: ${NUMBER_WORDS[n1]}. Build that many.`,
-        NUMBER_WORDS[n1],
-        0,
-        n1,
-        { target: n1 }
-      ),
-      item(
-        'w2',
-        'hear_build',
-        `Listen: ${NUMBER_WORDS[n2]}. Build that many.`,
-        NUMBER_WORDS[n2],
-        0,
-        n2,
-        { target: n2 }
-      ),
-      item(
-        'w3',
-        'exact_total',
-        `Make ${n3} without the word this time.`,
-        `Make ${n3}.`,
-        0,
-        n3,
-        { target: n3 }
-      ),
-    ];
+    const nums = [1, 2, 3, 4, 5, 6].map(() => pickInt(rng, 1, Math.min(20, hi)));
+    return pack(nums.map((n, index) => item(`w${index + 1}`, index === 5 ? 'exact_total' : 'hear_build', '', '', 0, n, { target: n })));
   }
 
   if (code === 'PLACE_SPLIT') {
-    const ones = pickInt(rng, 1, 4);
-    const ones2 = pickInt(rng, 2, 4);
-    return [
-      item(
-        'p1',
-        'tens_ones',
-        `One ten and ${ones} one${ones === 1 ? '' : 's'} is ${10 + ones}.`,
-        `One ten and ${ones} is ${10 + ones}.`,
-        10,
-        ones,
-        { target: 10 + ones }
-      ),
-      item(
-        'p2',
-        'tens_ones',
-        `One ten and ${ones2} ones. How many in all?`,
-        `One ten and ${ones2}. How many in all?`,
-        10,
-        ones2,
-        { target: 10 + ones2 }
-      ),
-      item(
-        'p3',
-        'exact_total',
-        `Build ${10 + ones} as one group.`,
-        `Build ${10 + ones}.`,
-        0,
-        10 + ones,
-        { target: 10 + ones }
-      ),
-    ];
+    const tens = pickInt(rng, 1, Math.max(1, Math.floor(hi / 10)));
+    const ones = pickInt(rng, 0, 9);
+    const tens2 = pickInt(rng, 1, Math.max(1, Math.floor(hi / 10)));
+    const ones2 = pickInt(rng, 0, 9);
+    return pack([
+      item('p1', 'tens_ones', '', '', tens * 10, ones, { target: tens * 10 + ones }),
+      item('p2', 'tens_ones', '', '', tens2 * 10, ones2, { target: tens2 * 10 + ones2 }),
+      item('p3', 'exact_total', '', '', 0, tens * 10 + ones, { target: tens * 10 + ones }),
+      item('p4', 'write_digit', '', '', 0, 0, { digit: tens * 10 + ones, target: tens * 10 + ones }),
+      item('p5', 'compare', '', '', tens * 10 + ones, tens2 * 10 + ones2),
+      item('p6', 'neighbor', '', '', tens * 10, 1, { target: tens * 10 + 1 }),
+    ]).map((entry) => (entry.kind === 'compare' ? { ...entry, target: Math.max(entry.start, entry.add) } : entry));
   }
 
-  const t = pickInt(rng, 5, 8);
-  const start = pickInt(rng, 3, 5);
-  const add = pickInt(rng, 2, Math.min(3, 9 - start));
-  return [
-    item('st1', 'count_on', `Count on from ${start}. Add ${add}.`, `Count on ${add} from ${start}.`, start, add),
-    item('st2', 'exact_total', `Make exactly ${t}.`, `Make exactly ${t}.`, 0, t, { target: t }),
-    item(
-      'st3',
-      'same_sum',
-      `2 + 4 and 4 + 2 are the same trip.`,
-      `2 plus 4 is the same as 4 plus 2.`,
-      2,
-      4,
-      { target: 6 }
-    ),
-  ];
+  const start = pickInt(rng, 1, Math.min(10, hi));
+  const add = pickInt(rng, 1, Math.min(5, hi - start));
+  return pack([
+    item('st1', 'count_on', '', '', start, add),
+    item('st2', 'exact_total', '', '', 0, pickInt(rng, 2, small), { target: pickInt(rng, 2, small) }),
+    item('st3', 'same_sum', '', '', 2, 4, { target: 6 }),
+    item('st4', 'take_away', '', '', pickInt(rng, 4, Math.min(12, hi)), 2),
+    item('st5', 'compare', '', '', pickInt(rng, 1, hi), pickInt(rng, 1, hi)),
+    item('st6', 'neighbor', '', '', pickInt(rng, 1, hi - 1), 1),
+  ]).map((entry) => {
+    if (entry.kind === 'take_away') return { ...entry, target: entry.start - entry.add };
+    if (entry.kind === 'neighbor') return { ...entry, target: entry.start + 1 };
+    if (entry.kind === 'compare') return { ...entry, target: Math.max(entry.start, entry.add) };
+    return entry;
+  });
 };
 
 export const STARTER_HINT: Diagnosis = {
@@ -359,21 +238,77 @@ export const STARTER_HINT: Diagnosis = {
   updatedAt: 0,
 };
 
+const MEMORY_KEY = 'mathlift.practice.recent';
+
+export interface PracticeBuildOptions {
+  round?: number;
+  entropy?: number;
+  recent?: string[];
+  accuracy?: number;
+  demo?: boolean;
+  maxNumber?: number;
+}
+
+export const itemSignature = (entry: PathItem) => `${entry.kind}:${entry.start}:${entry.add}:${entry.target}`;
+
+export const loadPracticeMemory = (): { recent: string[]; accuracy: number; round: number } => {
+  if (typeof localStorage === 'undefined') return { recent: [], accuracy: 0, round: 0 };
+  try {
+    const raw = localStorage.getItem(MEMORY_KEY);
+    if (!raw) return { recent: [], accuracy: 0, round: 0 };
+    const parsed = JSON.parse(raw) as { recent?: string[]; accuracy?: number; round?: number };
+    return {
+      recent: Array.isArray(parsed.recent) ? parsed.recent.slice(-18) : [],
+      accuracy: typeof parsed.accuracy === 'number' ? parsed.accuracy : 0,
+      round: typeof parsed.round === 'number' ? parsed.round : 0,
+    };
+  } catch {
+    return { recent: [], accuracy: 0, round: 0 };
+  }
+};
+
+export const savePracticeMemory = (recent: string[], accuracy: number, round: number) => {
+  if (typeof localStorage === 'undefined') return;
+  const next = { recent: recent.slice(-18), accuracy, round };
+  localStorage.setItem(MEMORY_KEY, JSON.stringify(next));
+};
+
 export const buildPersonalPath = (
   nickname: string,
   diagnosis: Diagnosis | null,
-  dayKey?: string
+  dayKey?: string,
+  options: PracticeBuildOptions = {}
 ): PersonalPath => {
   const code = diagnosis?.primary ?? 'STEADY';
   const day = dayKey ?? new Date().toISOString().slice(0, 10);
-  const seed = hashSeed(`${nickname.toLowerCase()}|${code}|${day}`);
+  const round = options.round ?? 0;
+  const entropy = options.demo ? round % 5 : (options.entropy ?? 0);
+  const seed = hashSeed(`${nickname.toLowerCase()}|${code}|${options.demo ? 'sample' : day}|${round}|${entropy}`);
   const rng = mulberry32(seed);
+  const band = rangeFor(options.accuracy ?? 0, round);
+  if (options.maxNumber) band[1] = Math.min(band[1], options.maxNumber);
+  const blocked = new Set(options.recent ?? []);
+  const items = buildItems(code, rng, band, blocked);
+  const cover = (round % band[1]) + 1;
+  const last = items[items.length - 1];
+  items[items.length - 1] = {
+    ...last,
+    id: `${last.id}-cover`,
+    kind: 'write_digit',
+    prompt: '',
+    speak: '',
+    start: 0,
+    add: 0,
+    digit: cover,
+    target: cover,
+  };
   return {
     code,
     title: TITLES[code],
     why: diagnosis?.kidLine ?? KID_LINE[code],
     seed,
-    items: buildItems(code, rng),
+    round,
+    items,
   };
 };
 

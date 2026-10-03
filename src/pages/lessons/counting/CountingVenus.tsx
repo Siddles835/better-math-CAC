@@ -1,8 +1,14 @@
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
+import { tx } from '@/i18n/tx';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
 // Counting Lesson - Venus (Quiz)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
 import LessonShell from '@/components/LessonShell';
@@ -21,7 +27,8 @@ import {
 
 const CountingVenus: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet, saveLastQuiz, saveDiagnosis } = useGame();
+  const { saveLastQuiz, saveDiagnosis } = useGame();
+  const { leave, finish } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('venus');
   const [showTransition, setShowTransition] = useState(false);
   const nextPlanet = getNextPlanet('venus');
@@ -45,8 +52,10 @@ const CountingVenus: React.FC = () => {
   const [quizScore, setQuizScore] = useState(0);
   const [quizAreas, setQuizAreas] = useState<string[]>([]);
   const [quizTries, setQuizTries] = useState<number[]>([]);
+  const [quizEpoch, setQuizEpoch] = useState(0);
 
-  const totalSteps = 3;
+  const [drillReady, setDrillReady] = useState(false);
+  const totalSteps = 3 + insertedCount;
 
   const checkMcq = (answer: number) => {
     setMcqAnswer(answer);
@@ -74,18 +83,21 @@ const CountingVenus: React.FC = () => {
       total: 8,
       tries,
     });
-    void saveDiagnosis(diagnoseFromQuiz('venus', score, 8, tries));
-    setStep(2);
+    saveDiagnosisSafely(saveDiagnosis, diagnoseFromQuiz('venus', score, 8, tries));
+    setStep(2 + insertedCount);
+  };
+
+  const practiceAgain = () => {
+    setQuizScore(0);
+    setQuizAreas([]);
+    setQuizTries([]);
+    setQuizEpoch((n) => n + 1);
+    setStep(1 + insertedCount);
   };
 
   const goToNextPlanet = () => {
     if (!nextPlanet) return;
-    completePlanet('venus');
-    setShowRocketTransition(true);
-    setTimeout(() => {
-      navigate(getLessonRoute(nextPlanet), { state: { initialStep: 0 } });
-      setShowRocketTransition(false);
-    }, 1600);
+    leave('venus', getLessonRoute(nextPlanet), { initialStep: 0 });
   };
 
   if (showTransition && nextPlanet) {
@@ -102,18 +114,17 @@ const CountingVenus: React.FC = () => {
   }
 
   const renderStep = () => {
+    if (step >= 1 && step < 1 + insertedCount) {
+      return <LessonDrill planet="venus" index={step - 1} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              Quick Quiz!
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_2e2e808a99')}</h2>
             <div className="flex items-center justify-center gap-3 mb-10">
-              <p className="text-xl text-muted-foreground">
-                How many circles?
-              </p>
-              <ReadAloudButton text="How many circles?" />
+              <p className="text-xl text-muted-foreground">{tx('ui:s_a297be8ee6')}</p>
+              <ReadAloudButton text={tx('ui:s_a297be8ee6')} />
             </div>
             
             <div className="flex justify-center gap-4 mb-10 flex-wrap max-w-sm mx-auto">
@@ -161,13 +172,9 @@ const CountingVenus: React.FC = () => {
                     : 'Count them again, one at a time'}
                 </p>
                 {mcqAnswer !== mcqQuestion.count ? (
-                  <Button variant="outline" size="lg" onClick={resetMcq}>
-                    Try Again
-                  </Button>
+                  <Button variant="outline" size="lg" onClick={resetMcq}>{tx('ui:s_cef2fe093b')}</Button>
                 ) : (
-                  <Button size="lg" onClick={() => setStep(1)}>
-                    Start Story Quiz
-                  </Button>
+                  <Button size="lg" onClick={() => setStep(1)}>{tx('ui:s_5617eba9f8')}</Button>
                 )}
               </div>
             )}
@@ -186,24 +193,23 @@ const CountingVenus: React.FC = () => {
           </div>
         );
 
-      case 1:
+      case 1 + insertedCount:
         return (
           <div className="flex flex-col items-center justify-center flex-1 py-8">
-            <h2 className="text-3xl font-semibold text-foreground mb-4 text-center">
-              Luna's Space Trip
-            </h2>
-            <p className="text-muted-foreground mb-8 text-center">
-              Help Luna count things for her trip!
-            </p>
-            <StoryQuiz 
-              lessonType="counting" 
+            <h2 className="text-3xl font-semibold text-foreground mb-4 text-center">{tx('ui:s_8f931f6ef3')}</h2>
+            <p className="text-muted-foreground mb-8 text-center">{tx('ui:s_e019eccc32')}</p>
+            <StoryQuiz
+              key={quizEpoch}
+              lessonType="counting"
               onComplete={handleQuizComplete}
             />
           </div>
         );
 
-      case 2:
+      case 2 + insertedCount:
         return (
+          <>
+          <PracticeAgainButton onClick={practiceAgain} />
           <QuizResults
             score={quizScore}
             totalQuestions={8}
@@ -211,12 +217,10 @@ const CountingVenus: React.FC = () => {
             questionTries={quizTries}
             lessonType="counting"
             onFinish={() => setShowTransition(true)}
-            onBack={() => {
-              void completePlanet('venus');
-              navigate('/planets');
-            }}
-            finishLabel={nextPlanet ? `Go to ${PLANET_META[nextPlanet].name}` : 'Continue'}
+            onBack={() => finish('venus')}
+            finishLabel={nextPlanet ? tx('ui:goToPlanet', { planet: tx(`ui:planet_${nextPlanet}`) }) : tx('ui:s_bc981983e7')}
           />
+          </>
         );
 
       default:
@@ -230,7 +234,8 @@ const CountingVenus: React.FC = () => {
       totalSteps={totalSteps}
       step={step}
       onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-      showNext={false}
+      showNext={step >= 1 && step < 1 + insertedCount && drillReady}
+      onNext={step >= 1 && step < 1 + insertedCount && drillReady ? () => setStep(step + 1) : undefined}
     >
       {renderStep()}
     </LessonShell>

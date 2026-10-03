@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -80,7 +81,7 @@ const MethodsPage: React.FC = () => {
         </p>
         <ClassTable rows={Array.isArray(tree?.perClass) ? tree.perClass : []} />
         <Heatmap matrix={asRecord(tree?.confusionMatrix)} />
-        <h3 className="text-lg font-semibold mt-6 mb-2">Calibration</h3>
+        <h3 className="text-lg font-semibold mt-6 mb-2">{tx('ui:s_f5ed075f00')}</h3>
         <p>ECE {metricText(asRecord(tree?.calibration)?.ece)}.</p>
         <BandList bands={asRecord(asRecord(tree?.calibration)?.bands)} />
         {chartRows.length > 0 ? (
@@ -96,18 +97,18 @@ const MethodsPage: React.FC = () => {
             </ResponsiveContainer>
           </div>
         ) : (
-          <p>not available</p>
+          <p>{tx('ui:s_5f23912208')}</p>
         )}
         <button type="button" className="mt-3 text-sm underline" onClick={() => setTableOn((on) => !on)}>
           {tableOn ? t('hideTable') : t('showTable')}
         </button>
         <table className={tableOn ? 'mt-3 w-full text-sm' : 'sr-only'}>
-          <caption>Calibration bins</caption>
+          <caption>{tx('ui:s_4597c8a60c')}</caption>
           <thead>
             <tr>
               <th>Bin</th>
-              <th>Accuracy</th>
-              <th>Count</th>
+              <th>{tx('ui:s_12a3a4f498')}</th>
+              <th>{tx('ui:s_66e12969c2')}</th>
             </tr>
           </thead>
           <tbody>
@@ -123,10 +124,10 @@ const MethodsPage: React.FC = () => {
         <h3 className="text-lg font-semibold mt-6 mb-2">{t('digits')}</h3>
         <ClassTable rows={Array.isArray(digits?.perDigit) ? digits.perDigit : []} />
         <Heatmap matrix={asRecord(digits?.confusionMatrix)} />
-        <h3 className="text-lg font-semibold mt-6 mb-2">Per language</h3>
+        <h3 className="text-lg font-semibold mt-6 mb-2">{tx('ui:s_a91d52d29f')}</h3>
         <LanguageTable languages={asRecord(tree?.perLanguage)} />
         <p>Worst language gap in macro-F1: {metricText(tree?.worstLanguageGapMacroF1)}.</p>
-        <h3 className="text-lg font-semibold mt-6 mb-2">Per script</h3>
+        <h3 className="text-lg font-semibold mt-6 mb-2">{tx('ui:s_99551f076c')}</h3>
         <ScriptTable scripts={asRecord(digits?.perScript)} />
       </Section>
 
@@ -147,7 +148,7 @@ const MethodsPage: React.FC = () => {
         <ul className="list-disc ps-5 space-y-2">
           <li>{t('limitGrade')}</li>
           <li>{t('strokes')}</li>
-          <li>Hard held-out digit accuracy is much lower than the easy split. Treat drawing checks as a hint, not a certainty.</li>
+          <li>{tx('ui:s_a02f3901b5')}</li>
         </ul>
       </Section>
 
@@ -174,9 +175,9 @@ const MethodsPage: React.FC = () => {
       </Section>
 
       <p className="text-sm text-muted-foreground">
-        <Link to="/classroom" className="underline underline-offset-2">sample classroom</Link>
+        <Link to="/classroom" className="underline underline-offset-2">{tx('ui:s_5e3f5556ee')}</Link>
         {' · '}
-        <Link to="/how-it-works" className="underline underline-offset-2">how a session runs</Link>
+        <Link to="/how-it-works" className="underline underline-offset-2">{tx('ui:s_704625cd49')}</Link>
       </p>
     </SiteChrome>
   );
@@ -190,17 +191,17 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
 );
 
 const ClassTable: React.FC<{ rows: unknown[] }> = ({ rows }) => {
-  if (rows.length === 0) return <p>not available</p>;
+  if (rows.length === 0) return <p>{tx('ui:s_5f23912208')}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr>
-            <th className="text-start border border-border px-2 py-1">Label</th>
-            <th className="text-start border border-border px-2 py-1">Precision</th>
-            <th className="text-start border border-border px-2 py-1">Recall</th>
+            <th className="text-start border border-border px-2 py-1">{tx('ui:s_74341e3c27')}</th>
+            <th className="text-start border border-border px-2 py-1">{tx('ui:s_3dd4db5ce7')}</th>
+            <th className="text-start border border-border px-2 py-1">{tx('ui:s_3f7e1fd914')}</th>
             <th className="text-start border border-border px-2 py-1">F1</th>
-            <th className="text-start border border-border px-2 py-1">Support</th>
+            <th className="text-start border border-border px-2 py-1">{tx('ui:s_f32d5a3b17')}</th>
           </tr>
         </thead>
         <tbody>
@@ -225,13 +226,13 @@ const ClassTable: React.FC<{ rows: unknown[] }> = ({ rows }) => {
 const Heatmap: React.FC<{ matrix: Record<string, unknown> | null }> = ({ matrix }) => {
   const labels = Array.isArray(matrix?.labels) ? matrix.labels : [];
   const cells = Array.isArray(matrix?.matrix) ? matrix.matrix : [];
-  if (labels.length === 0 || cells.length === 0) return <p>not available</p>;
+  if (labels.length === 0 || cells.length === 0) return <p>{tx('ui:s_5f23912208')}</p>;
   return (
     <div className="overflow-x-auto mt-3">
-      <table className="text-xs border-collapse" aria-label="Confusion matrix">
+      <table className="text-xs border-collapse" aria-label={tx('ui:s_b5baa4a70e')}>
         <thead>
           <tr>
-            <th className="border border-border px-1 py-1">Actual</th>
+            <th className="border border-border px-1 py-1">{tx('ui:s_7bb2ee60f7')}</th>
             {labels.map((label) => (
               <th key={String(label)} className="border border-border px-1 py-1">{String(label)}</th>
             ))}
@@ -267,14 +268,14 @@ const Heatmap: React.FC<{ matrix: Record<string, unknown> | null }> = ({ matrix 
 };
 
 const LanguageTable: React.FC<{ languages: Record<string, unknown> | null }> = ({ languages }) => {
-  if (!languages) return <p>not available</p>;
+  if (!languages) return <p>{tx('ui:s_5f23912208')}</p>;
   return (
     <table className="w-full text-sm border-collapse">
       <thead>
         <tr>
-          <th className="text-start border border-border px-2 py-1">Language</th>
-          <th className="text-start border border-border px-2 py-1">Accuracy</th>
-          <th className="text-start border border-border px-2 py-1">Macro-F1</th>
+          <th className="text-start border border-border px-2 py-1">{tx('ui:s_89b86ab0e6')}</th>
+          <th className="text-start border border-border px-2 py-1">{tx('ui:s_12a3a4f498')}</th>
+          <th className="text-start border border-border px-2 py-1">{tx('ui:s_a201cc4985')}</th>
         </tr>
       </thead>
       <tbody>
@@ -294,7 +295,7 @@ const LanguageTable: React.FC<{ languages: Record<string, unknown> | null }> = (
 };
 
 const ScriptTable: React.FC<{ scripts: Record<string, unknown> | null }> = ({ scripts }) => {
-  if (!scripts) return <p>not available</p>;
+  if (!scripts) return <p>{tx('ui:s_5f23912208')}</p>;
   return (
     <table className="w-full text-sm border-collapse">
       <tbody>
@@ -310,7 +311,7 @@ const ScriptTable: React.FC<{ scripts: Record<string, unknown> | null }> = ({ sc
 };
 
 const MultiplierTable: React.FC<{ values: Record<string, unknown> | null }> = ({ values }) => {
-  if (!values) return <p>not available</p>;
+  if (!values) return <p>{tx('ui:s_5f23912208')}</p>;
   return (
     <ul className="list-disc ps-5">
       {Object.entries(values).map(([lang, value]) => (
@@ -321,7 +322,7 @@ const MultiplierTable: React.FC<{ values: Record<string, unknown> | null }> = ({
 };
 
 const BandList: React.FC<{ bands: Record<string, unknown> | null }> = ({ bands }) => {
-  if (!bands) return <p>not available</p>;
+  if (!bands) return <p>{tx('ui:s_5f23912208')}</p>;
   return (
     <ul className="list-disc ps-5">
       {Object.entries(bands).map(([name, value]) => {
@@ -337,7 +338,7 @@ const BandList: React.FC<{ bands: Record<string, unknown> | null }> = ({ bands }
 };
 
 const ConfusionList: React.FC<{ rows: unknown[] }> = ({ rows }) => {
-  if (rows.length === 0) return <p>not available</p>;
+  if (rows.length === 0) return <p>{tx('ui:s_5f23912208')}</p>;
   return (
     <ul className="list-disc ps-5">
       {rows.slice(0, 5).map((row, index) => {

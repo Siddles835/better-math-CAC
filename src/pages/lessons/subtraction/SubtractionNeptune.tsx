@@ -1,8 +1,14 @@
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
+import { tx } from '@/i18n/tx';
 // Subtraction Lesson - Neptune (Quiz)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
 import LessonShell from '@/components/LessonShell';
@@ -14,7 +20,8 @@ import { diagnoseFromQuiz } from '@/lib/cognition';
 
 const SubtractionNeptune: React.FC = () => {
   const navigate = useNavigate();
-  const { completePlanet, saveLastQuiz, saveDiagnosis } = useGame();
+  const { saveLastQuiz, saveDiagnosis } = useGame();
+  const { finish } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('neptune');
   
   // MCQ state
@@ -38,8 +45,10 @@ const SubtractionNeptune: React.FC = () => {
   const [quizScore, setQuizScore] = useState(0);
   const [quizAreas, setQuizAreas] = useState<string[]>([]);
   const [quizTries, setQuizTries] = useState<number[]>([]);
+  const [quizEpoch, setQuizEpoch] = useState(0);
 
-  const totalSteps = 3;
+  const [drillReady, setDrillReady] = useState(false);
+  const totalSteps = 3 + insertedCount;
 
   const resetMcq = () => {
     setMcqSelected(null);
@@ -69,21 +78,33 @@ const SubtractionNeptune: React.FC = () => {
       total: 8,
       tries,
     });
-    void saveDiagnosis(diagnoseFromQuiz('neptune', score, 8, tries));
-    setStep(2);
+    saveDiagnosisSafely(saveDiagnosis, diagnoseFromQuiz('neptune', score, 8, tries));
+    setStep(2 + insertedCount);
+  };
+
+  const practiceAgain = () => {
+    setQuizScore(0);
+    setQuizAreas([]);
+    setQuizTries([]);
+    setMcqSelected(null);
+    setMcqChecked(false);
+    setShowGuided(false);
+    setWrongAttempts(0);
+    setQuizEpoch((n) => n + 1);
+    setStep(1 + insertedCount);
   };
 
   const renderStep = () => {
+    if (step >= 1 && step < 1 + insertedCount) {
+      return <LessonDrill planet="neptune" index={step - 1} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              Quick Quiz!
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_2e2e808a99')}</h2>
             <div className="flex items-center justify-center gap-3 mb-10">
-              <p className="text-2xl text-foreground">
-                What is <span className="font-bold text-neptune">{mcqA}</span> − <span className="font-bold text-neptune">{mcqB}</span>?
+              <p className="text-2xl text-foreground">{tx('ui:s_9c9e11934c')}<span className="font-bold text-neptune">{mcqA}</span> − <span className="font-bold text-neptune">{mcqB}</span>?
               </p>
               <ReadAloudButton text={`What is ${mcqA} minus ${mcqB}?`} />
             </div>
@@ -121,9 +142,7 @@ const SubtractionNeptune: React.FC = () => {
             </div>
             
             {!mcqChecked && mcqSelected !== null && (
-              <Button onClick={checkMcq} size="lg">
-                Check
-              </Button>
+              <Button onClick={checkMcq} size="lg">{tx('ui:s_4b5e84be0e')}</Button>
             )}
             
             {mcqChecked && !showGuided && (
@@ -136,13 +155,9 @@ const SubtractionNeptune: React.FC = () => {
                     : 'Look at the story again, then try a different choice'}
                 </p>
                 {mcqSelected !== mcqAnswer ? (
-                  <Button variant="outline" size="lg" onClick={resetMcq}>
-                    Try Again
-                  </Button>
+                  <Button variant="outline" size="lg" onClick={resetMcq}>{tx('ui:s_cef2fe093b')}</Button>
                 ) : (
-                  <Button size="lg" onClick={() => setStep(1)}>
-                    Start Story Quiz
-                  </Button>
+                  <Button size="lg" onClick={() => setStep(1)}>{tx('ui:s_5617eba9f8')}</Button>
                 )}
               </div>
             )}
@@ -162,40 +177,34 @@ const SubtractionNeptune: React.FC = () => {
           </div>
         );
 
-      case 1:
+      case 1 + insertedCount:
         return (
           <div className="flex flex-col items-center justify-center flex-1 py-8">
-            <h2 className="text-3xl font-semibold text-foreground mb-4 text-center">
-              Zara's School Day
-            </h2>
-            <p className="text-muted-foreground mb-8 text-center">
-              Help Zara share school supplies!
-            </p>
-            <StoryQuiz 
-              lessonType="subtraction" 
+            <h2 className="text-3xl font-semibold text-foreground mb-4 text-center">{tx('ui:s_c8adb8f88e')}</h2>
+            <p className="text-muted-foreground mb-8 text-center">{tx('ui:s_ad8d235920')}</p>
+            <StoryQuiz
+              key={quizEpoch}
+              lessonType="subtraction"
               onComplete={handleQuizComplete}
             />
           </div>
         );
 
-      case 2:
+      case 2 + insertedCount:
         return (
+          <>
+          <PracticeAgainButton onClick={practiceAgain} />
           <QuizResults
             score={quizScore}
             totalQuestions={8}
             areasToImprove={quizAreas}
             questionTries={quizTries}
             lessonType="subtraction"
-            onFinish={() => {
-              void completePlanet('neptune');
-              navigate('/planets');
-            }}
-            onBack={() => {
-              void completePlanet('neptune');
-              navigate('/planets');
-            }}
-            finishLabel="Return to Planets"
+            onFinish={() => finish('neptune')}
+            onBack={() => finish('neptune')}
+            finishLabel={tx('ui:returnPlanets')}
           />
+          </>
         );
 
       default:
@@ -209,7 +218,8 @@ const SubtractionNeptune: React.FC = () => {
       totalSteps={totalSteps}
       step={step}
       onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-      showNext={false}
+      showNext={step >= 1 && step < 1 + insertedCount && drillReady}
+      onNext={step >= 1 && step < 1 + insertedCount && drillReady ? () => setStep(step + 1) : undefined}
     >
       {renderStep()}
     </LessonShell>

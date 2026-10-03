@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { hapticTap } from '@/lib/haptics';
 
@@ -26,7 +27,7 @@ const Apple: React.FC<AppleProps> = ({ onClick, className = '', size = 'md' }) =
       type="button"
       onClick={handleClick}
       className={`${sizeClasses[size]} rounded-lg transition-transform duration-200 hover:scale-110 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className}`}
-      aria-label="Apple"
+      aria-label={tx('ui:s_476432a3e8')}
     >
       <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
         <ellipse cx="12" cy="14" rx="8" ry="9" fill="hsl(var(--apple))" />

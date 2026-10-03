@@ -1,8 +1,14 @@
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
+import { tx } from '@/i18n/tx';
 // Addition Lesson - Jupiter (Quiz)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import StoryQuiz from '@/components/StoryQuiz';
 import QuizResults from '@/components/QuizResults';
 import LessonShell from '@/components/LessonShell';
@@ -21,7 +27,8 @@ import {
 
 const AdditionJupiter: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet, saveLastQuiz, saveDiagnosis } = useGame();
+  const { saveLastQuiz, saveDiagnosis } = useGame();
+  const { leave, finish } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('jupiter');
   const [showTransition, setShowTransition] = useState(false);
   const nextPlanet = getNextPlanet('jupiter');
@@ -47,8 +54,10 @@ const AdditionJupiter: React.FC = () => {
   const [quizScore, setQuizScore] = useState(0);
   const [quizAreas, setQuizAreas] = useState<string[]>([]);
   const [quizTries, setQuizTries] = useState<number[]>([]);
+  const [quizEpoch, setQuizEpoch] = useState(0);
 
-  const totalSteps = 3;
+  const [drillReady, setDrillReady] = useState(false);
+  const totalSteps = 3 + insertedCount;
 
   const resetMcq = () => {
     setMcqSelected(null);
@@ -75,18 +84,21 @@ const AdditionJupiter: React.FC = () => {
       total: 8,
       tries,
     });
-    void saveDiagnosis(diagnoseFromQuiz('jupiter', score, 8, tries));
-    setStep(2);
+    saveDiagnosisSafely(saveDiagnosis, diagnoseFromQuiz('jupiter', score, 8, tries));
+    setStep(2 + insertedCount);
+  };
+
+  const practiceAgain = () => {
+    setQuizScore(0);
+    setQuizAreas([]);
+    setQuizTries([]);
+    setQuizEpoch((n) => n + 1);
+    setStep(1 + insertedCount);
   };
 
   const goToNextPlanet = () => {
     if (!nextPlanet) return;
-    completePlanet('jupiter');
-    setShowRocketTransition(true);
-    setTimeout(() => {
-      navigate(getLessonRoute(nextPlanet), { state: { initialStep: 0 } });
-      setShowRocketTransition(false);
-    }, 1600);
+    leave('jupiter', getLessonRoute(nextPlanet), { initialStep: 0 });
   };
 
   if (showTransition && nextPlanet) {
@@ -103,16 +115,16 @@ const AdditionJupiter: React.FC = () => {
   }
 
   const renderStep = () => {
+    if (step >= 1 && step < 1 + insertedCount) {
+      return <LessonDrill planet="jupiter" index={step - 1} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              Quick Quiz!
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_2e2e808a99')}</h2>
             <div className="flex items-center justify-center gap-3 mb-10">
-              <p className="text-2xl text-foreground">
-                What is <span className="font-bold text-jupiter">{mcqA}</span> + <span className="font-bold text-jupiter">{mcqB}</span>?
+              <p className="text-2xl text-foreground">{tx('ui:s_9c9e11934c')}<span className="font-bold text-jupiter">{mcqA}</span> + <span className="font-bold text-jupiter">{mcqB}</span>?
               </p>
               <ReadAloudButton text={`What is ${mcqA} plus ${mcqB}?`} />
             </div>
@@ -150,9 +162,7 @@ const AdditionJupiter: React.FC = () => {
             </div>
             
             {!mcqChecked && mcqSelected !== null && (
-              <Button onClick={checkMcq} size="lg">
-                Check
-              </Button>
+              <Button onClick={checkMcq} size="lg">{tx('ui:s_4b5e84be0e')}</Button>
             )}
             
             {mcqChecked && !showGuided && (
@@ -165,13 +175,9 @@ const AdditionJupiter: React.FC = () => {
                     : 'Try adding one more group in your head, then pick again'}
                 </p>
                 {mcqSelected !== mcqAnswer ? (
-                  <Button variant="outline" size="lg" onClick={resetMcq}>
-                    Try Again
-                  </Button>
+                  <Button variant="outline" size="lg" onClick={resetMcq}>{tx('ui:s_cef2fe093b')}</Button>
                 ) : (
-                  <Button size="lg" onClick={() => setStep(1)}>
-                    Start Story Quiz
-                  </Button>
+                  <Button size="lg" onClick={() => setStep(1)}>{tx('ui:s_5617eba9f8')}</Button>
                 )}
               </div>
             )}
@@ -191,24 +197,25 @@ const AdditionJupiter: React.FC = () => {
           </div>
         );
 
-      case 1:
+      case 1 + insertedCount:
         return (
           <div className="flex flex-col items-center justify-center flex-1 py-8">
             <h2 className="text-3xl font-semibold text-foreground mb-4 text-center">
               Max's Art Day
             </h2>
-            <p className="text-muted-foreground mb-8 text-center">
-              Help Max add his art supplies!
-            </p>
-            <StoryQuiz 
-              lessonType="addition" 
+            <p className="text-muted-foreground mb-8 text-center">{tx('ui:s_2d9ad2ce13')}</p>
+            <StoryQuiz
+              key={quizEpoch}
+              lessonType="addition"
               onComplete={handleQuizComplete}
             />
           </div>
         );
 
-      case 2:
+      case 2 + insertedCount:
         return (
+          <>
+          <PracticeAgainButton onClick={practiceAgain} />
           <QuizResults
             score={quizScore}
             totalQuestions={8}
@@ -216,12 +223,10 @@ const AdditionJupiter: React.FC = () => {
             questionTries={quizTries}
             lessonType="addition"
             onFinish={() => setShowTransition(true)}
-            onBack={() => {
-              void completePlanet('jupiter');
-              navigate('/planets');
-            }}
-            finishLabel={nextPlanet ? `Go to ${PLANET_META[nextPlanet].name}` : 'Continue'}
+            onBack={() => finish('jupiter')}
+            finishLabel={nextPlanet ? tx('ui:goToPlanet', { planet: tx(`ui:planet_${nextPlanet}`) }) : tx('ui:s_bc981983e7')}
           />
+          </>
         );
 
       default:
@@ -235,7 +240,8 @@ const AdditionJupiter: React.FC = () => {
       totalSteps={totalSteps}
       step={step}
       onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-      showNext={false}
+      showNext={step >= 1 && step < 1 + insertedCount && drillReady}
+      onNext={step >= 1 && step < 1 + insertedCount && drillReady ? () => setStep(step + 1) : undefined}
     >
       {renderStep()}
     </LessonShell>

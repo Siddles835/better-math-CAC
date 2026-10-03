@@ -3,7 +3,7 @@ export type { DiagnosisSnapshot } from './history';
 export { appendDiagnosisSnapshot } from './history';
 export { LessonTrace } from './trace';
 export { diagnoseTrace, diagnoseFromQuiz, diagnoseFeatures } from './diagnose';
-export { readDrawnDigit, readDrawing } from './digitModel';
+export { needsConfirm, readDrawnDigit, readDrawing } from './digitModel';
 export { extractFeatures } from './features';
 export { buildClassBriefing, briefingHeadline, briefingToText } from './briefing';
 export type { ClassBriefing, BriefingAction } from './briefing';
@@ -15,6 +15,10 @@ export {
   GLOW_PLANETS,
   NEXT_PLANET,
   confidenceLabel,
+  misconceptionLabel,
+  kidLineFor,
+  teacherLineFor,
+  practiceTitleFor,
 } from './catalog';
 export { buildPersonalPath, adaptPath, STARTER_HINT } from './personalPath';
 export type { PersonalPath, PathItem, PathKind, ItemOutcome } from './personalPath';

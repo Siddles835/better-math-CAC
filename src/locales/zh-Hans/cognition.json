@@ -22,5 +22,16 @@
   "teacher_DIGIT_REV": "写出的数字可能反了（6/9，2/5）。检查在设备上完成。",
   "teacher_WORD_GAP": "数词和数量可能对不上。在故事星球使用朗读。",
   "teacher_PLACE_SPLIT": "可能把十位和个位拆开。注意木星到土星的过渡。",
-  "teacher_STEADY": "没有明显的误解信号。可以进入下一个已解锁的星球。"
+  "teacher_STEADY": "没有明显的误解信号。可以进入下一个已解锁的星球。",
+  "practice_COUNT_ALL": "从你已经有的数接着数",
+  "practice_OVERSHOOT": "刚好做出这个数",
+  "practice_SUB_FLIP": "按故事里说的数量拿走",
+  "practice_COMMUTE": "总数一样，两种顺序",
+  "practice_DIGIT_REV": "写这个数字，从上面起笔",
+  "practice_WORD_GAP": "先听数字，再摆出来",
+  "practice_PLACE_SPLIT": "把十和个合成一个数",
+  "practice_STEADY": "接着上次，再练一小段",
+  "confidenceHigh": "把握较高",
+  "confidenceMid": "把握中等",
+  "confidenceLow": "把握较低，还在收集"
 }

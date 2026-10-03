@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { getActiveStudent } from '@/lib/session';
@@ -15,7 +16,7 @@ const RequireStudentSession: React.FC<{ children: React.ReactNode }> = ({ childr
   if (!ready) {
     return (
       <div className="min-h-screen bg-background subtle-stars flex items-center justify-center">
-        <p className="text-muted-foreground animate-fade-in">Loading…</p>
+        <p className="text-muted-foreground animate-fade-in">{tx('ui:s_33ce417454')}</p>
       </div>
     );
   }

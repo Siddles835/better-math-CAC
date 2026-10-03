@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -30,14 +31,9 @@ export class ErrorBoundary extends React.Component<
       return (
         <div className="min-h-screen bg-background subtle-stars flex items-center justify-center p-8">
           <div className="max-w-md w-full bg-card/95 border border-border rounded-2xl p-8 text-center animate-fade-in">
-            <h1 className="text-2xl font-semibold text-foreground mb-3">Something went wrong</h1>
-            <p className="text-muted-foreground mb-6">
-              MathLift hit an unexpected error. Your progress is saved in the cloud — tap below to
-              return home and continue.
-            </p>
-            <Button type="button" onClick={this.handleReset} size="lg">
-              Return Home
-            </Button>
+            <h1 className="text-2xl font-semibold text-foreground mb-3">{tx('ui:s_8d886c0ba6')}</h1>
+            <p className="text-muted-foreground mb-6">{tx('ui:s_0456ab388a')}</p>
+            <Button type="button" onClick={this.handleReset} size="lg">{tx('ui:s_27fae25416')}</Button>
           </div>
         </div>
       );

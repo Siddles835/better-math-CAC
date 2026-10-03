@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -501,9 +502,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
   const renderEquationStage = () => (
     <div className="bg-card rounded-xl p-6 border border-border mb-5 animate-fade-in">
       <div className="flex items-center justify-between gap-3 mb-4">
-        <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full inline-block">
-          Step 1: Build the equation
-        </span>
+        <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full inline-block">{tx('ui:s_b000371ada')}</span>
         <ReadAloudButton text={t(`quiz:${prefix}${currentQuestion}_question`)} />
       </div>
 
@@ -569,9 +568,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
           <p className="text-xl font-semibold text-success">
             {t('quiz:built')} <span dir="ltr">{showNum(chipValue(slots[0]))} {operator} {showNum(chipValue(slots[1]))} = ?</span>
           </p>
-          <Button type="button" onClick={() => setStage('solve')} size="lg" className="min-h-[48px] relative z-20">
-            Now Solve It
-            <ChevronRight className="w-5 h-5 ml-1" />
+          <Button type="button" onClick={() => setStage('solve')} size="lg" className="min-h-[48px] relative z-20">{tx('ui:s_895ad57fee')}<ChevronRight className="w-5 h-5 ms-1" />
           </Button>
         </div>
       )}
@@ -582,13 +579,9 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
             {t('quiz:lookAgain')}
           </p>
           {equationAttempts >= 2 && (
-            <p className="text-muted-foreground">
-              Hint: look at the story again.
-            </p>
+            <p className="text-muted-foreground">{tx('ui:s_75c60bce79')}</p>
           )}
-          <Button type="button" onClick={retryEquation} variant="outline" size="lg" className="min-h-[48px] relative z-20">
-            Try Again
-          </Button>
+          <Button type="button" onClick={retryEquation} variant="outline" size="lg" className="min-h-[48px] relative z-20">{tx('ui:s_cef2fe093b')}</Button>
         </div>
       )}
 
@@ -600,9 +593,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
             size="lg"
             disabled={slots.some(s => s === null)}
             className="min-h-[48px] relative z-20"
-          >
-            Check Equation
-          </Button>
+          >{tx('ui:s_5c56786450')}</Button>
         </div>
       )}
     </div>
@@ -632,9 +623,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
         {/* Answer input: number pad for open-ended, buttons otherwise */}
         {isOpenEnded ? (
           <div>
-            <p className="text-sm text-muted-foreground mb-4 text-center">
-              Type your answer!
-            </p>
+            <p className="text-sm text-muted-foreground mb-4 text-center">{tx('ui:s_672c15865f')}</p>
             <NumberPad
               value={typedAnswer}
               onChange={setTypedAnswer}
@@ -696,23 +685,17 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
       {/* Actions */}
       <div ref={actionsRef} className="flex flex-col items-center gap-3 relative z-20 py-2">
         {!isChecked && !showGuidedPractice && wrongAttempts > 0 && effectiveAnswer === null && (
-          <p className="text-sm text-muted-foreground text-center">
-            Pick or type an answer, then tap Check to try again.
-          </p>
+          <p className="text-sm text-muted-foreground text-center">{tx('ui:s_a4ca8abf51')}</p>
         )}
         <div className="flex justify-center gap-4">
           {!isChecked && effectiveAnswer !== null && (
-            <Button type="button" onClick={checkAnswer} size="lg" className="min-h-[48px] relative z-20">
-              Check
-            </Button>
+            <Button type="button" onClick={checkAnswer} size="lg" className="min-h-[48px] relative z-20">{tx('ui:s_4b5e84be0e')}</Button>
           )}
 
           {isChecked && isCorrect && (
             <Button type="button" onClick={nextQuestion} size="lg" className="min-h-[48px] relative z-20">
               {currentQuestion < questions.length - 1 ? (
-                <>
-                  Next
-                  <ChevronRight className="w-5 h-5 ml-1" />
+                <>{tx('ui:s_bc981983e7')}<ChevronRight className="w-5 h-5 ms-1" />
                 </>
               ) : (
                 'Done'
@@ -727,7 +710,7 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-in pb-6">
       {/* Progress Bar - Far Right Edge (decorative, must not intercept clicks) */}
-      <div className="fixed right-1 top-20 bottom-24 w-6 sm:w-8 flex flex-col items-center z-10 pointer-events-none">
+      <div className="fixed end-1 top-20 bottom-24 w-6 sm:w-8 flex flex-col items-center z-10 pointer-events-none">
         {/* Stars count */}
         <div className="flex flex-col items-center gap-0.5 mb-2">
           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />

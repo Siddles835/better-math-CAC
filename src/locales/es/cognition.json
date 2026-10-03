@@ -22,5 +22,16 @@
   "teacher_DIGIT_REV": "Los dígitos escritos pueden estar al revés (6/9, 2/5). La revisión queda en el dispositivo.",
   "teacher_WORD_GAP": "La palabra y la cantidad pueden no coincidir. Usar lectura en voz alta en los planetas de cuentos.",
   "teacher_PLACE_SPLIT": "Puede separar decenas y unidades. Vigilar el paso de Júpiter a Saturno.",
-  "teacher_STEADY": "No hay una señal fuerte de error. Listo para el siguiente planeta desbloqueado."
+  "teacher_STEADY": "No hay una señal fuerte de error. Listo para el siguiente planeta desbloqueado.",
+  "practice_COUNT_ALL": "Sigue contando desde un número que ya tienes",
+  "practice_OVERSHOOT": "Haz el número exacto",
+  "practice_SUB_FLIP": "Quita el número que pide la historia",
+  "practice_COMMUTE": "El mismo total, en dos órdenes",
+  "practice_DIGIT_REV": "Escribe el número, empezando arriba",
+  "practice_WORD_GAP": "Escucha el número y luego ármalo",
+  "practice_PLACE_SPLIT": "Decenas y unidades en un solo número",
+  "practice_STEADY": "Un tramo corto de la última vez",
+  "confidenceHigh": "Confianza alta",
+  "confidenceMid": "Confianza moderada",
+  "confidenceLow": "Confianza baja, todavía reuniendo señales"
 }

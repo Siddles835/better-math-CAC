@@ -1,3 +1,7 @@
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
+import { tx } from '@/i18n/tx';
 // Subtraction Lesson - Saturn (Activity/Practice)
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -5,6 +9,8 @@ import { useGame } from '@/context/GameContext';
 import ThoughtCard from '@/components/ThoughtCard';
 import { diagnoseTrace, LessonTrace, type Diagnosis } from '@/lib/cognition';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import Pencil from '@/components/Pencil';
 import Counter from '@/components/Counter';
 import PlanetTransition from '@/components/PlanetTransition';
@@ -18,7 +24,8 @@ import { Check, X, Play, RotateCcw } from 'lucide-react';
 
 const SubtractionSaturn: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet, saveDiagnosis } = useGame();
+  const { saveDiagnosis } = useGame();
+  const { leave } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('saturn');
   const [showTransition, setShowTransition] = useState(false);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
@@ -41,7 +48,9 @@ const SubtractionSaturn: React.FC = () => {
   const [showGuided, setShowGuided] = useState(false);
   const activity2Start = 7;
 
-  const totalSteps = 4;
+  const [drillReady, setDrillReady] = useState(false);
+  const coreSteps = 4;
+  const totalSteps = coreSteps + insertedCount;
 
   const startAnimation = () => {
     setAnimationPhase('initial');
@@ -86,7 +95,7 @@ const SubtractionSaturn: React.FC = () => {
     traceRef.current.check(activity2Pencils, activity2Target);
     const result = diagnoseTrace('saturn', traceRef.current);
     setDiagnosis(result);
-    void saveDiagnosis(result);
+    saveDiagnosisSafely(saveDiagnosis, result);
     if (activity2Pencils !== activity2Target) {
       hapticError();
       setShowGuided(true);
@@ -100,6 +109,13 @@ const SubtractionSaturn: React.FC = () => {
     setActivity2Removed(0);
     setActivity2Checked(false);
     setShowGuided(false);
+    setDiagnosis(null);
+    traceRef.current.reset();
+  };
+
+  const practiceAgain = () => {
+    resetActivity2();
+    setStep(2);
   };
 
   const resetPractice = () => {
@@ -115,12 +131,7 @@ const SubtractionSaturn: React.FC = () => {
 
 
   const goToNextPlanet = () => {
-    completePlanet('saturn');
-    setShowRocketTransition(true);
-    setTimeout(() => {
-      navigate('/lesson/subtraction/uranus');
-      setShowRocketTransition(false);
-    }, 1600);
+    leave('saturn', '/lesson/subtraction/uranus');
   };
 
   if (showTransition) {
@@ -137,13 +148,14 @@ const SubtractionSaturn: React.FC = () => {
   }
 
   const renderStep = () => {
+    if (step >= coreSteps - 1 && step < totalSteps - 1) {
+      return <LessonDrill planet="saturn" index={step - (coreSteps - 1)} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-8">
-              Watch: Taking Away
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-8">{tx('ui:s_eff938b9b0')}</h2>
             
             <div className="bg-card rounded-xl p-10 border border-border mb-8 w-full max-w-md">
               <div className="flex justify-center items-end gap-3 mb-6 min-h-[120px]">
@@ -181,15 +193,11 @@ const SubtractionSaturn: React.FC = () => {
             <div className="flex justify-center gap-4">
               {animationPhase === 'idle' && (
                 <Button onClick={startAnimation} size="lg">
-                  <Play className="w-5 h-5 mr-2" />
-                  Watch
-                </Button>
+                  <Play className="w-5 h-5 me-2" />{tx('ui:s_d91ebf5887')}</Button>
               )}
               {animationPhase === 'final' && (
                 <Button onClick={startAnimation} variant="outline" size="lg">
-                  <RotateCcw className="w-5 h-5 mr-2" />
-                  Watch Again
-                </Button>
+                  <RotateCcw className="w-5 h-5 me-2" />{tx('ui:s_180e2f4a3e')}</Button>
               )}
             </div>
           </div>
@@ -199,14 +207,10 @@ const SubtractionSaturn: React.FC = () => {
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-6">
-              <h2 className="text-3xl font-semibold text-foreground">
-                Take Away Pencils
-              </h2>
-              <ReadAloudButton text="Tap pencils to take them away. Start with 6 pencils." />
+              <h2 className="text-3xl font-semibold text-foreground">{tx('ui:s_1fb209cef8')}</h2>
+              <ReadAloudButton text={tx('ui:s_82a2705c39')} />
             </div>
-            <p className="text-lg text-muted-foreground mb-10">
-              Tap pencils to take them away
-            </p>
+            <p className="text-lg text-muted-foreground mb-10">{tx('ui:s_4037095c80')}</p>
             
             <div className="bg-card rounded-xl p-6 sm:p-10 border border-border mb-8 w-full max-w-lg">
               {/* Left side always shows all 6 pencils (taken ones fade in place);
@@ -237,7 +241,7 @@ const SubtractionSaturn: React.FC = () => {
               </div>
               
               <div className="mt-8">
-                <Counter count={leftPencils} label="Left" />
+                <Counter count={leftPencils} label={tx('ui:leftLabel')} />
               </div>
             </div>
             
@@ -261,8 +265,8 @@ const SubtractionSaturn: React.FC = () => {
             </p>
             
             <div className="flex justify-center gap-8 mb-8">
-              <Counter count={activity2Pencils} label="You have" />
-              <Counter count={activity2Target} label="You need" />
+              <Counter count={activity2Pencils} label={tx('ui:youHave')} />
+              <Counter count={activity2Target} label={tx('ui:youNeed')} />
             </div>
             
             <div className="bg-card rounded-xl p-6 sm:p-10 border border-border mb-8 w-full max-w-lg">
@@ -305,7 +309,7 @@ const SubtractionSaturn: React.FC = () => {
             </div>
             
             {!activity2Checked && (
-              <Button onClick={checkActivity2} size="lg">Check</Button>
+              <Button onClick={checkActivity2} size="lg">{tx('ui:s_4b5e84be0e')}</Button>
             )}
             
             {activity2Checked && !showGuided && (
@@ -316,21 +320,17 @@ const SubtractionSaturn: React.FC = () => {
                   {activity2Pencils === activity2Target ? (
                     <>
                       <Check className="w-8 h-8" />
-                      <span className="text-xl font-semibold">Great!</span>
+                      <span className="text-xl font-semibold">{tx('ui:s_91bb266617')}</span>
                     </>
                   ) : (
                     <>
                       <X className="w-8 h-8" />
-                      <span className="text-xl font-semibold">
-                        Let's practice with pencils!
-                      </span>
+                      <span className="text-xl font-semibold">{tx('ui:s_ff703fdb54')}</span>
                     </>
                   )}
                 </div>
                 {activity2Pencils !== activity2Target && (
-                  <Button onClick={resetActivity2} variant="outline" size="lg">
-                    Try Again
-                  </Button>
+                  <Button onClick={resetActivity2} variant="outline" size="lg">{tx('ui:s_cef2fe093b')}</Button>
                 )}
                 {diagnosis && <ThoughtCard diagnosis={diagnosis} />}
               </div>
@@ -351,23 +351,20 @@ const SubtractionSaturn: React.FC = () => {
           </div>
         );
 
-      case 3:
+      case totalSteps - 1:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              Great Work on Saturn!
-            </h2>
-            <p className="text-xl text-muted-foreground mb-10">
-              You learned how to subtract. Celebrate what you learned:
-            </p>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_580c2752f5')}</h2>
+            <p className="text-xl text-muted-foreground mb-10">{tx('ui:s_c920893e44')}</p>
             
             <div className="mb-10 w-full px-2">
               <LessonCelebration lessonType="subtraction" />
             </div>
             
-            <Button onClick={() => setShowTransition(true)} size="lg">
-              Go to Uranus
-            </Button>
+            <div className="flex flex-col items-center gap-3">
+              <PracticeAgainButton onClick={practiceAgain} />
+              <Button onClick={() => setShowTransition(true)} size="lg">{tx('ui:s_29d554030f')}</Button>
+            </div>
           </div>
         );
 
@@ -382,8 +379,8 @@ const SubtractionSaturn: React.FC = () => {
       totalSteps={totalSteps}
       step={step}
       onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-      onNext={step < 3 ? () => setStep(step + 1) : undefined}
-      showNext={step < 3}
+      onNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady) ? () => setStep(step + 1) : undefined}
+      showNext={step < totalSteps - 1 && (step < coreSteps - 1 || drillReady)}
     >
       {renderStep()}
     </LessonShell>

@@ -12,7 +12,13 @@ const pluralForms = {
   ar: ['zero', 'one', 'two', 'few', 'many', 'other'],
 };
 const suffixes = ['zero', 'one', 'two', 'few', 'many', 'other'];
-const allowValues = new Set(['MathLift', 'Devanagari']);
+const allowValues = new Set([
+  'MathLift',
+  'Devanagari',
+  'Macro-F1',
+  'mathlift1234@gmail.com',
+  'PIN',
+]);
 const errors = [];
 
 const read = (lang, file) => JSON.parse(fs.readFileSync(path.join(root, lang, file), 'utf8'));
@@ -107,8 +113,76 @@ for (const file of files) {
   }
 }
 
+const srcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src');
+const allowExact = new Set([
+  'MathLift',
+  'Chrome',
+  'Firefox',
+  'Safari',
+  'Edge',
+  'Opera',
+  'Firebase',
+  'Firestore',
+  'Vercel',
+  'FERPA',
+  'COPPA',
+  'PIN',
+  'PDF',
+  'OK',
+]);
+const proseWord = /[A-Za-z]{4,}/;
+const attrRe = /(aria-label|title|placeholder|alt)\s*=\s*(?:"([^"]+)"|'([^']+)'|\{\s*"([^"]+)"\s*\}|\{\s*'([^']+)'\s*\})/g;
+
+const stripComments = (source) =>
+  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+const looksEnglish = (value) => {
+  const text = value.replace(/\s+/g, ' ').trim();
+  if (!text || allowExact.has(text)) return false;
+  if (!proseWord.test(text)) return false;
+  if (/^https?:\/\//.test(text)) return false;
+  if (/^[a-z0-9_.:/-]+$/.test(text)) return false;
+  if (/[{};]|=>|const |let |function |\.split\(|&&|\|\||===|!==|\?\s*\(|\w+\(/.test(text)) return false;
+  const letters = (text.match(/[A-Za-z]/g) || []).length;
+  if (letters < 4 || letters / text.length < 0.45) return false;
+  return true;
+};
+
+const scanFile = (filePath) => {
+  const raw = stripComments(fs.readFileSync(filePath, 'utf8'));
+  const rel = path.relative(srcRoot, filePath);
+  attrRe.lastIndex = 0;
+  let match;
+  while ((match = attrRe.exec(raw))) {
+    const value = match[2] || match[3] || match[4] || match[5] || '';
+    if (looksEnglish(value)) errors.push(`${rel} hardcoded ${match[1]}: ${value.slice(0, 80)}`);
+  }
+  const jsxRe = />([^<>{}]*[A-Za-z][^<>{}]*)</g;
+  while ((match = jsxRe.exec(raw))) {
+    const value = match[1].trim();
+    if (looksEnglish(value)) errors.push(`${rel} hardcoded text: ${value.slice(0, 80)}`);
+  }
+};
+
+const walkTsx = (dir) => {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === 'ui') continue;
+      walkTsx(full);
+    } else if (entry.name.endsWith('.tsx')) {
+      scanFile(full);
+    }
+  }
+};
+
+walkTsx(path.join(srcRoot, 'pages'));
+walkTsx(path.join(srcRoot, 'components'));
+
 if (errors.length) {
-  console.error(errors.join('\n'));
+  console.error(errors.slice(0, 80).join('\n'));
+  if (errors.length > 80) console.error(`... and ${errors.length - 80} more`);
+  console.error(`${errors.length} locale problems`);
   process.exit(1);
 }
 console.log(`Locale check passed for ${langs.length} languages and ${files.length} namespaces.`);

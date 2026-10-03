@@ -31,7 +31,7 @@ export type DigitScript = 'western' | 'arabic' | 'devanagari';
 
 export interface DigitRead {
   status: 'ok' | 'unreadable';
-  /** Combined value for one or two digits. 0 when unreadable. */
+  /** Combined value for one, two, or three digits. 0 when unreadable. */
   digit: number;
   confidence: number;
   reversal: boolean;

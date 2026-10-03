@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useEffect, useRef, useState } from 'react';
 import { Volume2 } from 'lucide-react';
 import { speak, stopSpeaking, isSpeechSupported } from '@/lib/speech';
@@ -121,9 +122,7 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
       <Volume2 className="w-6 h-6" />
     </button>
     {unavailable && (
-      <span className="max-w-[12rem] text-xs text-muted-foreground text-center">
-        Read aloud isn't available in this language on this device
-      </span>
+      <span className="max-w-[12rem] text-xs text-muted-foreground text-center">{tx('ui:s_d1ce63d00e')}</span>
     )}
     </span>
   );

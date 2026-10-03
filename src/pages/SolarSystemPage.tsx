@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, LogOut, Rocket } from 'lucide-react';
@@ -135,21 +136,16 @@ const SolarSystemPage: React.FC = () => {
     <div className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-center p-4 sm:p-8 overflow-hidden pb-28">
       <div className="animate-fade-in z-20 text-center mb-6 sm:mb-8">
         {displayName && (
-          <p className="text-sm text-muted-foreground mb-2">
-            Playing as <strong className="text-foreground">{displayName}</strong>
+          <p className="text-sm text-muted-foreground mb-2">{tx('ui:s_b82e180967')}<strong className="text-foreground">{displayName}</strong>
             {' · '}
             <button
               type="button"
               onClick={() => navigate('/settings')}
               className="underline underline-offset-2 hover:text-foreground"
-            >
-              Settings
-            </button>
+            >{tx('ui:s_c7f73bb54d')}</button>
           </p>
         )}
-        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground mb-2">
-          Your solar system
-        </h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground mb-2">{tx('ui:s_7bb59b2f67')}</h1>
         <p className="text-muted-foreground max-w-lg mx-auto text-sm sm:text-base">
           Your teacher has unlocked planets through{' '}
           <strong className="text-foreground">{maxPlanetName}</strong>. Tap a planet to start or
@@ -157,9 +153,7 @@ const SolarSystemPage: React.FC = () => {
           {continuePlanet && PLANET_META[continuePlanet] && (
             <>
               {' '}
-              Tap <strong className="text-foreground">{PLANET_META[continuePlanet].name}</strong> to
-              continue where you left off.
-            </>
+              Tap <strong className="text-foreground">{PLANET_META[continuePlanet].name}</strong>{tx('ui:s_3a9548dd69')}</>
           )}
         </p>
         {lastDiagnosis ? (

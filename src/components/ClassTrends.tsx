@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -162,7 +163,7 @@ const ClassTrends: React.FC<ClassTrendsProps> = ({ students, sample = false, com
                   </li>
                 ))}
                 {(student.diagnosisHistory ?? []).length === 0 && (
-                  <li className="text-sm text-muted-foreground">No sessions yet.</li>
+                  <li className="text-sm text-muted-foreground">{tx('ui:s_a44ee05c19')}</li>
                 )}
               </ol>
             </div>
@@ -193,7 +194,7 @@ const TrendTable: React.FC<{ trend: ClassTrend; visible: boolean }> = ({ trend, 
           <tr key={row[0] ?? index}>
             {row.map((cell, cellIndex) =>
               index === 0 ? (
-                <th key={`${index}-${cellIndex}`} className="border border-border px-1 py-1 text-left font-medium">
+                <th key={`${index}-${cellIndex}`} className="border border-border px-1 py-1 text-start font-medium">
                   {cell}
                 </th>
               ) : (

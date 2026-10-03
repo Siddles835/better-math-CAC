@@ -113,6 +113,8 @@ const equalsWhat = (lang: AppLang) => {
   return 'equals what?';
 };
 
+export const numberWord = (n: number, lang: AppLang = loadLanguage()): string => wordsUnder100(n, lang);
+
 /** Turn digits and math signs into words for the active language. */
 export const normalizeSpeechText = (text: string, lang: AppLang = 'en'): string => {
   const cleaned = text.replace(EMOJI_REGEX, ' ');

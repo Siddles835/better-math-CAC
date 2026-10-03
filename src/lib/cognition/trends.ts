@@ -1,8 +1,9 @@
 import type { StudentState } from '@/lib/classroom';
 import type { DiagnosisSnapshot } from './history';
-import { MISCONCEPTION_LABEL } from './catalog';
+import i18n from '@/i18n/setup';
+import { misconceptionLabel } from './catalog';
 import type { MisconceptionCode } from './types';
-import { PLANET_META, type PlanetId } from '@/lib/planets';
+import type { PlanetId } from '@/lib/planets';
 
 export const MISCONCEPTION_ORDER: MisconceptionCode[] = [
   'COUNT_ALL',
@@ -179,7 +180,7 @@ export const studentSummary = (student: StudentState): string => {
   if (history.length === 0) return 'No sessions yet.';
   if (history.length === 1) {
     const only = history[0];
-    return `One session so far: ${MISCONCEPTION_LABEL[only.primary].toLowerCase()} on ${PLANET_META[only.planet].name}.`;
+    return i18n.t('ui:trendOne', { pattern: misconceptionLabel(only.primary), planet: i18n.t(`ui:planet_${only.planet}`) });
   }
 
   let steadyRun = 0;
@@ -190,22 +191,37 @@ export const studentSummary = (student: StudentState): string => {
   const latest = history[history.length - 1];
   const firstFlag = history.find((snap) => snap.primary !== 'STEADY');
   if (steadyRun >= 2 && firstFlag) {
-    return `Was ${MISCONCEPTION_LABEL[firstFlag.primary].toLowerCase()} on ${PLANET_META[firstFlag.planet].name}, now steady for ${steadyRun} sessions.`;
+    return i18n.t('ui:trendSteady', {
+      pattern: misconceptionLabel(firstFlag.primary),
+      planet: i18n.t(`ui:planet_${firstFlag.planet}`),
+      count: steadyRun,
+    });
   }
   if (steadyRun === 1 && firstFlag) {
-    return `Was ${MISCONCEPTION_LABEL[firstFlag.primary].toLowerCase()} on ${PLANET_META[firstFlag.planet].name}, steady for 1 session so far.`;
+    return i18n.t('ui:trendSteadyOne', {
+      pattern: misconceptionLabel(firstFlag.primary),
+      planet: i18n.t(`ui:planet_${firstFlag.planet}`),
+    });
   }
 
   const same = history.every((snap) => snap.primary === latest.primary);
   if (same) {
-    return `Still ${MISCONCEPTION_LABEL[latest.primary].toLowerCase()} on ${PLANET_META[latest.planet].name} across ${history.length} sessions.`;
+    return i18n.t('ui:trendStill', {
+      pattern: misconceptionLabel(latest.primary),
+      planet: i18n.t(`ui:planet_${latest.planet}`),
+      count: history.length,
+    });
   }
   const first = history[0];
-  return `Was ${MISCONCEPTION_LABEL[first.primary].toLowerCase()} on ${PLANET_META[first.planet].name}, now ${MISCONCEPTION_LABEL[latest.primary].toLowerCase()}.`;
+  return i18n.t('ui:trendChanged', {
+    before: misconceptionLabel(first.primary),
+    planet: i18n.t(`ui:planet_${first.planet}`),
+    after: misconceptionLabel(latest.primary),
+  });
 };
 
 export const trendTableRows = (trend: ClassTrend): string[][] => {
-  const header = ['Bucket', ...MISCONCEPTION_ORDER.map((code) => MISCONCEPTION_LABEL[code]), 'Carried forward'];
+  const header = [i18n.t('ui:trendBucket'), ...MISCONCEPTION_ORDER.map((code) => misconceptionLabel(code)), i18n.t('ui:trendCarried')];
   const rows = trend.buckets.map((bucket) => [
     bucket.label,
     ...MISCONCEPTION_ORDER.map((code) => String(bucket.counts[code])),
@@ -214,4 +230,4 @@ export const trendTableRows = (trend: ClassTrend): string[][] => {
   return [header, ...rows];
 };
 
-export const planetName = (planet: PlanetId) => PLANET_META[planet].name;
+export const planetName = (planet: PlanetId) => i18n.t(`ui:planet_${planet}`);

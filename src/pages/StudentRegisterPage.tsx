@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dices } from 'lucide-react';
@@ -86,14 +87,13 @@ const StudentRegisterPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background subtle-stars flex items-center justify-center p-6 sm:p-8">
       <div className="w-full max-w-md bg-card/95 p-6 rounded-2xl shadow-lg border border-border animate-fade-in backdrop-blur-sm">
-        <h2 className="text-2xl font-semibold mb-2">Join a Class</h2>
+        <h2 className="text-2xl font-semibold mb-2">{tx('ui:s_dd531598fa')}</h2>
         <p className="text-muted-foreground mb-6">
-          Enter your teacher&apos;s class code. We&apos;ll give you a fun space name — remember it (or
-          write it down) so you can resume on any phone, tablet, or computer.
+          {tx('ui:joinLead')}
         </p>
 
         <form onSubmit={handleRegister}>
-          <label className="block mb-2 font-medium">Class Code</label>
+          <label className="block mb-2 font-medium">{tx('ui:s_554850d9a1')}</label>
           <input
             value={classCode}
             onChange={(e) => {
@@ -101,14 +101,14 @@ const StudentRegisterPage: React.FC = () => {
               setError('');
             }}
             className="w-full mb-4 text-foreground bg-background px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-shadow min-h-[48px]"
-            placeholder="Ask your teacher for this"
+            placeholder={tx('ui:s_9375ac0b4d')}
             required
             disabled={loading}
             autoComplete="off"
             autoCapitalize="none"
           />
 
-          <label className="block mb-2 font-medium">Your Space Name</label>
+          <label className="block mb-2 font-medium">{tx('ui:s_36da6e37c5')}</label>
           <div className="flex items-stretch gap-2 mb-2">
             <div
               className="flex-1 flex items-center justify-center px-4 py-3 border border-emerald-500/40 bg-emerald-500/10 rounded-xl min-h-[48px]"
@@ -121,15 +121,14 @@ const StudentRegisterPage: React.FC = () => {
               onClick={rollNewUsername}
               disabled={loading}
               className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background text-foreground font-semibold hover:bg-muted min-h-[48px] disabled:opacity-60"
-              aria-label="Get a new space name"
+              aria-label={tx('ui:s_8e40309ccd')}
             >
               <Dices className="w-5 h-5" aria-hidden />
-              <span className="hidden sm:inline">New Name</span>
+              <span className="hidden sm:inline">{tx('ui:s_ddbcd37145')}</span>
             </button>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
-            Don&apos;t like it? Tap the dice for a new one — as many times as you want. We use fun
-            made-up names instead of real names to keep you safe.
+            {tx('ui:joinDice')}
           </p>
 
           {error && (

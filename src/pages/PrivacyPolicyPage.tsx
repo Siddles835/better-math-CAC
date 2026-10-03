@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +30,7 @@ const PrivacyPolicyPage: React.FC = () => {
           <p className="text-[15px] leading-relaxed text-slate-700">{t('privacyLead')}</p>
         )}
         <div>
-          <h1 className="text-3xl font-semibold text-slate-900 mb-2">Privacy Policy</h1>
+          <h1 className="text-3xl font-semibold text-slate-900 mb-2">{tx('ui:s_9db108ba6b')}</h1>
           <p className="text-sm text-slate-500">Last updated {LAST_UPDATED}</p>
         </div>
 
@@ -56,127 +57,98 @@ const PrivacyPolicyPage: React.FC = () => {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">
-          <h2 className="text-xl font-semibold text-slate-900">Exactly what data MathLift collects</h2>
-          <p className="text-[15px] leading-relaxed text-slate-600">
-            MathLift collects only the classroom data needed to run the lessons. We do not collect
-            legal names, emails, phone numbers, photos, precise location, contacts, health data, or
-            payment information from students.
-          </p>
+          <h2 className="text-xl font-semibold text-slate-900">{tx('ui:s_c2efb31cab')}</h2>
+          <p className="text-[15px] leading-relaxed text-slate-600">{tx('ui:s_25fd8aeafc')}</p>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
+            <table className="w-full text-start text-sm border-collapse">
               <thead>
                 <tr className="border-b border-slate-200">
-                  <th className="py-2 pr-3 font-semibold">Data</th>
-                  <th className="py-2 pr-3 font-semibold">Who it belongs to</th>
-                  <th className="py-2 pr-3 font-semibold">How it is collected</th>
+                  <th className="py-2 pe-3 font-semibold">{tx('ui:s_e5e429bcc9')}</th>
+                  <th className="py-2 pe-3 font-semibold">{tx('ui:s_ff34dc822f')}</th>
+                  <th className="py-2 pe-3 font-semibold">{tx('ui:s_ef3d175427')}</th>
                   <th className="py-2 font-semibold">Why we use it</th>
                 </tr>
               </thead>
               <tbody className="text-slate-600 align-top">
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 pr-3">Generated space name (username), e.g. BraveTiger42</td>
-                  <td className="py-2 pr-3">Student</td>
-                  <td className="py-2 pr-3">Created on the device. The student cannot type a custom name.</td>
-                  <td className="py-2">Identify the student inside one class so they can resume lessons.</td>
+                  <td className="py-2 pe-3">{tx('ui:s_cdcca732e9')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_42b3279479')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_0fe338df82')}</td>
+                  <td className="py-2">{tx('ui:s_9d5fa24ec2')}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 pr-3">Class code</td>
-                  <td className="py-2 pr-3">Teacher chooses it; students enter it</td>
-                  <td className="py-2 pr-3">Typed by the teacher when creating a class; typed by the student to join</td>
-                  <td className="py-2">Group students into one classroom.</td>
+                  <td className="py-2 pe-3">{tx('ui:s_1636cd7d91')}</td>
+                  <td className="py-2 pe-3">Teacher chooses it; students enter it</td>
+                  <td className="py-2 pe-3">Typed by the teacher when creating a class; typed by the student to join</td>
+                  <td className="py-2">{tx('ui:s_83d74b6bd7')}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 pr-3">Teacher PIN</td>
-                  <td className="py-2 pr-3">Teacher</td>
-                  <td className="py-2 pr-3">Generated on the server when the class is created</td>
-                  <td className="py-2">Prove the teacher may manage that class. The PIN is not stored on the device.</td>
+                  <td className="py-2 pe-3">{tx('ui:s_d4573570bc')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_da33ddcb58')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_d769fde217')}</td>
+                  <td className="py-2">{tx('ui:s_c78a55bcc0')}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 pr-3">Lesson progress (current planet, completed planets, step inside a lesson)</td>
-                  <td className="py-2 pr-3">Student</td>
-                  <td className="py-2 pr-3">Saved automatically as the student plays</td>
-                  <td className="py-2">Let the student continue where they left off and show the teacher a live roster.</td>
+                  <td className="py-2 pe-3">{tx('ui:s_df1c76ba12')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_42b3279479')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_3998da7321')}</td>
+                  <td className="py-2">{tx('ui:s_78f3a19c07')}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 pr-3">Last quiz summary (planet, score, number of tries per question)</td>
-                  <td className="py-2 pr-3">Student</td>
-                  <td className="py-2 pr-3">Saved when a quiz finishes</td>
-                  <td className="py-2">Help the teacher see which skills need more practice. Not used for grading outside the app.</td>
+                  <td className="py-2 pe-3">{tx('ui:s_8945850980')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_42b3279479')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_a3084ba7f1')}</td>
+                  <td className="py-2">{tx('ui:s_334efe19fc')}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 pr-3">Thinking summary (named practice pattern, confidence, suggested planet)</td>
-                  <td className="py-2 pr-3">Student</td>
-                  <td className="py-2 pr-3">Computed on the device after a checked activity or quiz</td>
-                  <td className="py-2">Give the teacher a short briefing. Drawings and raw tap traces are not uploaded.</td>
+                  <td className="py-2 pe-3">{tx('ui:s_3582f7484d')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_42b3279479')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_6cb88ac714')}</td>
+                  <td className="py-2">{tx('ui:s_a9a0158377')}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 pr-3">
-                    Short history of diagnosis results (misconception type, planet, and timestamp, up to 40 per student)
-                  </td>
-                  <td className="py-2 pr-3">Student</td>
-                  <td className="py-2 pr-3">Saved with the thinking summary when a new result is recorded</td>
+                  <td className="py-2 pe-3">{tx('ui:s_65d8a6668b')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_42b3279479')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_2169a7771f')}</td>
                   <td className="py-2">
                     Show the teacher which patterns are shrinking. Kept and deleted with the rest of that student&apos;s progress.
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 pr-3">Class start planet</td>
-                  <td className="py-2 pr-3">Teacher setting</td>
-                  <td className="py-2 pr-3">Chosen on the teacher dashboard</td>
-                  <td className="py-2">Unlock the right lessons for the class.</td>
+                  <td className="py-2 pe-3">{tx('ui:s_7dba2ffb5b')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_170e35edbe')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_289516da74')}</td>
+                  <td className="py-2">{tx('ui:s_d0bfabc000')}</td>
                 </tr>
                 <tr>
-                  <td className="py-2 pr-3">On-device session (class code + space name, or class code for a teacher)</td>
-                  <td className="py-2 pr-3">Whoever last signed in on that device</td>
-                  <td className="py-2 pr-3">Saved locally so the app can resume. Only one role is kept at a time.</td>
-                  <td className="py-2">Avoid forcing a sign-in on every launch. Cleared on Sign Out or account deletion.</td>
+                  <td className="py-2 pe-3">{tx('ui:s_d8b7ebdc02')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_142239a38f')}</td>
+                  <td className="py-2 pe-3">{tx('ui:s_4590b30f09')}</td>
+                  <td className="py-2">{tx('ui:s_1d36923f3a')}</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p className="text-[15px] leading-relaxed text-slate-600">
-            MathLift does <strong>not</strong> collect: handwriting images, stroke data, advertising
-            IDs, analytics user IDs, crash reports that include usernames, microphone audio
-            (read-aloud uses on-device speech synthesis only), camera, contacts, or precise location.
-          </p>
+          <p className="text-[15px] leading-relaxed text-slate-600">{tx('ui:s_936f7282c0')}<strong>not</strong>{tx('ui:s_ca54156154')}</p>
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3 text-[15px] leading-relaxed text-slate-600">
-          <h2 className="text-xl font-semibold text-slate-900">How we collect and store it</h2>
-          <ul className="list-disc pl-5 space-y-2">
-            <li>
-              Classroom records are stored in Google Cloud Firestore (project mathlift-63f6e) over
-              HTTPS. App Transport Security is enforced on iOS.
-            </li>
-            <li>
-              The iOS app stores the last session in the iOS Keychain (not in unencrypted
-              UserDefaults). Downloaded files on device use complete file protection so they are
-              encrypted when the device is locked.
-            </li>
-            <li>
-              Only one login is kept on a device: the most recent student <em>or</em> teacher
-              session. A student on a shared classroom iPad cannot open a leftover teacher session.
-            </li>
+          <h2 className="text-xl font-semibold text-slate-900">{tx('ui:s_15ab50faca')}</h2>
+          <ul className="list-disc ps-5 space-y-2">
+            <li>{tx('ui:s_f05a94ff46')}</li>
+            <li>{tx('ui:s_fa65bf4660')}</li>
+            <li>{tx('ui:s_c3b2d311ee')}<em>or</em>{tx('ui:s_8bcf685e48')}</li>
           </ul>
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3 text-[15px] leading-relaxed text-slate-600">
-          <h2 className="text-xl font-semibold text-slate-900">Third parties</h2>
-          <p>
-            We share classroom data only with the infrastructure needed to run the app:
-          </p>
-          <ul className="list-disc pl-5 space-y-2">
+          <h2 className="text-xl font-semibold text-slate-900">{tx('ui:s_6f8b52e948')}</h2>
+          <p>{tx('ui:s_1e07b6dea9')}</p>
+          <ul className="list-disc ps-5 space-y-2">
             <li>
-              <strong>Google Firebase / Firestore</strong> — stores class codes, generated student
-              usernames, and progress. Google&apos;s processing is limited to hosting this database.
-              We do <strong>not</strong> enable Firebase Analytics, Google Analytics, Firebase
-              Crashlytics, Google Ads, or any advertising SDK.
-            </li>
+              <strong>{tx('ui:s_12e9a490f2')}</strong> {tx('ui:firebaseStores')} <strong>{tx('ui:s_d3ba64f3d8')}</strong></li>
             <li>
-              <strong>Vercel</strong> — hosts the app website. Standard server logs (IP address,
-              user agent) may be retained briefly by the host for security and uptime. These logs
-              are not joined to student usernames.
-            </li>
+              <strong>Vercel</strong>{tx('ui:s_862dc2dff5')}</li>
           </ul>
           <p>
             We do not sell student data. We do not use or share student data to build advertising
@@ -187,27 +159,16 @@ const PrivacyPolicyPage: React.FC = () => {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3 text-[15px] leading-relaxed text-slate-600">
-          <h2 className="text-xl font-semibold text-slate-900">Retention, consent, and deletion</h2>
-          <p>
-            We keep a student record only while that student remains in the class. We keep a class
-            record only while the teacher maintains the class.
-          </p>
-          <p>
-            You can revoke consent and delete data at any time using the in-app controls below. An
-            email request is not required for deletion.
-          </p>
-          <ul className="list-disc pl-5 space-y-2">
+          <h2 className="text-xl font-semibold text-slate-900">{tx('ui:s_411be97727')}</h2>
+          <p>{tx('ui:s_4be32cb51c')}</p>
+          <p>{tx('ui:s_a996b17496')}</p>
+          <ul className="list-disc ps-5 space-y-2">
             <li>
-              <strong>Student:</strong> open Settings in the app → Delete My Account. This removes
-              the username, progress, and quiz history from the class.
-            </li>
+              <strong>{tx('ui:s_3708a66bf5')}</strong>{tx('ui:s_616c8beb9a')}</li>
             <li>
-              <strong>Teacher / school administrator:</strong> on the dashboard, tap Remove student
-              for one learner, or open Settings → Delete This Class to erase the whole roster,
-              teacher PIN, and class code.
-            </li>
+              <strong>{tx('ui:s_57a6f1f748')}</strong>{tx('ui:s_2390c26b51')}</li>
             <li>
-              <strong>Optional email request:</strong> you do not need to email us to delete data.
+              <strong>{tx('ui:s_80ae64f911')}</strong> you do not need to email us to delete data.
               If you cannot use the in-app controls, write to{' '}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-700 hover:underline font-medium">
                 {SUPPORT_EMAIL}
@@ -215,14 +176,11 @@ const PrivacyPolicyPage: React.FC = () => {
               with the class code and space name. We will delete the record and confirm.
             </li>
           </ul>
-          <p>
-            Signing out only clears the device session. Deletion is the step that removes data from
-            our servers.
-          </p>
+          <p>{tx('ui:s_640351f119')}</p>
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3 text-[15px] leading-relaxed text-slate-600">
-          <h2 className="text-xl font-semibold text-slate-900">Children, FERPA, and COPPA</h2>
+          <h2 className="text-xl font-semibold text-slate-900">{tx('ui:s_a947dcf4c0')}</h2>
           <p>
             MathLift is intended for classroom use, including children under 13. We practice data
             minimisation: students receive a generated space name and never enter a real name or
@@ -233,7 +191,7 @@ const PrivacyPolicyPage: React.FC = () => {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3 text-[15px] leading-relaxed text-slate-600">
-          <h2 className="text-xl font-semibold text-slate-900">Your rights</h2>
+          <h2 className="text-xl font-semibold text-slate-900">{tx('ui:s_e71102d544')}</h2>
           <p>
             In every region where MathLift is available, you can access, correct, or delete personal
             data. Use the in-app deletion controls described above. Emailing {SUPPORT_EMAIL} is
@@ -242,9 +200,8 @@ const PrivacyPolicyPage: React.FC = () => {
           </p>
         </section>
 
-        <p className="text-sm text-slate-500">
-          Also see our <Link to="/cookie-policy" className="text-sky-700 hover:underline">Cookie Policy</Link> and{' '}
-          <Link to="/support" className="text-sky-700 hover:underline">Support</Link> page.
+        <p className="text-sm text-slate-500">{tx('ui:s_750c35a37a')}<Link to="/cookie-policy" className="text-sky-700 hover:underline">{tx('ui:s_e6e178ccc8')}</Link> and{' '}
+          <Link to="/support" className="text-sky-700 hover:underline">{tx('ui:s_f32d5a3b17')}</Link> page.
         </p>
       </main>
     </div>

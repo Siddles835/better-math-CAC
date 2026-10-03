@@ -1,4 +1,5 @@
 import { lazy, Suspense, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -46,7 +47,9 @@ const lesson = (element: ReactNode) => (
   <RequireStudentSession>{element}</RequireStudentSession>
 );
 
-const App = () => (
+const App = () => {
+  useTranslation();
+  return (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -104,6 +107,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
-);
+  );
+};
 
 export default App;

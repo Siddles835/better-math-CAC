@@ -5,9 +5,11 @@ import {
   updateDoc,
   deleteDoc,
   deleteField,
+  arrayUnion,
   onSnapshot,
   type Unsubscribe,
 } from 'firebase/firestore';
+import { isArrayUnion } from './studentWrites';
 import { db } from './firebase';
 import type { Diagnosis, DiagnosisSnapshot } from './cognition';
 import {
@@ -286,6 +288,25 @@ export const updateStudentState = async (
   await updateDoc(doc(db, 'classrooms', resolved), {
     [`students.${key}`]: payload,
   });
+};
+
+/**
+ * Write a few student fields without replacing the rest of the record.
+ * Dotted paths keep a step save from wiping completedPlanets.
+ */
+export const patchStudentFields = async (
+  classCode: string,
+  studentKey: string,
+  fields: Record<string, unknown>
+) => {
+  const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
+  const payload: Record<string, unknown> = {};
+  for (const [field, value] of Object.entries(fields)) {
+    const path = `students.${studentKey}.${field}`;
+    payload[path] = isArrayUnion(value) ? arrayUnion(...value.__arrayUnion) : value;
+  }
+  payload[`students.${studentKey}.lastUpdated`] = Date.now();
+  await updateDoc(doc(db, 'classrooms', resolved), payload);
 };
 
 export const setClassDefaultStart = async (classCode: string, planet: string) => {

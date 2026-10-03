@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home } from 'lucide-react';
@@ -32,7 +33,7 @@ const HomeButton: React.FC<HomeButtonProps> = ({ embedded = false }) => {
               left: 'max(1rem, env(safe-area-inset-left))',
             }
       }
-      aria-label="Return to planet selection"
+      aria-label={tx('ui:s_77a31d3704')}
     >
       <Home className="h-5 w-5 text-foreground" strokeWidth={2.25} aria-hidden />
     </Button>

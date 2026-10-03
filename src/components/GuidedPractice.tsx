@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useMemo, useState } from 'react';
 import { Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -92,7 +93,7 @@ const GuidedPractice: React.FC<GuidedPracticeProps> = ({
       type="button"
       onClick={onClick}
       disabled={filled}
-      aria-label={filled ? 'Filled pencil' : 'Empty pencil — tap to fill'}
+      aria-label={filled ? tx('ui:pencilFilled') : tx('ui:pencilEmpty')}
       className={`w-12 h-12 min-h-[48px] min-w-[48px] rounded-xl flex items-center justify-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
         filled
           ? 'bg-primary/10 scale-100'
@@ -110,17 +111,17 @@ const GuidedPractice: React.FC<GuidedPracticeProps> = ({
           type="button"
           onClick={onClose}
           className="absolute top-3 right-3 w-10 h-10 min-h-[44px] min-w-[44px] rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Close"
+          aria-label={tx('ui:s_bbfa773e5a')}
         >
           <X className="w-5 h-5" />
         </button>
 
         {storyHint && (
-          <p className="text-sm text-muted-foreground mb-3 pr-10 text-left">{storyHint}</p>
+          <p className="text-sm text-muted-foreground mb-3 pe-10 text-start">{storyHint}</p>
         )}
 
         <div className="flex items-start justify-center gap-3 mb-6">
-          <p className="text-lg font-semibold text-foreground text-left flex-1">{instruction}</p>
+          <p className="text-lg font-semibold text-foreground text-start flex-1">{instruction}</p>
           <ReadAloudButton text={instruction} className="shrink-0" />
         </div>
 
@@ -218,12 +219,8 @@ const GuidedPractice: React.FC<GuidedPracticeProps> = ({
         {isDone && (
           <div className="animate-fade-in">
             <p className="text-lg font-semibold text-success mb-4 flex items-center justify-center gap-2">
-              <Check className="w-6 h-6" />
-              You matched the equation! Now try the question again.
-            </p>
-            <Button type="button" onClick={onClose} size="lg">
-              Try Again
-            </Button>
+              <Check className="w-6 h-6" />{tx('ui:s_436d23cbee')}</p>
+            <Button type="button" onClick={onClose} size="lg">{tx('ui:s_cef2fe093b')}</Button>
           </div>
         )}
       </div>

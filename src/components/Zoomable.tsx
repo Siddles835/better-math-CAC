@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useEffect, useRef, useState } from 'react';
 
 const MIN_SCALE = 1;
@@ -144,10 +145,8 @@ const Zoomable: React.FC<ZoomableProps> = ({ children, className = '', resetKey 
         <button
           type="button"
           onClick={() => applyScale(1)}
-          className="sticky top-2 z-20 ml-auto mb-2 mr-1 min-h-[44px] px-3 rounded-full bg-card/95 border border-border text-sm font-semibold shadow-sm block"
-        >
-          Reset zoom
-        </button>
+          className="sticky top-2 z-20 ms-auto mb-2 me-1 min-h-[44px] px-3 rounded-full bg-card/95 border border-border text-sm font-semibold shadow-sm block"
+        >{tx('ui:s_e5737972ce')}</button>
       )}
       <div
         ref={stageRef}

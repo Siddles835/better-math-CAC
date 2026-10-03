@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -83,14 +84,13 @@ const StudentLoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background subtle-stars flex items-center justify-center p-6 sm:p-8">
       <div className="w-full max-w-md bg-card/95 p-6 rounded-2xl shadow-lg border border-border animate-fade-in backdrop-blur-sm">
-        <h2 className="text-2xl font-semibold mb-2">Student Login</h2>
+        <h2 className="text-2xl font-semibold mb-2">{tx('ui:s_6f45c01a9d')}</h2>
         <p className="text-muted-foreground mb-6">
-          Welcome back! Enter the same class code and space name you used when you joined — works
-          on any device. Ask your teacher if you forget the name; they can see it on the class roster.
+          {tx('ui:loginWelcome')}
         </p>
 
         <form onSubmit={handleLogin}>
-          <label className="block mb-2 font-medium">Class Code</label>
+          <label className="block mb-2 font-medium">{tx('ui:s_554850d9a1')}</label>
           <input
             value={classCode}
             onChange={(e) => {
@@ -98,14 +98,14 @@ const StudentLoginPage: React.FC = () => {
               setError('');
             }}
             className="w-full mb-4 text-foreground bg-background px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-shadow min-h-[48px]"
-            placeholder="Class Code"
+            placeholder={tx('ui:s_554850d9a1')}
             required
             disabled={loading}
             autoComplete="off"
             autoCapitalize="none"
           />
 
-          <label className="block mb-2 font-medium">Your Space Name</label>
+          <label className="block mb-2 font-medium">{tx('ui:s_36da6e37c5')}</label>
           <input
             value={nickname}
             onChange={(e) => {
@@ -113,7 +113,7 @@ const StudentLoginPage: React.FC = () => {
               setError('');
             }}
             className="w-full mb-4 text-foreground bg-background px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-shadow min-h-[48px]"
-            placeholder="The generated name you joined with"
+            placeholder={tx('ui:s_f3c2f757fd')}
             required
             disabled={loading}
             autoComplete="username"

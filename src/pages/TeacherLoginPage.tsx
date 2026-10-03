@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { normalizeLabel, verifyTeacherPin } from '@/lib/classroom';
@@ -41,13 +42,11 @@ const TeacherLoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background subtle-stars flex items-center justify-center p-6 sm:p-8">
       <div className="w-full max-w-md bg-card/95 p-6 rounded-2xl shadow-lg border border-border animate-fade-in backdrop-blur-sm">
-        <h2 className="text-2xl font-semibold mb-2">Teacher Login</h2>
-        <p className="text-muted-foreground mb-6">
-          Enter your class code and teacher PIN to open the live dashboard.
-        </p>
+        <h2 className="text-2xl font-semibold mb-2">{tx('ui:s_4e9496bc54')}</h2>
+        <p className="text-muted-foreground mb-6">{tx('ui:s_7d9694d715')}</p>
 
         <form onSubmit={handleLogin}>
-          <label className="block mb-2 font-medium">Class Code</label>
+          <label className="block mb-2 font-medium">{tx('ui:s_554850d9a1')}</label>
           <input
             value={classCode}
             onChange={(e) => {
@@ -55,14 +54,14 @@ const TeacherLoginPage: React.FC = () => {
               setError('');
             }}
             className="w-full mb-4 text-foreground bg-background px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-shadow min-h-[48px]"
-            placeholder="Enter your class code"
+            placeholder={tx('ui:s_c7ea158fdd')}
             required
             disabled={loading}
             autoComplete="off"
             autoCapitalize="none"
           />
 
-          <label className="block mb-2 font-medium">Teacher PIN</label>
+          <label className="block mb-2 font-medium">{tx('ui:s_d4573570bc')}</label>
           <input
             value={teacherPin}
             onChange={(e) => {
@@ -70,7 +69,7 @@ const TeacherLoginPage: React.FC = () => {
               setError('');
             }}
             className="w-full mb-4 text-foreground bg-background px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-shadow min-h-[48px] tracking-widest"
-            placeholder="PIN shown when you created the class"
+            placeholder={tx('ui:s_4c31863a47')}
             required
             disabled={loading}
             autoComplete="off"

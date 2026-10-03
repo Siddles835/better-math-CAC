@@ -1,10 +1,14 @@
+import { tx } from '@/i18n/tx';
+import LessonDrill from '@/components/LessonDrill';
+import { insertedCount } from '@/lib/lessonDuration';
 // Counting Lesson - Mercury ("You need...they have" activity)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGame } from '@/context/GameContext';
 import ThoughtCard from '@/components/ThoughtCard';
 import { useCognitionSession } from '@/hooks/useCognitionSession';
 import { useLessonStep } from '@/hooks/useLessonStep';
+import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
+import PracticeAgainButton from '@/components/PracticeAgainButton';
 import Apple from '@/components/Apple';
 import Basket from '@/components/Basket';
 import Counter from '@/components/Counter';
@@ -18,8 +22,8 @@ import { Check, X } from 'lucide-react';
 
 const CountingMercury: React.FC = () => {
   const navigate = useNavigate();
-  const { setShowRocketTransition, completePlanet } = useGame();
-  const { trace, diagnosis, publish } = useCognitionSession('mercury');
+  const { trace, diagnosis, publish, setDiagnosis } = useCognitionSession('mercury');
+  const { leave } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('mercury');
   const [showTransition, setShowTransition] = useState(false);
   
@@ -30,7 +34,9 @@ const CountingMercury: React.FC = () => {
   const [wordProblemChecked, setWordProblemChecked] = useState(false);
   const [wordProblemCorrect, setWordProblemCorrect] = useState(false);
 
-  const totalSteps = 2;
+  const [drillReady, setDrillReady] = useState(false);
+  const coreSteps = 2;
+  const totalSteps = coreSteps + insertedCount;
 
   const addAppleToWordProblem = () => {
     if (wordProblemAvailable > 0 && !wordProblemCorrect && wordProblemCount < 9) {
@@ -62,13 +68,15 @@ const CountingMercury: React.FC = () => {
     setWordProblemCorrect(false);
   };
 
+  const practiceAgain = () => {
+    resetWordProblem();
+    trace.reset();
+    setDiagnosis(null);
+    setStep(0);
+  };
+
   const goToNextPlanet = () => {
-    completePlanet('mercury');
-    setShowRocketTransition(true);
-    setTimeout(() => {
-      navigate('/lesson/counting/venus');
-      setShowRocketTransition(false);
-    }, 1600);
+    leave('mercury', '/lesson/counting/venus');
   };
 
   if (showTransition) {
@@ -85,25 +93,23 @@ const CountingMercury: React.FC = () => {
   }
 
   const renderStep = () => {
+    if (step >= coreSteps - 1 && step < totalSteps - 1) {
+      return <LessonDrill planet="mercury" index={step - (coreSteps - 1)} onReady={setDrillReady} />;
+    }
     switch (step) {
       case 0:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              Help Fill the Basket!
-            </h2>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_6169527f21')}</h2>
             <div className="bg-card rounded-xl p-6 border border-border mb-8 max-w-lg">
               <div className="flex items-start justify-between gap-3">
-                <div className="text-left flex-1">
-                  <p className="text-lg text-foreground">
-                    Jo needs <span className="font-bold text-primary text-xl">{targetCount} apples</span> for a pie.
+                <div className="text-start flex-1">
+                  <p className="text-lg text-foreground">{tx('ui:joNeedsPie', { count: targetCount })}
                   </p>
-                  <p className="text-muted-foreground mt-2">
-                    Can you put the right amount?
-                  </p>
+                  <p className="text-muted-foreground mt-2">{tx('ui:s_639e98d98d')}</p>
                 </div>
                 <ReadAloudButton
-                  text={`Jo needs ${targetCount} apples for a pie. Can you put the right amount?`}
+                  text={tx('ui:joNeedsSpeak', { count: targetCount })}
                   className="shrink-0"
                 />
               </div>
@@ -111,8 +117,8 @@ const CountingMercury: React.FC = () => {
             
             <div className="flex flex-col items-center gap-6">
               <div className="flex items-center gap-8">
-                <Counter count={wordProblemCount} label="You have" />
-                <Counter count={targetCount} label="You need" />
+                <Counter count={wordProblemCount} label={tx('ui:youHave')} />
+                <Counter count={targetCount} label={tx('ui:youNeed')} />
               </div>
               
               <Basket>
@@ -130,25 +136,21 @@ const CountingMercury: React.FC = () => {
               )}
               
               {!wordProblemChecked ? (
-                <Button onClick={checkWordProblem} className="mt-4 relative z-20" size="lg">
-                  Check
-                </Button>
+                <Button onClick={checkWordProblem} className="mt-4 relative z-20" size="lg">{tx('ui:s_4b5e84be0e')}</Button>
               ) : (
                 <div className="flex flex-col items-center gap-4">
                   {wordProblemCorrect ? (
                     <div className="flex items-center gap-2 text-success">
                       <Check className="w-8 h-8" />
-                      <span className="text-xl font-semibold">Great job!</span>
+                      <span className="text-xl font-semibold">{tx('ui:s_a2d4f4d778')}</span>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-4">
                       <div className="flex items-center gap-2 text-destructive">
                         <X className="w-8 h-8" />
-                        <span className="text-xl font-semibold">Try again!</span>
+                        <span className="text-xl font-semibold">{tx('ui:s_6c5571c034')}</span>
                       </div>
-                      <Button type="button" onClick={resetWordProblem} variant="outline" size="lg" className="min-h-[48px] relative z-20">
-                        Try Again
-                      </Button>
+                      <Button type="button" onClick={resetWordProblem} variant="outline" size="lg" className="min-h-[48px] relative z-20">{tx('ui:s_cef2fe093b')}</Button>
                     </div>
                   )}
                   {diagnosis && <ThoughtCard diagnosis={diagnosis} />}
@@ -158,23 +160,20 @@ const CountingMercury: React.FC = () => {
           </div>
         );
 
-      case 1:
+      case totalSteps - 1:
         return (
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
-            <h2 className="text-3xl font-semibold text-foreground mb-4">
-              Great Work on Mercury!
-            </h2>
-            <p className="text-xl text-muted-foreground mb-10">
-              You practiced counting! Celebrate what you learned:
-            </p>
+            <h2 className="text-3xl font-semibold text-foreground mb-4">{tx('ui:s_497f706ef6')}</h2>
+            <p className="text-xl text-muted-foreground mb-10">{tx('ui:s_37d7abfa1f')}</p>
             
             <div className="mb-10 w-full px-2">
               <LessonCelebration lessonType="counting" />
             </div>
             
-            <Button onClick={() => setShowTransition(true)} size="lg">
-              Go to Venus
-            </Button>
+            <div className="flex flex-col items-center gap-3">
+              <PracticeAgainButton onClick={practiceAgain} />
+              <Button onClick={() => setShowTransition(true)} size="lg">{tx('ui:s_f490373037')}</Button>
+            </div>
           </div>
         );
 
@@ -189,8 +188,8 @@ const CountingMercury: React.FC = () => {
       totalSteps={totalSteps}
       step={step}
       onBack={step > 0 ? () => setStep(step - 1) : () => navigate('/planets')}
-      onNext={step < totalSteps - 1 && wordProblemCorrect ? () => setStep(step + 1) : undefined}
-      showNext={step < totalSteps - 1 && wordProblemCorrect}
+      onNext={step < totalSteps - 1 && (step === 0 ? wordProblemCorrect : drillReady) ? () => setStep(step + 1) : undefined}
+      showNext={step < totalSteps - 1 && (step === 0 ? wordProblemCorrect : drillReady)}
     >
       {renderStep()}
     </LessonShell>

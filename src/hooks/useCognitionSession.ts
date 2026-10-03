@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { diagnoseTrace, LessonTrace, type Diagnosis } from '@/lib/cognition';
+import { saveDiagnosisSafely } from '@/lib/saveDiagnosisSafely';
 import type { PlanetId } from '@/lib/planets';
 
 /** One lesson session: tap traces stay in memory; only the summary is saved. */
@@ -12,7 +13,7 @@ export function useCognitionSession(planet: PlanetId) {
   const publish = () => {
     const result = diagnoseTrace(planet, traceRef.current);
     setDiagnosis(result);
-    void saveDiagnosis(result);
+    saveDiagnosisSafely(saveDiagnosis, result);
     return result;
   };
 

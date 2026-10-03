@@ -1,5 +1,16 @@
+import i18n from '@/i18n/setup';
 import type { PlanetId } from '@/lib/planets';
 import type { MisconceptionCode } from './types';
+
+export const misconceptionLabel = (code: MisconceptionCode): string => i18n.t(`cognition:${code}`);
+export const kidLineFor = (code: MisconceptionCode): string => i18n.t(`cognition:kid_${code}`);
+export const teacherLineFor = (code: MisconceptionCode): string => i18n.t(`cognition:teacher_${code}`);
+export const practiceTitleFor = (code: MisconceptionCode): string => i18n.t(`cognition:practice_${code}`);
+export const confidenceText = (confidence: number): string => {
+  if (confidence >= 0.78) return i18n.t('cognition:confidenceHigh');
+  if (confidence >= 0.55) return i18n.t('cognition:confidenceMid');
+  return i18n.t('cognition:confidenceLow');
+};
 
 export const MISCONCEPTION_LABEL: Record<MisconceptionCode, string> = {
   COUNT_ALL: 'Counting from one each time',
@@ -67,8 +78,4 @@ export const PRACTICE_TITLE: Record<MisconceptionCode, string> = {
   STEADY: 'Continue on the next unlocked planet',
 };
 
-export const confidenceLabel = (confidence: number): string => {
-  if (confidence >= 0.78) return 'High confidence';
-  if (confidence >= 0.55) return 'Moderate confidence';
-  return 'Low confidence — still gathering';
-};
+export const confidenceLabel = (confidence: number): string => confidenceText(confidence);
