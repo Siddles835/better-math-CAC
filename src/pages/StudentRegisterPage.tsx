@@ -16,6 +16,7 @@ import { generateUsername } from '@/lib/usernames';
 import { hapticTap } from '@/lib/haptics';
 import { useGame } from '@/context/GameContext';
 import AuthNavButton from '@/components/AuthNavButton';
+import { saveClassPlacementPending } from '@/lib/placementSession';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 
 const StudentRegisterPage: React.FC = () => {
@@ -74,6 +75,15 @@ const StudentRegisterPage: React.FC = () => {
         nickname: nicknameKey(name),
         displayName: result.student.nickname,
       });
+      if (cls?.usePlacementCheck) {
+        saveClassPlacementPending({
+          classCode: result.classCode,
+          nickname: nicknameKey(name),
+          displayName: result.student.nickname,
+        });
+        navigate('/level-check?mode=class', { replace: true });
+        return;
+      }
       navigate(STUDENT_HUB_PATH, { replace: true });
     } catch (err: unknown) {
       console.error(err);

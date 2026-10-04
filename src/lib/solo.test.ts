@@ -5,9 +5,11 @@ import {
   createSoloProgress,
   isSoloClassCode,
   loadSoloProgress,
+  normalizeSoloPin,
   patchSoloProgressFields,
   saveSoloProgress,
   soloProgressToStudent,
+  verifySoloPin,
 } from './solo';
 import { arrayUnionValue } from './studentWrites';
 
@@ -45,6 +47,18 @@ describe('solo helpers', () => {
     expect(progress.completedPlanets).toContain('sun');
     expect(progress.completedPlanets).toContain('venus');
     expect(progress.completedPlanets).not.toContain('earth');
+    expect(progress.pin).toBeUndefined();
+  });
+
+  it('stores an optional 4-digit PIN on device only', () => {
+    expect(normalizeSoloPin('12')).toBeUndefined();
+    expect(normalizeSoloPin('1234')).toBe('1234');
+    const progress = createSoloProgress('Nova Bee', 'venus', 'mercury', { pin: '1234' });
+    saveSoloProgress(progress);
+    const loaded = loadSoloProgress('Nova Bee');
+    expect(loaded?.pin).toBe('1234');
+    expect(verifySoloPin(loaded!, '1234')).toBe(true);
+    expect(verifySoloPin(loaded!, '0000')).toBe(false);
   });
 
   it('round-trips local progress and patches fields', () => {

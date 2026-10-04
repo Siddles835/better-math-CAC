@@ -59,6 +59,11 @@ export interface Classroom {
   defaultStart?: { planet: string; lesson: LessonType };
   /** Legacy field some older docs may still have */
   defaultPlanet?: string;
+  /**
+   * Optional: when true, new students are offered the placement check
+   * before starting. Older class docs omit this field (treated as false).
+   */
+  usePlacementCheck?: boolean;
   students: Record<string, StudentState>;
 }
 
@@ -320,6 +325,17 @@ export const setClassDefaultStart = async (classCode: string, planet: string) =>
   });
   // Advance roster records so teachers see the correct current planet live.
   await syncStudentsToClassStart(resolved, normalized);
+};
+
+/** Toggle optional placement check for newly joining students. */
+export const setClassUsePlacementCheck = async (
+  classCode: string,
+  enabled: boolean
+): Promise<void> => {
+  const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
+  await updateDoc(doc(db, 'classrooms', resolved), {
+    usePlacementCheck: enabled,
+  });
 };
 
 /**

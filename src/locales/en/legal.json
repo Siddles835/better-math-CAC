@@ -2,5 +2,7 @@
   "notice": "The English version is the authoritative one.",
   "privacyLead": "MathLift stores a generated space name, class code, lesson progress, and a short history of diagnosis results (misconception type, planet, and timestamp, up to 40). Drawings stay on the device. The same deletion rules remove that history.",
   "cookieLead": "MathLift does not use advertising or analytics cookies. A language choice and a sign-in session stay on this device.",
-  "supportLead": "For help, use the support email on this page. Deleting a student or a class also deletes that diagnosis history."
+  "supportLead": "For help, use the support email on this page. Deleting a student or a class also deletes that diagnosis history.",
+  "individualTitle": "Individual mode:",
+  "individualBody": "When a child chooses Learn on my own, MathLift stores only a generated space name, an optional 4-digit PIN, lesson progress, and local preferences on this device (browser localStorage, and on iOS a Keychain mirror of that progress). Nothing from individual mode is sent to our servers or written to Firestore unless the learner later joins a class with a class code (not required). Drawings stay on the device. Use Settings → Delete my progress to wipe individual progress on this device."
 }

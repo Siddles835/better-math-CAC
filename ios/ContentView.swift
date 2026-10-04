@@ -78,7 +78,8 @@ private enum MathLiftKeychain {
         "better-math:active",
         "better-math:active-teacher",
         "better-math:active-role",
-        "better-math:last-class-code"
+        "better-math:last-class-code",
+        "better-math:solo-progress"
     ]
 
     enum ReadResult: Equatable {
@@ -260,11 +261,13 @@ private enum MathLiftKeychain {
         let teacherRead = read(account: "better-math:active-teacher")
         let roleRead = read(account: "better-math:active-role")
         let lastClassRead = read(account: "better-math:last-class-code")
+        let soloProgressRead = read(account: "better-math:solo-progress")
 
         var student = positiveString(studentRead)
         var teacher = positiveString(teacherRead)
         var role = positiveString(roleRead)
         let lastClass = positiveString(lastClassRead)
+        let soloProgress = positiveString(soloProgressRead)
 
         if student != nil && teacher != nil {
             if role == "teacher" {
@@ -282,6 +285,7 @@ private enum MathLiftKeychain {
             var teacher = \(jsString(teacher));
             var role = \(jsString(role));
             var lastClass = \(jsString(lastClass));
+            var soloProgress = \(jsString(soloProgress));
             function write(k, v) {
               // Critical: never removeItem when Keychain read was nil/locked.
               if (v) localStorage.setItem(k, v);
@@ -290,6 +294,7 @@ private enum MathLiftKeychain {
             write('better-math:active-teacher', teacher);
             write('better-math:active-role', role);
             write('better-math:last-class-code', lastClass);
+            write('better-math:solo-progress', soloProgress);
           } catch (e) {}
         })();
         """
@@ -638,7 +643,8 @@ private struct MathLiftWebView: UIViewRepresentable {
         'better-math:active': true,
         'better-math:active-teacher': true,
         'better-math:active-role': true,
-        'better-math:last-class-code': true
+        'better-math:last-class-code': true,
+        'better-math:solo-progress': true
       };
       var originalSet = localStorage.setItem.bind(localStorage);
       var originalRemove = localStorage.removeItem.bind(localStorage);
@@ -809,7 +815,8 @@ private struct MathLiftWebView: UIViewRepresentable {
                 "better-math:active",
                 "better-math:active-teacher",
                 "better-math:active-role",
-                "better-math:last-class-code"
+                "better-math:last-class-code",
+                "better-math:solo-progress"
             ]
             return accounts.contains { MathLiftKeychain.read(account: $0) == .interactionNotAllowed }
         }
