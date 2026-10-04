@@ -20,6 +20,7 @@ import {
 import { deleteClassroom, deleteStudent } from '@/lib/classroom';
 import { Button } from '@/components/ui/button';
 import AccessibilityPanel from '@/components/AccessibilityPanel';
+import VoiceToggle from '@/components/VoiceToggle';
 
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
 
@@ -101,6 +102,8 @@ const SettingsPage: React.FC = () => {
         </Link>
         <h1 className="text-3xl font-semibold mb-2 mt-6">{t('settings:title')}</h1>
         <p className="text-muted-foreground mb-8">{t('settings:intro')}</p>
+
+        <VoiceToggle className="mb-6" />
 
         <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5">
           <h2 className="text-lg font-semibold mb-2">{t('common:language')}</h2>
