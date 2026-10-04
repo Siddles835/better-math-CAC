@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { hapticError, hapticSuccess, hapticTap } from '@/lib/haptics';
+import { buildEquationChipValues, computeExpectedAnswer, equationAccepts } from '@/lib/answers';
 
 interface EquationBuilderProps {
   num1: number;
@@ -15,15 +16,6 @@ interface EquationBuilderProps {
 }
 
 type Chip = { id: number; value: number };
-
-const shuffle = <T,>(items: T[]): T[] => {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-};
 
 /**
  * Step 1 for word problems: student builds the equation from the story
@@ -38,15 +30,9 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
   onResult,
 }) => {
   const chips = useMemo<Chip[]>(() => {
-    const values = [num1, num2];
-    for (const candidate of [num1 + num2, num1 + 1, num2 + 1, 9, 1, 8, 2]) {
-      if (values.length >= 4) break;
-      if (candidate >= 0 && candidate <= 12 && !values.includes(candidate)) {
-        values.push(candidate);
-      }
-    }
-    return shuffle(values.map((value, id) => ({ id, value })));
-  }, [num1, num2]);
+    const values = buildEquationChipValues(num1, num2, operator, Math.random);
+    return values.map((value, id) => ({ id, value }));
+  }, [num1, num2, operator]);
 
   const [slots, setSlots] = useState<(number | null)[]>([null, null]);
   const [checked, setChecked] = useState(false);
@@ -77,11 +63,9 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({
     const v2 = chipValue(slots[1]);
     if (v1 === null || v2 === null) return;
     const reverseAddends = v1 === num2 && v2 === num1;
-    const usedTotal = v1 === num1 + num2 || v2 === num1 + num2;
-    const ok =
-      operator === '+'
-        ? (v1 === num1 && v2 === num2) || reverseAddends
-        : v1 === num1 && v2 === num2;
+    const total = computeExpectedAnswer(operator, num1, num2);
+    const usedTotal = v1 === total || v2 === total;
+    const ok = equationAccepts(v1, v2, num1, num2, operator);
     setChecked(true);
     setCorrect(ok);
     onResult?.({ correct: ok, reverseAddends, usedTotal });

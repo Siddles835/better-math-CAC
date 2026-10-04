@@ -213,7 +213,7 @@ const SubtractionSaturn: React.FC = () => {
             <p className="text-lg text-muted-foreground mb-10">{tx('ui:s_4037095c80')}</p>
             
             <div className="bg-card rounded-xl p-6 sm:p-10 border border-border mb-8 w-full max-w-lg">
-              {/* Left side always shows all 6 pencils (taken ones fade in place);
+              {/* Left side always shows all start pencils (taken ones fade in place);
                   taken pencils show up grayed on the right of the minus sign. */}
               <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
                 <div className="flex flex-wrap justify-center gap-2 min-w-[8rem] max-w-[12rem] sm:max-w-none">

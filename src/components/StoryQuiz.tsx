@@ -19,6 +19,25 @@ import GuidedPractice from '@/components/GuidedPractice';
 import NumberPad from '@/components/NumberPad';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { hapticError, hapticSuccess, hapticTap } from '@/lib/haptics';
+import {
+  buildEquationChipValues,
+  materializeQuizQuestion,
+  parseStudentAnswer,
+  quizDefsFor,
+  type LessonKind,
+} from '@/lib/answers';
+
+type IconName = 'Star' | 'Apple' | 'Shirt' | 'Circle' | 'Gauge' | 'AppWindow' | 'Rocket';
+
+const ICONS: Record<IconName, LucideIcon> = {
+  Star,
+  Apple,
+  Shirt,
+  Circle,
+  Gauge,
+  AppWindow,
+  Rocket,
+};
 
 interface Question {
   story: string;
@@ -29,9 +48,7 @@ interface Question {
   num2?: number;
   /** Icon shown for counting questions so the picture matches the prompt. */
   icon?: LucideIcon;
-  /** Whether the icon should be filled (looks nicer for stars/buttons). */
   iconFill?: boolean;
-  /** Extra classes for the counting picture (e.g. blue buttons). */
   iconClass?: string;
 }
 
@@ -40,210 +57,25 @@ interface StoryQuizProps {
   onComplete: (score: number, areas: string[], questionTries: number[]) => void;
 }
 
-const countingQuestions: Question[] = [
-  {
-    story: 'Luna is going to space! She packs her bag.',
-    question: 'How many stars does Luna pack?',
-    options: [4, 5, 6, 3],
-    answer: 5,
-    num1: 5,
-    icon: Star,
-    iconFill: true,
-  },
-  {
-    story: 'Luna looks at her food.',
-    question: 'How many apples are ready for the trip?',
-    options: [6, 7, 8, 5],
-    answer: 7,
-    num1: 7,
-    icon: Apple,
-  },
-  {
-    story: 'She gets her suits.',
-    question: 'How many space suits does Luna have?',
-    options: [2, 3, 4, 1],
-    answer: 3,
-    num1: 3,
-    icon: Shirt,
-  },
-  {
-    story: 'Luna sees buttons on the control panel.',
-    question: 'How many blue buttons does she see?',
-    options: [5, 6, 7, 4],
-    answer: 6,
-    num1: 6,
-    icon: Circle,
-    iconFill: true,
-    iconClass: 'bg-sky-500/30 text-sky-400',
-  },
-  {
-    story: 'She checks the power meters.',
-    question: 'How many power meters are lit?',
-    options: [3, 4, 5, 2],
-    answer: 4,
-    num1: 4,
-    icon: Gauge,
-  },
-  {
-    story: 'Luna counts windows on the ship.',
-    question: 'How many windows does Luna count?',
-    options: [7, 8, 9, 6],
-    answer: 8,
-    num1: 8,
-    icon: AppWindow,
-  },
-  {
-    story: 'Time to go! She sees stars outside.',
-    question: 'How many bright stars does she see?',
-    options: [5, 6, 7, 4],
-    answer: 6,
-    num1: 6,
-    icon: Star,
-    iconFill: true,
-  },
-  {
-    story: 'Luna made it! She is happy.',
-    question: 'How many toy rockets does Luna have?',
-    options: [1, 2, 3, 4],
-    answer: 2,
-    num1: 2,
-    icon: Rocket,
-  },
-];
+const buildQuestions = (lesson: LessonKind): Question[] =>
+  quizDefsFor(lesson).map((def) => {
+    const q = materializeQuizQuestion(def);
+    return {
+      story: def.story,
+      question: def.question,
+      options: q.options,
+      answer: q.expectedAnswer,
+      num1: def.num1,
+      num2: def.num2,
+      icon: def.icon ? ICONS[def.icon] : undefined,
+      iconFill: def.iconFill,
+      iconClass: def.iconClass,
+    };
+  });
 
-const additionQuestions: Question[] = [
-  {
-    story: "Max likes to paint. He has brushes.",
-    question: "Max has 2 brushes. He gets 3 more. How many now?",
-    options: [4, 5, 6, 3],
-    answer: 5,
-    num1: 2,
-    num2: 3
-  },
-  {
-    story: "Max has paint jars.",
-    question: "He has 3 red and 2 blue. How many in all?",
-    options: [4, 5, 6, 3],
-    answer: 5,
-    num1: 3,
-    num2: 2
-  },
-  {
-    story: "He looks at his papers.",
-    question: "2 big papers and 4 small papers. How many?",
-    options: [5, 6, 7, 4],
-    answer: 6,
-    num1: 2,
-    num2: 4
-  },
-  {
-    story: "Friends come to paint!",
-    question: "4 kids here. 2 more come. How many kids?",
-    options: [5, 6, 7, 4],
-    answer: 6,
-    num1: 4,
-    num2: 2
-  },
-  {
-    story: "Time for a snack!",
-    question: "Max has 3 grapes. He gets 4 more. How many?",
-    options: [6, 7, 8, 5],
-    answer: 7,
-    num1: 3,
-    num2: 4
-  },
-  {
-    story: "Max finds rocks.",
-    question: "He has 1 rock. He finds 5 more. How many?",
-    options: [5, 6, 7, 4],
-    answer: 6,
-    num1: 1,
-    num2: 5
-  },
-  {
-    story: "He draws with crayons.",
-    question: "2 crayons here and 2 more there. How many?",
-    options: [3, 4, 5, 2],
-    answer: 4,
-    num1: 2,
-    num2: 2
-  },
-  {
-    story: "Max is done! He made art.",
-    question: "He made 3 drawings today and 3 yesterday. How many?",
-    options: [5, 6, 7, 4],
-    answer: 6,
-    num1: 3,
-    num2: 3
-  }
-];
-
-const subtractionQuestions: Question[] = [
-  {
-    story: "Zara has pencils for class.",
-    question: "She has 5 pencils. She gives 2 away. How many left?",
-    options: [2, 3, 4, 1],
-    answer: 3,
-    num1: 5,
-    num2: 2
-  },
-  {
-    story: "The kids need erasers.",
-    question: "There are 6 erasers. 2 kids take one each. How many left?",
-    options: [3, 4, 5, 2],
-    answer: 4,
-    num1: 6,
-    num2: 2
-  },
-  {
-    story: "Lunch time! Cookies for all.",
-    question: "There are 7 cookies. 3 get eaten. How many left?",
-    options: [3, 4, 5, 2],
-    answer: 4,
-    num1: 7,
-    num2: 3
-  },
-  {
-    story: "Books on the shelf.",
-    question: "6 books are here. 1 is taken. How many now?",
-    options: [4, 5, 6, 3],
-    answer: 5,
-    num1: 6,
-    num2: 1
-  },
-  {
-    story: "Zara has stickers.",
-    question: "She has 8 stickers. She gives 4 away. How many left?",
-    options: [3, 4, 5, 2],
-    answer: 4,
-    num1: 8,
-    num2: 4
-  },
-  {
-    story: "Apples in a bowl.",
-    question: "5 apples. 2 are eaten. How many left?",
-    options: [2, 3, 4, 1],
-    answer: 3,
-    num1: 5,
-    num2: 2
-  },
-  {
-    story: "Kids go home.",
-    question: "7 kids were here. 2 left. How many still here?",
-    options: [4, 5, 6, 3],
-    answer: 5,
-    num1: 7,
-    num2: 2
-  },
-  {
-    story: "Good day at school!",
-    question: "9 crayons. 3 are lost. How many left?",
-    options: [5, 6, 7, 4],
-    answer: 6,
-    num1: 9,
-    num2: 3
-  }
-];
+const countingQuestions = buildQuestions('counting');
+const additionQuestions = buildQuestions('addition');
+const subtractionQuestions = buildQuestions('subtraction');
 
 const affirmations = [
   "That's right.",
@@ -257,28 +89,12 @@ interface EquationChip {
   value: number;
 }
 
-/** Build tappable number chips: the two problem numbers plus two distractors. */
-const buildEquationChips = (question: Question): EquationChip[] => {
-  const values = [question.num1!, question.num2!];
-  const candidates = [
-    question.answer,
-    question.num1! + 1,
-    question.num2! + 2,
-    9, 8, 1, 7,
-  ];
-  for (const candidate of candidates) {
-    if (values.length >= 4) break;
-    if (candidate >= 0 && candidate <= 9 && !values.includes(candidate)) {
-      values.push(candidate);
-    }
-  }
-  const chips = values.map((value, id) => ({ id, value }));
-  // Fisher–Yates shuffle
-  for (let i = chips.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [chips[i], chips[j]] = [chips[j], chips[i]];
-  }
-  return chips;
+
+/** Build tappable number chips: operands plus safe distractors (never the answer). */
+const buildEquationChips = (question: Question, lessonType: LessonKind): EquationChip[] => {
+  const op = lessonType === 'subtraction' ? '−' : '+';
+  const values = buildEquationChipValues(question.num1!, question.num2!, op, Math.random);
+  return values.map((value, id) => ({ id, value }));
 };
 
 const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
@@ -330,9 +146,9 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
   );
 
   const chips = useMemo(
-    () => (needsEquation ? buildEquationChips(question) : []),
+    () => (needsEquation ? buildEquationChips(question, lessonType) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentQuestion, needsEquation]
+    [currentQuestion, needsEquation, lessonType]
   );
 
   const chipValue = (chipId: number | null) =>
@@ -383,8 +199,11 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
     setEquationCorrect(false);
   };
 
+  const parsedTyped = isOpenEnded ? parseStudentAnswer(typedAnswer) : null;
   const effectiveAnswer = isOpenEnded
-    ? (typedAnswer === '' ? null : parseInt(typedAnswer, 10))
+    ? parsedTyped && parsedTyped.status === 'ok'
+      ? parsedTyped.value
+      : null
     : selectedAnswer;
 
   useEffect(() => {
@@ -398,6 +217,10 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
   }, [isChecked, equationChecked, stage, currentQuestion, showAffirmation, effectiveAnswer]);
 
   const checkAnswer = () => {
+    // Unreadable typed input is never scored as wrong.
+    if (isOpenEnded && parsedTyped && parsedTyped.status === 'unreadable') {
+      return;
+    }
     setIsChecked(true);
     const isAnswerCorrect = effectiveAnswer === question.answer;
 
@@ -644,14 +467,14 @@ const StoryQuiz: React.FC<StoryQuizProps> = ({ lessonType, onComplete }) => {
                 onClick={() => !isChecked && setSelectedAnswer(option)}
                 variant={
                   isChecked
-                    ? option === question.answer
+                    ? isCorrect && option === question.answer
                       ? 'default'
-                      : option === selectedAnswer
-                      ? 'destructive'
-                      : 'outline'
+                      : !isCorrect && option === selectedAnswer
+                        ? 'destructive'
+                        : 'outline'
                     : selectedAnswer === option
-                    ? 'default'
-                    : 'outline'
+                      ? 'default'
+                      : 'outline'
                 }
                 className={`text-2xl py-7 transition-all duration-300 active:scale-95 ${
                   isChecked && isCorrect && option === question.answer
