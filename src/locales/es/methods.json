@@ -24,5 +24,7 @@
   "digits": "Modelo de dígitos",
   "recommend": "Árbol de recomendación de planetas",
   "showTable": "Mostrar tabla",
-  "hideTable": "Ocultar tabla"
+  "hideTable": "Ocultar tabla",
+  "explore": "Explorar (sentido numérico)",
+  "exploreBody": "Explorar es un área opcional y sin tiempo, como una estación lunar, con actividades abiertas de sentido numérico (marcos de diez, miradas de subitización, charlas de números, cuál no pertenece, hacer 10/20/100, rectas numéricas, historias y patrones de conteo salteado). Celebra muchas formas de pensar. No añade códigos de diagnóstico. Las señales opcionales breves (id de actividad, formas halladas, marca de tiempo) quedan en el dispositivo con el resto del progreso. Las notas de diseño citan prácticas de aula como influencias, no como respaldos. No se probó con niños en esta versión; no fue revisado por educadores como estudio formal."
 }

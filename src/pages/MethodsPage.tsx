@@ -170,6 +170,10 @@ const MethodsPage: React.FC = () => {
         <p>{t('soloModeBody')}</p>
       </Section>
 
+      <Section title={t('explore')}>
+        <p>{t('exploreBody')}</p>
+      </Section>
+
       <Section title={t('limits')}>
         <ul className="list-disc ps-5 space-y-2">
           <li>{t('limitGrade')}</li>
