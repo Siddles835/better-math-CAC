@@ -10,5 +10,11 @@
   "signedTeacher": "Signed in as teacher",
   "signOut": "Sign out",
   "deleteAccount": "Delete my account",
-  "deleteClassButton": "Delete this class"
+  "deleteClassButton": "Delete this class",
+  "voiceTitle": "Voice",
+  "voiceHelp": "Turn the speaking voice on or off. Your choice stays on this device.",
+  "voiceToggle": "Speaking voice",
+  "voiceToggleHint": "When off, MathLift will not speak and speaker buttons stay hidden.",
+  "voiceOn": "Voice on",
+  "voiceOff": "Voice off"
 }

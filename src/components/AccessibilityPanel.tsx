@@ -2,6 +2,7 @@ import { tx } from '@/i18n/tx';
 import React from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import VoiceToggle from '@/components/VoiceToggle';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import type { AccessibilityPrefs } from '@/lib/accessibility';
 
@@ -9,9 +10,10 @@ type BoolKey = {
   [K in keyof AccessibilityPrefs]: AccessibilityPrefs[K] extends boolean ? K : never;
 }[keyof AccessibilityPrefs];
 
+/** Voice on/off is surfaced via VoiceToggle; muteSounds stays in prefs for persistence. */
 const TOGGLE_IDS: BoolKey[] = [
   'easyReadSpacing', 'highContrast', 'colorSafeLabels', 'reduceMotion', 'calmBackground',
-  'focusMode', 'autoReadAloud', 'soundAsText', 'muteSounds', 'biggerButtons', 'breaks',
+  'focusMode', 'autoReadAloud', 'soundAsText', 'biggerButtons', 'breaks',
   'summaryFirst', 'workedExampleFirst',
 ];
 
@@ -76,6 +78,8 @@ const AccessibilityPanel: React.FC<{ className?: string }> = ({ className = '' }
 
       <div>
         <h3 className="text-lg font-semibold">{tx('ui:s_3b5d9db120')}</h3>
+        <p className="text-sm text-muted-foreground mt-1 mb-3">{tx('ui:voicePanelHint')}</p>
+        <VoiceToggle embedded className="mb-3" />
         <ul className="mt-3 space-y-2">
           {TOGGLE_IDS.map((id) => {
             const on = prefs[id];

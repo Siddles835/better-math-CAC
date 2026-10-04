@@ -134,19 +134,58 @@ export const normalizeSpeechText = (text: string, lang: AppLang = 'en'): string 
 };
 
 const VOICE_PREFIX: Record<AppLang, string[]> = {
-  en: ['en-us', 'en'],
+  en: ['en-us', 'en-gb', 'en-au', 'en-ie', 'en'],
   'zh-Hans': ['zh-cn', 'zh-hans', 'zh'],
   hi: ['hi-in', 'hi'],
-  es: ['es-us', 'es-es', 'es-mx', 'es'],
-  ar: ['ar-sa', 'ar'],
+  es: ['es-us', 'es-mx', 'es-es', 'es'],
+  ar: ['ar-sa', 'ar-eg', 'ar'],
+};
+
+/** Voices that tend to sound warm and clear for early readers (K–2). */
+const FRIENDLY_VOICE = /samantha|karen|moira|tessa|fiona|victoria|veena|lekha|monica|paulina|meijia|mei-jia|ting-ting|sin-ji|aria|jenny|zira|susan|hazel|google us english|google uk english female|google español|microsoft aria|microsoft jenny|microsoft zira|microsoft sabina|microsoft helena|microsoft naayf|xiao.?xiao|yunxia|child|kid|girl/i;
+
+/** Higher-quality synthesis brands/engines when the platform exposes them. */
+const QUALITY_VOICE = /natural|neural|premium|enhanced|online|wavenet|studio|superstar|eloquent/i;
+
+/** Novelty / compact voices that sound harsh or silly for lessons. */
+const AVOID_VOICE = /compact|novelty|whisper|evil|zarvox|trinoids|bad news|good news|cellos|organ|bells|boing|bubbles|deranged|hysterical|pipe organ|ralph|albert|bahh|bells|junior|kathy|princess|robot/i;
+
+/** Gentle K–2 defaults: clear, not rushed, lightly warm — not cartoonish. */
+export const K2_SPEECH_RATE = 0.92;
+export const K2_SPEECH_PITCH = 1.05;
+
+export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number => {
+  const name = voice.name.toLowerCase();
+  const langLower = voice.lang.toLowerCase();
+  const prefixes = VOICE_PREFIX[lang];
+  let score = 0;
+
+  const prefixIndex = prefixes.findIndex((prefix) => langLower.startsWith(prefix));
+  if (prefixIndex < 0) return -1000;
+  // Prefer earlier (more specific) locale matches.
+  score += (prefixes.length - prefixIndex) * 12;
+
+  if (voice.localService) score += 18;
+  if (voice.default) score += 4;
+  if (QUALITY_VOICE.test(name)) score += 28;
+  if (FRIENDLY_VOICE.test(name)) score += 24;
+  if (AVOID_VOICE.test(name)) score -= 50;
+  // Mild preference for clearly labeled female voices (often warmer for young listeners).
+  if (/\bfemale\b|\bwoman\b/i.test(name)) score += 6;
+  if (/\bmale\b|\bman\b/i.test(name) && !FRIENDLY_VOICE.test(name)) score -= 4;
+
+  return score;
 };
 
 export const pickVoice = (lang: AppLang, voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null => {
   const prefixes = VOICE_PREFIX[lang];
-  const matching = voices.filter((voice) => prefixes.some((prefix) => voice.lang.toLowerCase().startsWith(prefix)));
+  const matching = voices.filter((voice) =>
+    prefixes.some((prefix) => voice.lang.toLowerCase().startsWith(prefix))
+  );
   if (matching.length === 0) return null;
-  const friendly = /child|kid|samantha|karen|moira|ting|female|girl/i;
-  return matching.find((voice) => friendly.test(voice.name)) ?? matching[0];
+  return matching.reduce((best, voice) =>
+    scoreVoice(voice, lang) > scoreVoice(best, lang) ? voice : best
+  );
 };
 
 const primeVoices = () => {
@@ -166,6 +205,22 @@ export interface SpeakOptions {
   onUnavailable?: () => void;
 }
 
+const beginUtterance = (
+  cleaned: string,
+  voice: SpeechSynthesisVoice,
+  onEnd?: () => void,
+) => {
+  const utterance = new SpeechSynthesisUtterance(cleaned);
+  utterance.lang = voice.lang;
+  utterance.voice = voice;
+  utterance.rate = K2_SPEECH_RATE;
+  utterance.pitch = K2_SPEECH_PITCH;
+  const finish = () => onEnd?.();
+  utterance.onend = finish;
+  utterance.onerror = finish;
+  speechSynthesis.speak(utterance);
+};
+
 export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
   const lang = options?.lang ?? loadLanguage();
   if (speechMuted) {
@@ -184,31 +239,52 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
     return 'unavailable';
   }
   primeVoices();
-  const voice = pickVoice(lang, speechSynthesis.getVoices());
-  if (!voice) {
-    options?.onUnavailable?.();
-    unavailableHandler?.();
-    options?.onEnd?.();
-    return 'unavailable';
-  }
   if (speakTimer) {
     clearTimeout(speakTimer);
     speakTimer = null;
   }
   const wasSpeaking = speechSynthesis.speaking || speechSynthesis.pending;
   speechSynthesis.cancel();
-  const start = () => {
-    speakTimer = null;
-    const utterance = new SpeechSynthesisUtterance(cleaned);
-    utterance.lang = voice.lang;
-    utterance.voice = voice;
-    utterance.rate = 0.85;
-    utterance.pitch = 1.1;
-    const finish = () => options?.onEnd?.();
-    utterance.onend = finish;
-    utterance.onerror = finish;
-    speechSynthesis.speak(utterance);
+
+  const failUnavailable = () => {
+    options?.onUnavailable?.();
+    unavailableHandler?.();
+    options?.onEnd?.();
   };
+
+  const startWithVoices = (voices: SpeechSynthesisVoice[]) => {
+    speakTimer = null;
+    const voice = pickVoice(lang, voices);
+    if (!voice) {
+      failUnavailable();
+      return;
+    }
+    beginUtterance(cleaned, voice, options?.onEnd);
+  };
+
+  const start = () => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      startWithVoices(voices);
+      return;
+    }
+    // Chrome / some WebViews load voices asynchronously after first use.
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      speechSynthesis.removeEventListener('voiceschanged', onVoices);
+      clearTimeout(waitTimer);
+      const later = speechSynthesis.getVoices();
+      if (later.length === 0) failUnavailable();
+      else startWithVoices(later);
+    };
+    const onVoices = () => finish();
+    speechSynthesis.addEventListener('voiceschanged', onVoices);
+    const waitTimer = setTimeout(finish, 800);
+    speakTimer = waitTimer;
+  };
+
   if (wasSpeaking) speakTimer = setTimeout(start, 40);
   else start();
   return 'spoken';
