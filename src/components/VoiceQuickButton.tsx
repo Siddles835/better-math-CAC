@@ -3,18 +3,20 @@ import { Volume2, VolumeX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import { tx } from '@/i18n/tx';
+import { stopSpeaking } from '@/lib/speech';
 
 /**
- * One-tap voice on/off in lesson chrome. Persists via learning prefs.
+ * One-tap voice on/off near read-aloud. Persists via voiceEnabled (not SFX mute).
  */
 const VoiceQuickButton: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { t } = useTranslation(['settings']);
   const { prefs, setPref, announce } = useAccessibility();
-  const voiceOn = !prefs.muteSounds;
+  const voiceOn = prefs.voiceEnabled;
 
   const toggle = () => {
     const nextOn = !voiceOn;
-    setPref('muteSounds', !nextOn);
+    setPref('voiceEnabled', nextOn);
+    if (!nextOn) stopSpeaking();
     announce(`${t('settings:voiceToggle')} ${nextOn ? tx('ui:switchOn') : tx('ui:switchOff')}`);
   };
 

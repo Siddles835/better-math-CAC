@@ -10,6 +10,12 @@
 //  iOS Keychain session storage (Guideline 1.6), complete file protection,
 //  ATS/HTTPS-only navigation, and pinch-to-zoom on lesson visuals.
 //
+//  Session persistence (Prompt A):
+//  - Keychain uses kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+//  - restoreScript NEVER removes localStorage on a nil/locked Keychain read
+//  - scenePhase + web process termination re-flush / re-restore
+//  UNTESTED on device/Xcode in CI — see docs/MANUAL_TESTS.md
+//
 
 import SwiftUI
 import UIKit
@@ -67,6 +73,20 @@ private enum MathLiftTab: String, CaseIterable, Identifiable {
 
 private enum MathLiftKeychain {
     private static let service = "com.mathlift.app.session"
+    private static let accessibility = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+    private static let sessionAccounts = [
+        "better-math:active",
+        "better-math:active-teacher",
+        "better-math:active-role",
+        "better-math:last-class-code"
+    ]
+
+    enum ReadResult: Equatable {
+        case value(String)
+        case notFound
+        case interactionNotAllowed
+        case failed(OSStatus)
+    }
 
     static func set(_ value: String, account: String) {
         let data = Data(value.utf8)
@@ -78,11 +98,11 @@ private enum MathLiftKeychain {
         SecItemDelete(query as CFDictionary)
         var add = query
         add[kSecValueData as String] = data
-        add[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        add[kSecAttrAccessible as String] = accessibility
         SecItemAdd(add as CFDictionary, nil)
     }
 
-    static func get(account: String) -> String? {
+    static func read(account: String) -> ReadResult {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -92,8 +112,22 @@ private enum MathLiftKeychain {
         ]
         var out: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &out)
-        guard status == errSecSuccess, let data = out as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
+        if status == errSecSuccess, let data = out as? Data, let text = String(data: data, encoding: .utf8) {
+            return .value(text)
+        }
+        if status == errSecItemNotFound {
+            return .notFound
+        }
+        if status == errSecInteractionNotAllowed {
+            return .interactionNotAllowed
+        }
+        return .failed(status)
+    }
+
+    /// Convenience: only returns a string when the item exists and is readable.
+    static func get(account: String) -> String? {
+        if case .value(let text) = read(account: account) { return text }
+        return nil
     }
 
     static func remove(account: String) {
@@ -103,6 +137,18 @@ private enum MathLiftKeychain {
             kSecAttrAccount as String: account
         ]
         SecItemDelete(query as CFDictionary)
+    }
+
+    /// Re-write existing items under AfterFirstUnlock so background restores work.
+    static func migrateAccessibilityIfNeeded() {
+        for account in sessionAccounts {
+            switch read(account: account) {
+            case .value(let text):
+                set(text, account: account)
+            case .notFound, .interactionNotAllowed, .failed:
+                break
+            }
+        }
     }
 
     /// Mirror web localStorage session keys into Keychain.
@@ -168,35 +214,77 @@ private enum MathLiftKeychain {
         }
     }
 
-    static func restoreScript() -> String {
-        func jsString(_ value: String?) -> String {
-            guard let value else { return "null" }
-            let escaped = value
-                .replacingOccurrences(of: "\\", with: "\\\\")
-                .replacingOccurrences(of: "'", with: "\\'")
-                .replacingOccurrences(of: "\n", with: "\\n")
-            return "'\(escaped)'"
+    /// Flush a full snapshot from the web layer (visibility / scenePhase).
+    /// Only keys with non-empty values are written; empty strings clear that key.
+    static func flushSnapshot(student: String?, teacher: String?, role: String?, lastClass: String?) {
+        if let student, !student.isEmpty {
+            persistWebStorage(key: "better-math:active", json: student)
+        } else if student != nil {
+            persistWebStorage(key: "better-math:active", json: nil)
         }
+        if let teacher, !teacher.isEmpty {
+            persistWebStorage(key: "better-math:active-teacher", json: teacher)
+        } else if teacher != nil {
+            persistWebStorage(key: "better-math:active-teacher", json: nil)
+        }
+        if let role, !role.isEmpty {
+            persistWebStorage(key: "better-math:active-role", json: role)
+        } else if role != nil {
+            persistWebStorage(key: "better-math:active-role", json: nil)
+        }
+        if let lastClass, !lastClass.isEmpty {
+            persistWebStorage(key: "better-math:last-class-code", json: lastClass)
+        } else if lastClass != nil {
+            persistWebStorage(key: "better-math:last-class-code", json: nil)
+        }
+    }
 
-        let student = jsString(get(account: "better-math:active"))
-        let teacher = jsString(get(account: "better-math:active-teacher"))
-        let role = jsString(get(account: "better-math:active-role"))
-        let lastClass = jsString(get(account: "better-math:last-class-code"))
+    private static func jsString(_ value: String?) -> String {
+        guard let value else { return "null" }
+        let escaped = value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "'", with: "\\'")
+            .replacingOccurrences(of: "\n", with: "\\n")
+        return "'\(escaped)'"
+    }
+
+    private static func positiveString(_ result: ReadResult) -> String? {
+        if case .value(let text) = result, !text.isEmpty { return text }
+        return nil
+    }
+
+    /// Document-start restore. NEVER localStorage.removeItem when Keychain is
+    /// nil / locked / failed — only setItem when a stored value exists.
+    static func restoreScript() -> String {
+        let studentRead = read(account: "better-math:active")
+        let teacherRead = read(account: "better-math:active-teacher")
+        let roleRead = read(account: "better-math:active-role")
+        let lastClassRead = read(account: "better-math:last-class-code")
+
+        var student = positiveString(studentRead)
+        var teacher = positiveString(teacherRead)
+        var role = positiveString(roleRead)
+        let lastClass = positiveString(lastClassRead)
+
+        if student != nil && teacher != nil {
+            if role == "teacher" {
+                student = nil
+            } else {
+                teacher = nil
+                role = "student"
+            }
+        }
 
         return """
         (function() {
           try {
-            var student = \(student);
-            var teacher = \(teacher);
-            var role = \(role);
-            var lastClass = \(lastClass);
-            if (student && teacher) {
-              if (role === 'teacher') { student = null; }
-              else { teacher = null; role = 'student'; }
-            }
+            var student = \(jsString(student));
+            var teacher = \(jsString(teacher));
+            var role = \(jsString(role));
+            var lastClass = \(jsString(lastClass));
             function write(k, v) {
+              // Critical: never removeItem when Keychain read was nil/locked.
               if (v) localStorage.setItem(k, v);
-              else localStorage.removeItem(k);
             }
             write('better-math:active', student);
             write('better-math:active-teacher', teacher);
@@ -206,6 +294,48 @@ private enum MathLiftKeychain {
         })();
         """
     }
+
+    /// Push Keychain session into the live page via CustomEvent (defensive restore).
+    static func restoreEventScript() -> String {
+        let student = positiveString(read(account: "better-math:active"))
+        let teacher = positiveString(read(account: "better-math:active-teacher"))
+        let role = positiveString(read(account: "better-math:active-role"))
+        let lastClass = positiveString(read(account: "better-math:last-class-code"))
+        return """
+        (function() {
+          try {
+            window.dispatchEvent(new CustomEvent('mathlift-session-restore', {
+              detail: {
+                student: \(jsString(student)),
+                teacher: \(jsString(teacher)),
+                role: \(jsString(role)),
+                lastClassCode: \(jsString(lastClass))
+              }
+            }));
+          } catch (e) {}
+        })();
+        """
+    }
+
+    /// Ask the page to post its current localStorage session back to Keychain.
+    static let flushFromWebScript = """
+    (function() {
+      try {
+        function val(k) {
+          try { return localStorage.getItem(k); } catch (e) { return null; }
+        }
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.mathlift) {
+          window.webkit.messageHandlers.mathlift.postMessage({
+            type: 'flushSession',
+            student: val('better-math:active'),
+            teacher: val('better-math:active-teacher'),
+            role: val('better-math:active-role'),
+            lastClassCode: val('better-math:last-class-code')
+          });
+        }
+      } catch (e) {}
+    })();
+    """
 }
 
 // MARK: - File protection (Guideline 1.6)
@@ -243,12 +373,14 @@ final class ConnectivityMonitor: ObservableObject {
 }
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var connectivity = ConnectivityMonitor()
     @State private var selectedTab: MathLiftTab = .home
     @State private var isLoading = true
     @State private var loadFailed = false
     @State private var reloadToken = 0
     @State private var canGoBack = false
+    @State private var keychainRetryToken = 0
 
     private var showOffline: Bool {
         !connectivity.isOnline || loadFailed
@@ -263,6 +395,7 @@ struct ContentView: View {
                     selectedTab: selectedTab,
                     reloadToken: reloadToken,
                     isOnline: connectivity.isOnline,
+                    keychainRetryToken: keychainRetryToken,
                     onLoadingChange: { loading in
                         isLoading = loading
                         if loading {
@@ -296,6 +429,19 @@ struct ContentView: View {
         .preferredColorScheme(.dark)
         .onAppear {
             protectAppFiles()
+            MathLiftKeychain.migrateAccessibilityIfNeeded()
+        }
+        .onChange(of: scenePhase) { phase in
+            switch phase {
+            case .background, .inactive:
+                NotificationCenter.default.post(name: .mathLiftFlushSession, object: nil)
+            case .active:
+                MathLiftKeychain.migrateAccessibilityIfNeeded()
+                keychainRetryToken += 1
+                NotificationCenter.default.post(name: .mathLiftRestoreSession, object: nil)
+            @unknown default:
+                break
+            }
         }
         .onReceive(connectivity.$isOnline.dropFirst()) { online in
             // NWPathMonitor often flips false→true when the app backgrounds /
@@ -313,6 +459,11 @@ struct ContentView: View {
             if selectedTab != tab {
                 selectedTab = tab
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .mathLiftWebProcessDied)) { _ in
+            loadFailed = false
+            isLoading = true
+            reloadToken += 1
         }
     }
 
@@ -420,6 +571,7 @@ private struct MathLiftWebView: UIViewRepresentable {
     let selectedTab: MathLiftTab
     let reloadToken: Int
     let isOnline: Bool
+    let keychainRetryToken: Int
     let onLoadingChange: (Bool) -> Void
     let onLoadFailed: () -> Void
     let onCanGoBackChange: (Bool) -> Void
@@ -464,7 +616,12 @@ private struct MathLiftWebView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         context.coordinator.parent = self
         context.coordinator.webView = webView
-        context.coordinator.apply(tab: selectedTab, reloadToken: reloadToken, isOnline: isOnline)
+        context.coordinator.apply(
+            tab: selectedTab,
+            reloadToken: reloadToken,
+            isOnline: isOnline,
+            keychainRetryToken: keychainRetryToken
+        )
     }
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
@@ -508,7 +665,9 @@ private struct MathLiftWebView: UIViewRepresentable {
         weak var webView: WKWebView?
         private var lastTabPath: String?
         private var lastReloadToken = -1
+        private var lastKeychainRetryToken = -1
         private var hapticEngine: CHHapticEngine?
+        private var lockedRetryWorkItem: DispatchWorkItem?
 
         init(_ parent: MathLiftWebView) {
             self.parent = parent
@@ -525,6 +684,18 @@ private struct MathLiftWebView: UIViewRepresentable {
                 name: .mathLiftOpenTab,
                 object: nil
             )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(flushSessionFromWeb),
+                name: .mathLiftFlushSession,
+                object: nil
+            )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(restoreSessionIntoWeb),
+                name: .mathLiftRestoreSession,
+                object: nil
+            )
             prepareHaptics()
         }
 
@@ -534,19 +705,37 @@ private struct MathLiftWebView: UIViewRepresentable {
             try? hapticEngine?.start()
         }
 
-        func apply(tab: MathLiftTab, reloadToken: Int, isOnline: Bool) {
+        func apply(tab: MathLiftTab, reloadToken: Int, isOnline: Bool, keychainRetryToken: Int) {
             if reloadToken != lastReloadToken {
                 lastReloadToken = reloadToken
                 lastTabPath = tab.path
                 if isOnline {
+                    // Refresh document-start restore script before reload.
+                    reinjectRestoreScript()
                     load(path: tab.path, force: true)
                 }
                 return
+            }
+            if keychainRetryToken != lastKeychainRetryToken {
+                lastKeychainRetryToken = keychainRetryToken
+                restoreSessionIntoWeb()
             }
             if tab.path != lastTabPath {
                 lastTabPath = tab.path
                 navigateInApp(to: tab.path)
             }
+        }
+
+        private func reinjectRestoreScript() {
+            guard let webView else { return }
+            let controller = webView.configuration.userContentController
+            controller.removeAllUserScripts()
+            let restore = WKUserScript(
+                source: MathLiftKeychain.restoreScript() + MathLiftWebView.storageBridgeScript,
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: false
+            )
+            controller.addUserScript(restore)
         }
 
         /// Hop off the current SwiftUI update so we never set @State from updateUIView.
@@ -599,6 +788,41 @@ private struct MathLiftWebView: UIViewRepresentable {
             navigateInApp(to: path)
         }
 
+        @objc private func flushSessionFromWeb() {
+            webView?.evaluateJavaScript(MathLiftKeychain.flushFromWebScript, completionHandler: nil)
+        }
+
+        @objc private func restoreSessionIntoWeb() {
+            // If Keychain is still locked, retry shortly instead of wiping.
+            let locked = sessionAccountsContainLockedRead()
+            if locked {
+                scheduleLockedRetry()
+                return
+            }
+            reinjectRestoreScript()
+            webView?.evaluateJavaScript(MathLiftKeychain.restoreScript(), completionHandler: nil)
+            webView?.evaluateJavaScript(MathLiftKeychain.restoreEventScript(), completionHandler: nil)
+        }
+
+        private func sessionAccountsContainLockedRead() -> Bool {
+            let accounts = [
+                "better-math:active",
+                "better-math:active-teacher",
+                "better-math:active-role",
+                "better-math:last-class-code"
+            ]
+            return accounts.contains { MathLiftKeychain.read(account: $0) == .interactionNotAllowed }
+        }
+
+        private func scheduleLockedRetry() {
+            lockedRetryWorkItem?.cancel()
+            let work = DispatchWorkItem { [weak self] in
+                self?.restoreSessionIntoWeb()
+            }
+            lockedRetryWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.75, execute: work)
+        }
+
         func userContentController(
             _ userContentController: WKUserContentController,
             didReceive message: WKScriptMessage
@@ -612,6 +836,21 @@ private struct MathLiftWebView: UIViewRepresentable {
                     let value = body["value"] as? String
                     DispatchQueue.main.async {
                         MathLiftKeychain.persistWebStorage(key: key, json: value)
+                    }
+                    return
+                case "flushSession":
+                    DispatchQueue.main.async {
+                        MathLiftKeychain.flushSnapshot(
+                            student: body["student"] as? String,
+                            teacher: body["teacher"] as? String,
+                            role: body["role"] as? String,
+                            lastClass: body["lastClassCode"] as? String
+                        )
+                    }
+                    return
+                case "getSession":
+                    DispatchQueue.main.async {
+                        self.restoreSessionIntoWeb()
                     }
                     return
                 case "selectTab":
@@ -729,6 +968,8 @@ private struct MathLiftWebView: UIViewRepresentable {
                 $0.onLoadingChange(false)
                 $0.onCanGoBackChange(canGo)
             }
+            // Re-apply Keychain after navigation in case WKWebView storage was empty.
+            restoreSessionIntoWeb()
         }
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -741,6 +982,12 @@ private struct MathLiftWebView: UIViewRepresentable {
             withError error: Error
         ) {
             handleFailure(error)
+        }
+
+        func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+            // Process death wipes in-memory JS/localStorage; Keychain is SoT.
+            reinjectRestoreScript()
+            NotificationCenter.default.post(name: .mathLiftWebProcessDied, object: nil)
         }
 
         private func handleFailure(_ error: Error) {
@@ -757,6 +1004,9 @@ private extension Notification.Name {
     static let mathLiftGoBack = Notification.Name("MathLiftGoBack")
     static let mathLiftOpenTab = Notification.Name("MathLiftOpenTab")
     static let mathLiftSelectTab = Notification.Name("MathLiftSelectTab")
+    static let mathLiftFlushSession = Notification.Name("MathLiftFlushSession")
+    static let mathLiftRestoreSession = Notification.Name("MathLiftRestoreSession")
+    static let mathLiftWebProcessDied = Notification.Name("MathLiftWebProcessDied")
 }
 
 #Preview {

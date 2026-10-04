@@ -22,6 +22,7 @@ import { clearSoloProgress, isSoloClassCode } from '@/lib/solo';
 import { Button } from '@/components/ui/button';
 import AccessibilityPanel from '@/components/AccessibilityPanel';
 import VoiceToggle from '@/components/VoiceToggle';
+import VoiceSettings from '@/components/VoiceSettings';
 
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
 
@@ -109,6 +110,12 @@ const SettingsPage: React.FC = () => {
         <p className="text-muted-foreground mb-8">{t('settings:intro')}</p>
 
         <VoiceToggle className="mb-6" />
+
+        <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5">
+          <h2 className="text-lg font-semibold mb-1">{t('settings:voicePickerTitle')}</h2>
+          <p className="text-sm text-muted-foreground mb-4">{t('settings:voicePickerIntro')}</p>
+          <VoiceSettings />
+        </section>
 
         <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5">
           <h2 className="text-lg font-semibold mb-2">{t('common:language')}</h2>

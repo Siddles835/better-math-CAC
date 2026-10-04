@@ -3,6 +3,7 @@ import React from 'react';
 import { Volume2, VolumeX, Check } from 'lucide-react';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import { useTranslation } from 'react-i18next';
+import { stopSpeaking } from '@/lib/speech';
 
 interface VoiceToggleProps {
   className?: string;
@@ -12,16 +13,17 @@ interface VoiceToggleProps {
 
 /**
  * Persistent speaking-voice on/off control.
- * Stores as inverted `muteSounds` in learning prefs so existing sessions keep working.
+ * Uses `voiceEnabled` — distinct from `muteSounds` (sound effects).
  */
 const VoiceToggle: React.FC<VoiceToggleProps> = ({ className = '', embedded = false }) => {
   const { t } = useTranslation(['settings']);
   const { prefs, setPref, announce } = useAccessibility();
-  const voiceOn = !prefs.muteSounds;
+  const voiceOn = prefs.voiceEnabled;
 
   const toggle = () => {
     const nextOn = !voiceOn;
-    setPref('muteSounds', !nextOn);
+    setPref('voiceEnabled', nextOn);
+    if (!nextOn) stopSpeaking();
     announce(`${t('settings:voiceToggle')} ${nextOn ? tx('ui:switchOn') : tx('ui:switchOff')}`);
   };
 
