@@ -24,6 +24,7 @@ import {
   PLANET_BG_CLASS,
   getTopicDisplayName,
 } from '@/lib/planets';
+import { generateVenusMcq } from '@/lib/answers';
 
 const CountingVenus: React.FC = () => {
   const navigate = useNavigate();
@@ -33,15 +34,10 @@ const CountingVenus: React.FC = () => {
   const [showTransition, setShowTransition] = useState(false);
   const nextPlanet = getNextPlanet('venus');
   
-  // MCQ state
+  // MCQ state — seeded generator guarantees unique options + answer present.
   const [mcqQuestion] = useState(() => {
-    const count = Math.floor(Math.random() * 6) + 2;
-    const options = [count];
-    while (options.length < 4) {
-      const opt = Math.floor(Math.random() * 8) + 1;
-      if (!options.includes(opt)) options.push(opt);
-    }
-    return { count, options: options.sort(() => Math.random() - 0.5) };
+    const q = generateVenusMcq((Math.random() * 1e9) | 0);
+    return { count: q.expectedAnswer, options: q.options };
   });
   const [mcqAnswer, setMcqAnswer] = useState<number | null>(null);
   const [mcqChecked, setMcqChecked] = useState(false);
@@ -143,11 +139,11 @@ const CountingVenus: React.FC = () => {
                   }}
                   variant={
                     mcqChecked
-                      ? option === mcqQuestion.count
+                      ? mcqAnswer === mcqQuestion.count && option === mcqQuestion.count
                         ? 'default'
                         : option === mcqAnswer
-                        ? 'destructive'
-                        : 'outline'
+                          ? 'destructive'
+                          : 'outline'
                       : 'outline'
                   }
                   className={`text-2xl py-8 transition-all duration-500 ${
