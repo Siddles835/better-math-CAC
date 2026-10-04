@@ -11,6 +11,8 @@ export interface ActiveStudent {
   nickname: string;
   /** Optional display label (falls back to nickname) */
   displayName?: string;
+  /** Device-only solo learner (no classroom / no email). */
+  solo?: boolean;
 }
 
 export interface ActiveTeacher {

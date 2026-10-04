@@ -26,6 +26,12 @@ import {
   normalizePlanetId,
 } from '@/lib/planets';
 import { hapticMedium } from '@/lib/haptics';
+import {
+  isSoloClassCode,
+  loadSoloProgress,
+  patchSoloProgressFields,
+  soloProgressToStudent,
+} from '@/lib/solo';
 
 interface GameContextType {
   currentLesson: LessonType | null;
@@ -122,11 +128,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const writerFor = React.useCallback((active: ActiveStudent) => {
-    const key = `${active.classCode}:${nicknameKey(active.nickname)}`;
+    const solo = isSoloClassCode(active.classCode) || active.solo;
+    const key = `${solo ? 'solo' : active.classCode}:${nicknameKey(active.nickname)}`;
     if (!writerRef.current || writerKeyRef.current !== key) {
       writerKeyRef.current = key;
       writerRef.current = createStudentWriter({
-        write: (fields) => patchStudentFields(active.classCode, nicknameKey(active.nickname), fields),
+        write: async (fields) => {
+          if (solo) {
+            patchSoloProgressFields(fields);
+            return;
+          }
+          await patchStudentFields(active.classCode, nicknameKey(active.nickname), fields);
+        },
       });
     }
     return writerRef.current;
@@ -258,6 +271,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   React.useEffect(() => {
     if (!activeSession) return;
+
+    // Solo learners keep progress on-device — no classroom subscription.
+    if (isSoloClassCode(activeSession.classCode) || activeSession.solo) {
+      const progress = loadSoloProgress(activeSession.nickname);
+      if (progress) {
+        hydrateClassMax(progress.unlockPlanet);
+        hydrateFromStudent(soloProgressToStudent(progress));
+      }
+      return;
+    }
+
     let writeInFlight = false;
 
     const unsubscribe = subscribeToClass(activeSession.classCode, (cls) => {
