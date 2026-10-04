@@ -105,36 +105,66 @@ private enum MathLiftKeychain {
         SecItemDelete(query as CFDictionary)
     }
 
-    /// Only one role may stay signed in on a shared classroom device.
+    /// Mirror web localStorage session keys into Keychain.
+    ///
+    /// IMPORTANT: `setActiveStudent` / `setActiveTeacher` in `src/lib/session.ts`
+    /// always `removeItem` the other role. Clearing the inactive role must NOT
+    /// wipe the active role — the old logic did (`remove teacher` → deleted
+    /// student + role), so Keychain was empty after login. On background /
+    /// WKWebView reload, `restoreScript` then cleared localStorage and the
+    /// user looked logged out. Contract covered by `src/lib/sessionNativePersist.test.ts`.
     static func persistWebStorage(key: String, json: String?) {
         let studentKey = "better-math:active"
         let teacherKey = "better-math:active-teacher"
         let roleKey = "better-math:active-role"
+        let hasValue = !(json ?? "").isEmpty
 
-        if let json, !json.isEmpty {
+        if key == studentKey {
+            if hasValue, let json {
+                set(json, account: studentKey)
+                remove(account: teacherKey)
+                set("student", account: roleKey)
+            } else {
+                remove(account: studentKey)
+                if get(account: roleKey) == "student" {
+                    remove(account: roleKey)
+                }
+            }
+            return
+        }
+
+        if key == teacherKey {
+            if hasValue, let json {
+                set(json, account: teacherKey)
+                remove(account: studentKey)
+                set("teacher", account: roleKey)
+            } else {
+                remove(account: teacherKey)
+                if get(account: roleKey) == "teacher" {
+                    remove(account: roleKey)
+                }
+            }
+            return
+        }
+
+        if key == roleKey {
+            if hasValue, let json {
+                set(json, account: roleKey)
+                if json == "student" {
+                    remove(account: teacherKey)
+                } else if json == "teacher" {
+                    remove(account: studentKey)
+                }
+            } else {
+                remove(account: roleKey)
+            }
+            return
+        }
+
+        if hasValue, let json {
             set(json, account: key)
         } else {
             remove(account: key)
-        }
-
-        if key == studentKey {
-            remove(account: teacherKey)
-            set("student", account: roleKey)
-            if json == nil || json?.isEmpty == true {
-                remove(account: roleKey)
-            }
-        } else if key == teacherKey {
-            remove(account: studentKey)
-            set("teacher", account: roleKey)
-            if json == nil || json?.isEmpty == true {
-                remove(account: roleKey)
-            }
-        } else if key == roleKey {
-            if json == "student" {
-                remove(account: teacherKey)
-            } else if json == "teacher" {
-                remove(account: studentKey)
-            }
         }
     }
 
@@ -268,7 +298,11 @@ struct ContentView: View {
             protectAppFiles()
         }
         .onReceive(connectivity.$isOnline.dropFirst()) { online in
-            if online {
+            // NWPathMonitor often flips false→true when the app backgrounds /
+            // resumes. Reloading the WKWebView on every flap remounts the SPA
+            // and (with a broken Keychain mirror) looked like a logout.
+            // Only retry when a real load failure left the offline screen up.
+            if online, loadFailed {
                 loadFailed = false
                 isLoading = true
                 reloadToken += 1
