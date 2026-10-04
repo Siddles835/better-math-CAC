@@ -1,0 +1,3914 @@
+{
+  "summary": {
+    "phase": "after_model_change",
+    "generatedAt": "2026-10-04T05:48:03.860Z",
+    "singleDigitGateRate": 0.996875,
+    "silentWrongTotal": 0,
+    "perDigit": {
+      "0": {
+        "n": 32,
+        "exact": 32,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      },
+      "1": {
+        "n": 32,
+        "exact": 32,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      },
+      "2": {
+        "n": 32,
+        "exact": 32,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      },
+      "3": {
+        "n": 32,
+        "exact": 32,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      },
+      "4": {
+        "n": 32,
+        "exact": 32,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      },
+      "5": {
+        "n": 32,
+        "exact": 31,
+        "okOrConfirm": 31,
+        "silentWrong": 0,
+        "rate": 0.96875
+      },
+      "6": {
+        "n": 32,
+        "exact": 29,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      },
+      "7": {
+        "n": 32,
+        "exact": 30,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      },
+      "8": {
+        "n": 32,
+        "exact": 31,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      },
+      "9": {
+        "n": 32,
+        "exact": 32,
+        "okOrConfirm": 32,
+        "silentWrong": 0,
+        "rate": 1
+      }
+    },
+    "multi": {
+      "10": {
+        "n": 12,
+        "exact": 11,
+        "rate": 1,
+        "silentWrong": 0
+      },
+      "12": {
+        "n": 12,
+        "exact": 12,
+        "rate": 1,
+        "silentWrong": 0
+      },
+      "45": {
+        "n": 12,
+        "exact": 8,
+        "rate": 1,
+        "silentWrong": 0
+      },
+      "99": {
+        "n": 12,
+        "exact": 9,
+        "rate": 1,
+        "silentWrong": 0
+      },
+      "100": {
+        "n": 12,
+        "exact": 8,
+        "rate": 1,
+        "silentWrong": 0
+      }
+    }
+  },
+  "rows": [
+    {
+      "target": 0,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999977639704,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999998946523083,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999992197619,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999999422411,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999937019648909,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999981292809,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999572857361,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999976361591,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.99999056133549,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.99999999968753,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999998439126595,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999995035086777,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999994773985,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999990305220503,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999988955803,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.99999998390504,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999737966447,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999904326137,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999911100085,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999879640077,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999990468222,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999968713948,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999984971273006,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999749657476,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999993282935,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999483071529,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.999998609269494,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999986549655,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999942998254,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999554581818,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999725308827,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 0,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999995813160832,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999221396656919,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.999225077568682,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9981229443688774,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999578401267193,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999169287059941,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999881493562097,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999655695567783,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9998117002353674,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999729023463032,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999886290777148,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.999859142756607,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.999974590564942,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999584901863247,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9994686644867937,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999656793998025,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999730540702316,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9759952966704631,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9902736862659374,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999948076196633,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999469796258956,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999615537323235,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999254654677324,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.999975725129913,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.7921116223401604,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999849513503007,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9998678805677517,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.99996495132597,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999917735125881,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9723043877435291,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.8763483661214837,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9999831747370806,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 1,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.999992102100358,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999971594855178,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999887361095842,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999947096444044,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9985057757101876,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999509303777984,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999565123630688,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999847995029817,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.995721155619435,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9355225152013078,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9987332590219916,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9998592894812938,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999963193450855,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9988480316652553,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9998095880271635,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999355551585257,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999891668793984,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9973070908641793,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9983778877788412,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999663362679923,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9996433449889017,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999123501292625,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999036293124909,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9445913146261724,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9991968671387406,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9859003071211784,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.7281329365774328,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9870531264631212,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.999736335190441,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9991898924252346,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9994078234031282,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999947435329861,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 2,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999937949885686,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999483998232,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999223944110123,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999999739442,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999996659219198,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999999586948,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999991794985881,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.999988662619377,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999974186113,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9952481082998851,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999111212347,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999983707464891,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9993776597276622,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999917399341,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999991651973531,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.999961645762665,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999973869273141,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.999999999237781,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999986570163,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999961427524,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.999999945117838,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999660432848,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999995515740127,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999995161546934,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999976700487,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999588953065,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999988872842624,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999977757421,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999996884752855,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999893590236003,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999954369040965,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999961463899238,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 3,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999999999210187,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999907778,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999987813915,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999900053,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999993477113,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999929678,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999998912534,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.999999999986579,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.999999990277232,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9997947960802346,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999998686087,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999923388,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999995655424,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999987103907,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999883320879,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999667668,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999978375,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999837148,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999057194,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999634421,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999988378696248,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999822193,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999957832,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999983185119,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999990637041,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999992842561,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999070031,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999997083517,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.999999998578003,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999818636225769,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999876233355982,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999999937923,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 4,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999999998294054,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999996194577774,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999238253002085,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9987868586188328,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999999953670018,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9998882314237332,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999998836705632,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999868927163883,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9991402747591476,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.99995599784024,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.99999999972856,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999824990496066,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9982178112562613,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999999623759427,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999996008215793,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9996545677221564,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999972660398265,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999999974456124,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999996785879735,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999999805986365,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9977571901160681,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9998947939404108,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999998673691868,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9977426323696433,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999912571098749,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999999987469073,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999973434420736,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999994625161204,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999999238929052,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v28",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.4650215647100027,
+      "exact": false,
+      "successOrConfirm": false,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9532266643039334,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999971438736057,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 5,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999999823774953,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9989830633877999,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9843765588794363,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9845436222142925,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9990542876046853,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.5195389500077104,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.999512057832146,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.999874449700111,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.8578688400177519,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.8536381162849912,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9996261776264924,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9999990164107697,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9993372690865483,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9093827869470843,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9979374746069821,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9988305945436811,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9997013998199922,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9833502286686936,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.7350469337321209,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9995816689539532,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9999997781619973,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9999992914133677,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9998285471193521,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9996640100723506,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.8381469680698712,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9949123779363547,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.5509035809773624,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9111420336174095,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9910119448838891,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.7452913140247391,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9915677119419252,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9999431639076353,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 6,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9999989061428033,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9980073490457276,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9999908788290017,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9998710125568773,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9981211474104394,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.8187911580081411,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9729869909911931,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9993235360910542,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.8826191691820031,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9996446370160876,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.8812689682955775,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9999835302011009,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9999936590323873,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9985078004738233,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.8457505357480456,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9997098130764842,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9992120332108152,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9999961350296198,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9999800980776813,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9944542830634238,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.999940228922526,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9761473825764294,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.99929443868877,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.8589706063214935,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9936399352885129,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9655051427611422,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9999321064491971,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9965064714919427,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9998542142840214,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9999988041164201,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.996079727534245,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9983443907393221,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 7,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9960035512182546,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999713280875,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999967015795349,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999847647301,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999984864012,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999918017234,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999770388407,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999940641087,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9959598249546089,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9723485935211957,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999357259014,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999755647845,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999482381234,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999904283455,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999998549839971,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9163127977975749,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.999999987308772,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9934833483793909,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.96305133956353,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999861091282,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999572621825,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999998065867114,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999852722352,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.999990902841308,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999995163736454,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999993501002693,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999839839572964,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999997062205227,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999999969306124,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.999999712919664,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999998121559237,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999998106733173,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 8,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.999999384862462,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.999898804532536,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999862339281615,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999999442312615,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999826814362127,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999705844060943,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999471882097614,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999812421125704,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.999999754136615,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.8654256376552303,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999516655193501,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999990190374388,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999994065420881,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9996197809138048,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999875186393008,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9891740202644613,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999820496481491,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999981266505191,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999961120752127,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999730874168995,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999374395346429,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999991798421154,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999644616811139,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9997558109254246,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9947808338221787,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999003866108515,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999079496336375,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999929947134715,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999840154285821,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9997951726853448,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999712683868974,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.999947704466807,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 9,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9996490159877788,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9997418188994553,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9989220121474804,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9963994752599582,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9999922769270633,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9991239078772594,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9999593997011029,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9999605834723503,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.999983066514951,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 40,
+      "confidence": 0.9688655027031248,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9999896955531394,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9999895004019952,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 10,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9999265456581475,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.99976804179161,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9994712764710761,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9999814628123905,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9997695833471877,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9949565795316108,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9703544103299058,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9999712117273706,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.981712226172162,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9814643889637709,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.997879983799662,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9999447801131776,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 12,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 12,
+      "confidence": 0.9990239792603567,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 45,
+      "confidence": 0.9998528296642144,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 45,
+      "confidence": 0.999989444486753,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 45,
+      "confidence": 0.9984863768565131,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9999992959865791,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9999949534126965,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9996098394585173,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 45,
+      "confidence": 0.9999996409743678,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 45,
+      "confidence": 0.9999999428313425,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 45,
+      "confidence": 0.9992267824095629,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 45,
+      "confidence": 0.9999999954241416,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 45,
+      "confidence": 0.9996301170550076,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 45,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.999953456211573,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.9999934918482656,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.9999991769539527,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.999862872867721,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.9994278364197423,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9910098628877795,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.7576207856360435,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.9999283146302422,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.9999556407915501,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.9984329726640623,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.999907691314605,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 99,
+      "confidence": 0.9999984277282938,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 99,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9988193201973953,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 100,
+      "confidence": 0.9999802549141463,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 100,
+      "confidence": 0.9968109893809506,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 100,
+      "confidence": 0.9998849483985329,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9999651990857551,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.7987731838173454,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9999701382328015,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 100,
+      "confidence": 0.9999798366871256,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 100,
+      "confidence": 0.9884217592733476,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 100,
+      "confidence": 0.9434697517787662,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 100,
+      "confidence": 0.9999488620716778,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 100,
+      "confidence": 0.9999872900943111,
+      "exact": true,
+      "successOrConfirm": true,
+      "silentWrong": false
+    },
+    {
+      "target": 100,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 10,
+      "confidence": 0.9998279179932215,
+      "exact": false,
+      "successOrConfirm": true,
+      "silentWrong": false
+    }
+  ]
+}

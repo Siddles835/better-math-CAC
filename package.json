@@ -12,6 +12,7 @@
     "test:e2e": "playwright test",
     "check:i18n": "node scripts/check-locales.mjs",
     "train:ml": "python3 ml/train_cognition.py",
+    "train:digits": "python3 ml/train_digit_cnn.py",
     "train:recommend": "cd ml && python3 generate_data.py && python3 train.py",
     "preview": "vite preview",
     "cap:sync": "npm run build && npx cap sync",

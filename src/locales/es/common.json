@@ -27,5 +27,7 @@
   "print": "Imprimir / Guardar como PDF",
   "notAvailable": "no disponible",
   "close": "Cerrar",
-  "legalNotice": "La versión en inglés es la que manda."
+  "legalNotice": "La versión en inglés es la que manda.",
+  "iSee": "Veo: {{digit}}",
+  "iSeeUnreadable": "Aún no puedo leer eso"
 }

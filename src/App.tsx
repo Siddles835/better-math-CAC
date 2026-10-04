@@ -46,6 +46,9 @@ const queryClient = new QueryClient();
 const DigitCollectPage = import.meta.env.DEV
   ? lazy(() => import("./pages/DigitCollectPage"))
   : null;
+const DigitBenchPage = import.meta.env.DEV
+  ? lazy(() => import("./pages/DigitBenchPage"))
+  : null;
 
 const lesson = (element: ReactNode) => (
   <RequireStudentSession>{element}</RequireStudentSession>
@@ -72,6 +75,16 @@ const App = () => {
                   element={
                     <Suspense fallback={null}>
                       <DigitCollectPage />
+                    </Suspense>
+                  }
+                />
+              )}
+              {DigitBenchPage && (
+                <Route
+                  path="/dev/digit-bench"
+                  element={
+                    <Suspense fallback={null}>
+                      <DigitBenchPage />
                     </Suspense>
                   }
                 />

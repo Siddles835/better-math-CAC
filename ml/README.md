@@ -1,33 +1,41 @@
 # MathLift models
 
-Training and evaluation use Python 3.10 or newer. The pinned packages are in `requirements.txt` (numpy 2.2.6, pandas 2.3.2, scikit-learn 1.7.2).
+Training and evaluation use Python 3.10 or newer. Pinned packages are in `requirements.txt`
+(numpy, pandas, scikit-learn, torch, torchvision).
 
 ```bash
 pip install -r ml/requirements.txt
-npm run train:ml
-npm run train:recommend
-python ml/evaluate_pilot.py
+# CPU torch wheels if needed:
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+npm run train:digits   # 28×28 CNN + thresholds + digit eval fragment
+DIGIT_SKIP_TRAIN=1 npm run train:ml   # misconception tree + merge digit fragment
 python ml/test_raster.py
 ```
 
-`train:ml` writes:
+## Digit recognizer (28×28)
 
-- `src/lib/cognition/models/misconception_tree.json`
-- `src/lib/cognition/models/digit_mlp.json`
-- `src/lib/cognition/models/digit_thresholds.json`
-- `src/lib/cognition/models/eval.json`
-- `ml/golden_rasters.json`
+`train_digit_cnn.py` trains a small CNN (~65k params) in PyTorch and exports flat JSON
+weights to `src/lib/cognition/models/digit_mlp.json` for a dependency-free TypeScript
+forward pass.
 
-Seeds are fixed. Running the script twice should produce the same `eval.json`.
+### Datasets and licenses
 
-The digit strokes are hand-written templates plus jitter. They are not real children's handwriting. Chinese numerals are not included. Children in Chinese math class write Western digits.
+| Dataset | Role | License / note |
+|---|---|---|
+| **MNIST** via `torchvision.datasets.MNIST` | Primary western digit images | Yann LeCun et al., **CC BY-SA 3.0** |
+| Fallback: `sklearn.datasets.fetch_openml('mnist_784')` | If torchvision download fails | Same MNIST corpus |
+| Fallback: `sklearn.datasets.load_digits` | Offline 8×8 upscaled | Only if no network |
+| Synthetic stroke templates | Child-style augmentation (wobble, ≤20° rotation, slant, multi-stroke 4/5/7, scale) | Hand-authored in this repo — **not** real children’s handwriting |
+| `ml/data/real/*.json` | Optional real samples from `/dev/digits` | Local only; never uploaded |
 
-Reading-time multipliers (`en` 1, `zh-Hans` 0.82, `es` 1.18, `hi` 1.30, `ar` 1.35) are assumptions, not measured classroom values. The app divides timing features by them so the tree stays language-independent.
+Chinese math class uses Western digits; hanzi numerals are not in the drawing model.
+Arabic-Indic and Devanagari synthetic classes are kept for script-aware reversal safety.
 
-## Real handwriting
+### Collecting real samples
 
-Open `/dev/digits` in a development build, draw labeled digits, and download the JSON. Put files in `ml/data/real/`. The trainer mixes them in, weighted above synthetic strokes, when the folder has files. If the folder is empty, training still runs. Nothing is uploaded.
+1. Run a development build (`npm run dev`).
+2. Open `/dev/digits`.
+3. Draw labeled digits (aim for **20+ per digit**), download JSON.
+4. Put files in `ml/data/real/` and rerun `npm run train:digits`.
 
-## Pilot comparison
-
-Copy `ml/pilot_labels.template.csv` to `ml/pilot_labels.csv` and fill anonymized ids only. `evaluate_pilot.py` writes `pilot_eval.json` only when that CSV exists. It does not invent numbers.
+Seeds are fixed. Two digit training runs with the same environment should hash-match the exported weights.

@@ -27,5 +27,7 @@
   "print": "Print / Save as PDF",
   "notAvailable": "not available",
   "close": "Close",
-  "legalNotice": "The English version is the authoritative one."
+  "legalNotice": "The English version is the authoritative one.",
+  "iSee": "I see: {{digit}}",
+  "iSeeUnreadable": "I can’t read that yet"
 }

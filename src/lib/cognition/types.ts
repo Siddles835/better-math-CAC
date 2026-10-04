@@ -41,6 +41,8 @@ export interface DigitRead {
   /** Digits left to right when status is ok. */
   parts?: number[];
   script?: DigitScript;
+  /** True when the ink is much wider than tall (likely multi-digit). */
+  wide?: boolean;
 }
 
 export interface CognitionFeatures {
