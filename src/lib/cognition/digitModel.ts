@@ -1,21 +1,76 @@
 import type { DigitRead, DigitScript, UnreadableReason } from './types';
-import { rasterizeStrokes, startQuadrant, type Stroke } from './strokes';
+import { GRID, rasterizeStrokes, startQuadrant, type Stroke } from './strokes';
 import { densifyStrokes, segmentIntoDigits, strokePointCount, strokeSpan } from './segment';
 import weights from './models/digit_mlp.json';
 import thresholds from './models/digit_thresholds.json';
 
+type ConvLayer =
+  | { w: number[][][][]; b: number[] }
+  | { shape: number[]; w: number[]; b: number[] };
+
+type DenseLayer = number[][] | { shape: number[]; w: number[] };
+
 interface MlpWeights {
   kind?: 'mlp' | 'cnn';
+  grid?: number;
+  centroidGrid?: number;
   sizes?: number[];
   activation?: string;
   classes: number[];
   coefs?: number[][][];
   intercepts?: number[][];
-  conv?: { w: number[][][][]; b: number[] }[];
-  denseCoefs?: number[][][];
+  conv?: ConvLayer[];
+  denseCoefs?: DenseLayer[];
   denseIntercepts?: number[][];
   scriptCentroids?: Partial<Record<DigitScript, number[][]>>;
 }
+
+const reshape4 = (flat: number[], shape: number[]): number[][][][] => {
+  const [a, b, c, d] = shape;
+  const out: number[][][][] = [];
+  let i = 0;
+  for (let ai = 0; ai < a; ai++) {
+    const A: number[][][] = [];
+    for (let bi = 0; bi < b; bi++) {
+      const B: number[][] = [];
+      for (let ci = 0; ci < c; ci++) {
+        const C: number[] = [];
+        for (let di = 0; di < d; di++) C.push(flat[i++]);
+        B.push(C);
+      }
+      A.push(B);
+    }
+    out.push(A);
+  }
+  return out;
+};
+
+const reshape2 = (flat: number[], shape: number[]): number[][] => {
+  const [rows, cols] = shape;
+  const out: number[][] = [];
+  let i = 0;
+  for (let r = 0; r < rows; r++) {
+    const row: number[] = [];
+    for (let c = 0; c < cols; c++) row.push(flat[i++]);
+    out.push(row);
+  }
+  return out;
+};
+
+const convKernel = (layer: ConvLayer): { w: number[][][][]; b: number[] } => {
+  if (Array.isArray((layer as { w: unknown }).w) && !Array.isArray((layer as { w: unknown[] }).w[0])) {
+    const flat = layer as { shape: number[]; w: number[]; b: number[] };
+    return { w: reshape4(flat.w, flat.shape), b: flat.b };
+  }
+  return layer as { w: number[][][][]; b: number[] };
+};
+
+const denseMatrix = (layer: DenseLayer): number[][] => {
+  if (!Array.isArray(layer) && 'shape' in layer) {
+    return reshape2(layer.w, layer.shape);
+  }
+  return layer as number[][];
+};
 
 interface ThresholdFile {
   minConfidence: number;
@@ -27,6 +82,7 @@ interface ThresholdFile {
 
 const model = weights as MlpWeights;
 const limits = thresholds as ThresholdFile;
+const gridSize = model.grid ?? GRID;
 
 const relu = (x: number) => (x > 0 ? x : 0);
 
@@ -56,11 +112,12 @@ const mlpForward = (pixels: number[]): number[] => {
 };
 
 const convForward = (pixels: number[]): number[] => {
-  let volume: number[][][] = Array.from({ length: 16 }, (_, y) =>
-    Array.from({ length: 16 }, (_, x) => [pixels[y * 16 + x] ?? 0])
+  let volume: number[][][] = Array.from({ length: gridSize }, (_, y) =>
+    Array.from({ length: gridSize }, (_, x) => [pixels[y * gridSize + x] ?? 0])
   );
 
-  for (const layer of model.conv ?? []) {
+  for (const rawLayer of model.conv ?? []) {
+    const layer = convKernel(rawLayer);
     const kh = layer.w.length;
     const kw = layer.w[0]?.length ?? 0;
     const cin = volume[0]?.[0]?.length ?? 0;
@@ -110,11 +167,20 @@ const convForward = (pixels: number[]): number[] => {
     volume = pooled;
   }
 
-  let flat: number[] = [];
-  for (const row of volume) {
-    for (const cell of row) flat = flat.concat(cell);
+  // Match PyTorch NCHW flatten order: channel, then y, then x.
+  const outH = volume.length;
+  const outW = volume[0]?.length ?? 0;
+  const outC = volume[0]?.[0]?.length ?? 0;
+  const flat = new Array(outH * outW * outC);
+  let fi = 0;
+  for (let c = 0; c < outC; c++) {
+    for (let y = 0; y < outH; y++) {
+      for (let x = 0; x < outW; x++) {
+        flat[fi++] = volume[y][x][c];
+      }
+    }
   }
-  const coefs = model.denseCoefs ?? [];
+  const coefs = (model.denseCoefs ?? []).map(denseMatrix);
   const intercepts = model.denseIntercepts ?? [];
   let layer = flat;
   for (let i = 0; i < coefs.length; i++) {
@@ -142,16 +208,38 @@ const squaredDistance = (a: number[], b: number[]): number => {
   return sum;
 };
 
+const poolCentroid = (pixels: number[], side: number): number[] => {
+  const src = Math.sqrt(pixels.length);
+  if (!Number.isFinite(src) || src * src !== pixels.length) return pixels;
+  const block = src / side;
+  if (!Number.isInteger(block)) return pixels;
+  const out = new Array(side * side).fill(0);
+  for (let y = 0; y < side; y++) {
+    for (let x = 0; x < side; x++) {
+      let sum = 0;
+      for (let dy = 0; dy < block; dy++) {
+        for (let dx = 0; dx < block; dx++) {
+          sum += pixels[(y * block + dy) * src + (x * block + dx)] ?? 0;
+        }
+      }
+      out[y * side + x] = sum / (block * block);
+    }
+  }
+  return out;
+};
+
 export const guessDigitScript = (pixels: number[], digit: number): DigitScript => {
   const centroids = model.scriptCentroids;
   if (!centroids) return 'western';
+  const side = model.centroidGrid ?? Math.sqrt(centroids.western?.[0]?.length ?? pixels.length);
+  const probe = side && side * side !== pixels.length ? poolCentroid(pixels, side) : pixels;
   const scripts: DigitScript[] = ['western', 'arabic', 'devanagari'];
   let best: DigitScript = 'western';
   let bestDistance = Infinity;
   for (const script of scripts) {
     const row = centroids[script]?.[digit];
     if (!row) continue;
-    const distance = squaredDistance(pixels, row);
+    const distance = squaredDistance(probe, row);
     if (distance < bestDistance) {
       bestDistance = distance;
       best = script;
@@ -238,8 +326,30 @@ export const confirmConfidence = (): number => {
   return Math.min(0.97, limits.minConfidence + 0.12);
 };
 
-export const needsConfirm = (read: DigitRead): boolean =>
-  read.status === 'ok' && read.confidence < confirmConfidence();
+export const needsConfirm = (read: DigitRead): boolean => {
+  if (read.status !== 'ok') return false;
+  // Multi-digit or unusually wide ink always confirms — never silently score a merge mistake.
+  if ((read.parts?.length ?? 1) > 1 || read.wide) return true;
+  return read.confidence < confirmConfidence();
+};
+
+const inkAspect = (strokes: Stroke[]): number => {
+  const pts = strokes.flat();
+  if (pts.length === 0) return 1;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of pts) {
+    minX = Math.min(minX, p.x);
+    minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x);
+    maxY = Math.max(maxY, p.y);
+  }
+  const w = Math.max(1, maxX - minX);
+  const h = Math.max(1, maxY - minY);
+  return w / h;
+};
 
 /** Read up to three digits. Unreadable drawings are not scored as wrong. */
 export const readDrawing = (strokes: Stroke[]): DigitRead => {
@@ -257,6 +367,7 @@ export const readDrawing = (strokes: Stroke[]): DigitRead => {
   }
   const digits = parts.map((part) => part.digit);
   const value = digits.reduce((total, digit) => total * 10 + digit, 0);
+  const wide = inkAspect(strokes) >= 1.35;
   return {
     status: 'ok',
     digit: value,
@@ -266,6 +377,7 @@ export const readDrawing = (strokes: Stroke[]): DigitRead => {
     startQuadrant: startQuadrant(strokes),
     parts: digits,
     script: parts[0]?.script,
+    wide,
   };
 };
 

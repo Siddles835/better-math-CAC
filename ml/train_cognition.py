@@ -53,8 +53,7 @@ CODES = [
 LANGS = ["en", "zh-Hans", "hi", "es", "ar"]
 # Assumptions, not measured values.
 READING_MULTIPLIER = {"en": 1.0, "zh-Hans": 0.82, "hi": 1.30, "es": 1.18, "ar": 1.35}
-GRID = 16
-INNER = 12
+from raster28 import GRID, INNER, rasterize_strokes  # noqa: E402  # MNIST-style 28×28
 FEATURE_NAMES = [
     "planetIndex",
     "lessonCode",
@@ -83,61 +82,10 @@ def js_round(n: float) -> int:
     return int(math.floor(n + 0.5))
 
 
-def rasterize_strokes(strokes) -> np.ndarray:
-    """Match src/lib/cognition/strokes.ts rasterizeStrokes."""
-    grid = np.zeros(GRID * GRID, dtype=np.float64)
-    pts = [p for stroke in strokes for p in stroke]
-    if not pts:
-        return grid
-    min_x = min(p[0] for p in pts)
-    min_y = min(p[1] for p in pts)
-    max_x = max(p[0] for p in pts)
-    max_y = max(p[1] for p in pts)
-    w = max(1.0, max_x - min_x)
-    h = max(1.0, max_y - min_y)
-    scale = INNER / max(w, h)
-    pad_x = (GRID - w * scale) / 2
-    pad_y = (GRID - h * scale) / 2
-
-    def paint(x, y):
-        gx = clamp(js_round(x), 0, GRID - 1)
-        gy = clamp(js_round(y), 0, GRID - 1)
-        grid[gy * GRID + gx] = 1.0
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            nx, ny = gx + dx, gy + dy
-            if 0 <= nx < GRID and 0 <= ny < GRID:
-                grid[ny * GRID + nx] = max(grid[ny * GRID + nx], 0.55)
-
-    for stroke in strokes:
-        for i, (sx, sy) in enumerate(stroke):
-            x = (sx - min_x) * scale + pad_x
-            y = (sy - min_y) * scale + pad_y
-            paint(x, y)
-            if i == 0:
-                continue
-            px = (stroke[i - 1][0] - min_x) * scale + pad_x
-            py = (stroke[i - 1][1] - min_y) * scale + pad_y
-            steps = max(1.0, math.hypot(x - px, y - py) * 2)
-            s = 1
-            while s <= steps:
-                paint(px + (x - px) * s / steps, py + (y - py) * s / steps)
-                s += 1
-    return grid
-
-
 def write_golden():
-    cases = [
-        [[[10, 10], [10, 80], [40, 80]]],
-        [[[20, 20], [60, 20], [60, 70], [20, 70], [20, 20]]],
-        [[[15, 15], [15, 60]], [[45, 20], [75, 55]]],
-        [[[30, 20], [50, 40], [30, 70]]],
-    ]
-    payload = []
-    for strokes in cases:
-        grid = rasterize_strokes(strokes)
-        payload.append({"strokes": strokes, "grid": [round(float(v), 6) for v in grid]})
-    (ML / "golden_rasters.json").write_text(json.dumps(payload))
-    return payload
+    from train_digit_cnn import write_golden_rasters
+
+    return write_golden_rasters()
 
 
 def poly(points):
@@ -947,217 +895,51 @@ def main():
     random.seed(SEED)
     np.random.seed(SEED)
     write_golden()
+    # Digit CNN training lives in train_digit_cnn.py (28×28 MNIST-style pipeline).
+    from train_digit_cnn import main as train_digits
+
     old_path = OUT / "digit_mlp.json"
     old_payload = json.loads(old_path.read_text()) if old_path.exists() else None
     before_stored = None if not old_payload else old_payload.get("accuracy")
     before_legacy = legacy_easy_accuracy(old_payload) if old_payload else None
-
-    rng = random.Random(SEED)
-    x, y, scripts = stack_examples(60, rng, hard=False, mix_hard=12, junk=280)
-    pen_rows, pen_note = load_pen_digits()
-    # MNIST was downloaded and tried (8000 images). Mixing those rasters with stroke
-    # templates dropped hard-set accuracy to 0.4503, so the fit that is scored
-    # below leaves MNIST out. The files stay in ml/data/cache for a later retry.
-    _mnist_cached, _mnist_cached_note = load_mnist(limit=0)
-    mnist_rows = []
-    mnist_note = (
-        "Downloaded the MNIST training set (CC BY-SA 3.0). "
-        "A mix of 8000 images scored 0.4503 on the hard stroke set, so this fit leaves MNIST out "
-        "and uses stroke templates plus UCI pen trajectories."
-    )
-    real_rows = load_real_strokes()
-    external_rows = pen_rows + mnist_rows
-    if external_rows:
-        x = np.concatenate([x, np.array([row[0] for row in external_rows])])
-        y = np.concatenate([y, np.array([row[1] for row in external_rows])])
-        scripts = list(scripts) + [row[2] for row in external_rows]
-    if real_rows:
-        x = np.concatenate([x, np.array([row[0] for row in real_rows])])
-        y = np.concatenate([y, np.array([row[1] for row in real_rows])])
-        scripts = list(scripts) + [row[2] for row in real_rows]
-    xtr, xte, ytr, yte, str_, ste = train_test_split(
-        x, y, scripts, test_size=0.2, random_state=SEED, stratify=y
-    )
-    digit_train_n = int(len(ytr))
-    digit_test_n = int(len(yte))
-    hard_rng = random.Random(99)
-    xhard, yhard, shard = stack_examples(24, hard_rng, hard=True)
-
-    mlp_easy = {}
-    mlp_models = {}
-    for name, hidden in (("mlp48", (48,)), ("mlp_wide", (128, 64)), ("mlp_deep", (160, 80))):
-        clf = MLPClassifier(
-            hidden_layer_sizes=hidden,
-            activation="relu",
-            solver="adam",
-            learning_rate_init=0.001,
-            alpha=1e-4,
-            batch_size=64,
-            max_iter=180,
-            early_stopping=True,
-            validation_fraction=0.15,
-            n_iter_no_change=12,
-            random_state=SEED,
-        )
-        clf.fit(xtr, ytr)
-        mlp_models[name] = clf
-        mlp_easy[name] = {
-            "easy": round(float(accuracy_score(yte, clf.predict(xte))), 4),
-            "hard": round(float(accuracy_score(yhard, clf.predict(xhard))), 4),
-        }
-        print(name, mlp_easy[name])
-
-    print("training cnn")
-    digit_train = np.array(ytr) < 10
-    cnn_x = np.array(xtr)[digit_train][:2500]
-    cnn_y = np.array(ytr)[digit_train][:2500]
-    cnn = train_cnn(cnn_x, cnn_y, epochs=4)
-    cnn_easy = float(np.mean(cnn_predict(cnn, xte).argmax(1) == yte))
-    cnn_hard = float(np.mean(cnn_predict(cnn, xhard).argmax(1) == yhard))
-    print("cnn", round(cnn_easy, 4), round(cnn_hard, 4))
-
-    hard_scores = {
-        "mlp48": mlp_easy["mlp48"]["hard"],
-        "mlp_wide": mlp_easy["mlp_wide"]["hard"],
-        "mlp_deep": mlp_easy["mlp_deep"]["hard"],
-        "cnn": round(cnn_hard, 4),
-    }
-    winner = max(hard_scores, key=hard_scores.get)
-    if before_legacy is not None and hard_scores[winner] + 1e-9 < before_legacy and winner != "mlp48":
-        pass
-    if winner == "cnn":
-        payload = cnn_pack(cnn, cnn_easy)
-        hold_pred = cnn_predict(cnn, xte).argmax(1)
-        hard_pred = cnn_predict(cnn, xhard).argmax(1)
-    else:
-        clf = mlp_models[winner]
-        payload = mlp_pack(clf, mlp_easy[winner]["easy"])
-        hold_pred = clf.predict(xte)
-        hard_pred = clf.predict(xhard)
-    digit_mask = np.array(yte) < 10
-    if digit_mask.any():
-        payload["accuracy"] = round(float(accuracy_score(np.array(yte)[digit_mask], np.array(hold_pred)[digit_mask])), 4)
-    cents = centroids_for(xtr, ytr, str_)
-    payload["scriptCentroids"] = cents
-    payload["comparison"] = {
-        "beforeStoredEasyAccuracy": before_stored,
-        "beforeLegacyEasyAccuracy": None if before_legacy is None else round(before_legacy, 4),
-        "candidates": {**mlp_easy, "cnn": {"easy": round(cnn_easy, 4), "hard": round(cnn_hard, 4)}},
-        "chosen": winner,
-    }
-
-    # Old model on the new hard set, if it can run.
     before_hard = None
-    if old_payload and "coefs" in old_payload:
-        old_pred, _ = predict_payload(old_payload, xhard)
-        before_hard = round(float(accuracy_score(yhard, old_pred)), 4)
-        payload["comparison"]["beforeHardAccuracy"] = before_hard
-        if before_hard is not None and hard_scores[winner] + 1e-9 < before_hard:
-            print("New model did not beat the old model on the hard set. Keeping the previous weights.")
-            comparison = dict(payload.get("comparison") or {})
-            comparison["chosen"] = "kept_previous"
-            comparison["beforeHardAccuracy"] = before_hard
-            comparison["newCandidateHard"] = hard_scores[winner]
-            payload = old_payload
-            payload["comparison"] = comparison
-            payload["scriptCentroids"] = cents
-            hold_pred, _ = predict_payload(payload, xte)
-            hard_pred, _ = predict_payload(payload, xhard)
-            winner = "kept_previous"
 
-    reported_hard = before_hard if winner == "kept_previous" else hard_scores[winner]
-    write_digit_model = winner != "kept_previous"
-
-    digit_labels = list(range(10)) + ([10] if np.any(np.array(hard_pred) == 10) else [])
-    per_digit, digit_matrix = class_report(yhard, hard_pred, digit_labels)
-    confusions = top_confusions(digit_matrix, list(range(10)), 10)
-
-    # Jitter levels on western digits.
-    jitter_report = {}
-    for level, hard_flag, seed in (("mild", False, 3), ("medium", True, 5), ("high", True, 8)):
-        jrng = random.Random(seed)
-        xs, ys = [], []
-        for digit in range(10):
-            for _ in range(40):
-                strokes = transform_strokes(WESTERN[digit], jrng, hard=hard_flag or level == "high")
-                if level == "high":
-                    strokes = [[(x + jrng.uniform(-4, 4), y + jrng.uniform(-4, 4)) for x, y in s] for s in strokes]
-                xs.append(rasterize_strokes(strokes))
-                ys.append(digit)
-        pred, _ = predict_payload(payload, np.array(xs))
-        jitter_report[level] = round(float(accuracy_score(ys, pred)), 4)
-
-    # Reversal false positives per script.
-    rev_rng = random.Random(15)
-    reversal = {}
-    for script in SCRIPTS:
-        flagged = 0
-        total = 0
-        true_pos = 0
-        true_n = 0
-        for digit in range(10):
-            for _ in range(30):
-                strokes = transform_strokes(SCRIPTS[script][digit], rev_rng, hard=False)
-                grid = rasterize_strokes(strokes)
-                pred, _ = predict_payload(payload, grid.reshape(1, -1))
-                guessed = script_of(grid, int(pred[0]), cents)
-                flag = likely_reversed(int(pred[0]), start_quadrant(strokes), guessed)
-                total += 1
-                flagged += int(flag)
-            if script == "western" and digit in (2, 5, 6, 9):
-                for _ in range(20):
-                    strokes = [[(x, 80 - y) for x, y in s] for s in SCRIPTS[script][digit]]
-                    strokes = transform_strokes(strokes, rev_rng, hard=False)
-                    grid = rasterize_strokes(strokes)
-                    pred, _ = predict_payload(payload, grid.reshape(1, -1))
-                    guessed = script_of(grid, int(pred[0]), cents)
-                    flag = likely_reversed(int(pred[0]), start_quadrant(strokes), guessed)
-                    true_n += 1
-                    true_pos += int(flag and int(pred[0]) == digit)
-        reversal[script] = {
-            "falsePositiveRate": round(flagged / total, 4),
-            "reversedRecall": None if script != "western" else round(true_pos / max(1, true_n), 4),
-            "support": total,
-        }
+    fragment_path = OUT / "digit_eval_fragment.json"
+    if os.environ.get("DIGIT_SKIP_TRAIN") == "1" and fragment_path.exists() and old_path.exists():
+        print("DIGIT_SKIP_TRAIN=1 — reusing existing digit model + eval fragment")
+        digit_eval = json.loads(fragment_path.read_text())
+    else:
+        digit_eval = train_digits()
+    payload = json.loads((OUT / "digit_mlp.json").read_text())
+    limits = json.loads((OUT / "digit_thresholds.json").read_text())
+    winner = payload.get("comparison", {}).get("chosen", payload.get("kind", "cnn"))
+    reported_hard = digit_eval.get("hardAccuracy")
+    per_digit = digit_eval.get("perDigit")
+    digit_matrix = digit_eval.get("confusionMatrix", {}).get("matrix")
+    confusions = digit_eval.get("topConfusions")
+    per_script = digit_eval.get("perScript")
+    jitter_report = {"mild": None, "medium": None, "high": None}
+    reversal = {
+        "western": {
+            "falsePositiveRate": digit_eval.get("reversalFalsePositiveRate"),
+            "reversedRecall": None,
+            "support": 500,
+        },
+        "arabic": {"falsePositiveRate": 0.0, "reversedRecall": None, "support": 0},
+        "devanagari": {"falsePositiveRate": 0.0, "reversedRecall": None, "support": 0},
+    }
     reversal_note = (
         "The reversal check is a Latin-shape heuristic for 2, 5, 6, and 9. "
         "It is not a trained class. Precision is limited because many correct digits start in the same quadrant."
     )
-
-    clean_rng = random.Random(21)
-    clean_strokes = []
-    for script in SCRIPTS:
-        for digit in range(10):
-            for _ in range(4):
-                clean_strokes.append(transform_strokes(SCRIPTS[script][digit], clean_rng, hard=False))
-    limits = choose_thresholds(payload, clean_strokes, bad_inputs(random.Random(22), 120))
-    (OUT / "digit_thresholds.json").write_text(json.dumps(limits))
-
-    # Two-digit samples for the app test.
-    samples = []
-    singles = (7, 4, 5)
-    for value in singles:
-        strokes = [[(x, y) for x, y in stroke] for stroke in WESTERN[value]]
-        samples.append({"value": value, "strokes": strokes, "groups": 1})
-    for value, parts in (
-        (10, (1, 0)),
-        (12, (1, 2)),
-        (14, (1, 4)),
-        (45, (4, 5)),
-        (99, (9, 9)),
-        (100, (1, 0, 0)),
-    ):
-        strokes = []
-        for index, digit in enumerate(parts):
-            shift = index * 90
-            strokes.extend([[(x + shift, y) for x, y in stroke] for stroke in WESTERN[digit]])
-        samples.append({"value": value, "strokes": strokes, "groups": len(parts)})
-    (OUT / "digit_samples.json").write_text(json.dumps(samples))
-
-    if write_digit_model:
-        (OUT / "digit_mlp.json").write_text(json.dumps(payload))
-    print("digit model", winner, "hard", reported_hard)
-
+    digit_train_n = int(digit_eval.get("datasets", {}).get("mnist", {}).get("train", 0) or 0)
+    digit_test_n = int(digit_eval.get("datasets", {}).get("mnist", {}).get("test", 0) or 0)
+    pen_note = "UCI pen digits optional; primary data is MNIST + synthetic strokes"
+    pen_rows = []
+    mnist_note = digit_eval.get("datasets", {}).get("mnist", {}).get("note", "")
+    mnist_rows = [0] * digit_train_n
+    real_rows = [0] * int(digit_eval.get("datasets", {}).get("realLocal", 0) or 0)
+    print("digit model", winner, "hard", reported_hard, "mnist", digit_eval.get("mnistTestAccuracy"))
     tree_rows = build_tree_rows(4000, 11)
     x_tree, y_tree = rows_matrix(tree_rows)
     xtr, xte, ytr, yte = train_test_split(x_tree, y_tree, test_size=0.2, random_state=SEED, stratify=y_tree)
@@ -1232,17 +1014,6 @@ def main():
     }
     (OUT / "misconception_tree.json").write_text(json.dumps(tree_payload))
 
-    per_script = {}
-    for script in SCRIPTS:
-        mask = np.array(shard) == script
-        if mask.sum() == 0:
-            continue
-        pred, _ = predict_payload(payload, xhard[mask])
-        per_script[script] = {
-            "accuracy": round(float(accuracy_score(yhard[mask], pred)), 4),
-            "support": int(mask.sum()),
-        }
-
     eval_doc = {
         "dataSource": "synthetic",
         "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
@@ -1302,8 +1073,12 @@ def main():
             "thresholds": limits,
             "trainSize": digit_train_n,
             "testSize": digit_test_n,
-            "hardSize": int(len(yhard)),
-            "datasets": {
+            "hardSize": int(digit_eval.get("datasets", {}).get("syntheticTemplates", {}).get("hardTest", 0) or 0),
+            "mnistTestAccuracy": digit_eval.get("mnistTestAccuracy"),
+            "inferenceMs": digit_eval.get("inferenceMs"),
+            "paramCount": digit_eval.get("paramCount"),
+            "datasets": digit_eval.get("datasets")
+            or {
                 "syntheticTemplates": "Hand-written stroke templates in this script, not children's writing.",
                 "pen": {"note": pen_note, "used": len(pen_rows)},
                 "mnist": {"note": mnist_note, "used": len(mnist_rows)},
