@@ -68,7 +68,7 @@ export const NEXT_PLANET: Record<MisconceptionCode, PlanetId> = {
 };
 
 export const PRACTICE_TITLE: Record<MisconceptionCode, string> = {
-  COUNT_ALL: 'Five minutes of counting on',
+  COUNT_ALL: 'Count on from a number you already have',
   OVERSHOOT: 'Exact totals with pencils',
   SUB_FLIP: 'Story subtraction, one direction',
   COMMUTE: 'Same sum, two orders',

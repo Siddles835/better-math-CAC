@@ -21,6 +21,8 @@ import {
   getInProgressPlanet,
 } from '@/lib/planets';
 import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 
 const BASE_SIZE = 640; // design space that fits Neptune orbit (580) + labels
 
@@ -28,6 +30,7 @@ const BASE_SIZE = 640; // design space that fits Neptune orbit (580) + labels
 // put the Sun on the opposite side of the path and break the planet order
 // children learn (Sun, Mercury, Venus, ...). Equations elsewhere use dir=ltr.
 const SolarSystemPage: React.FC = () => {
+  const { t } = useTranslation('explore');
   const navigate = useNavigate();
   const {
     setShowRocketTransition,
@@ -300,6 +303,17 @@ const SolarSystemPage: React.FC = () => {
             })}
           </div>
         </div>
+      </div>
+
+      <div className="mb-6 flex justify-center z-20">
+        <Button
+          type="button"
+          className="min-h-11"
+          data-testid="hub-explore"
+          onClick={() => navigate('/explore')}
+        >
+          {t('hub_cta')}
+        </Button>
       </div>
 
       <NavigationArrows

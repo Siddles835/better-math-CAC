@@ -78,6 +78,14 @@ const HomePage: React.FC = () => {
           <Link to="/try-practice" className="underline underline-offset-2 hover:text-foreground">
             {t('tryPractice')}
           </Link>
+          {studentSession && (
+            <>
+              {' · '}
+              <Link to="/explore" className="underline underline-offset-2 hover:text-foreground">
+                {t('explore')}
+              </Link>
+            </>
+          )}
         </p>
       </div>
 
@@ -201,6 +209,9 @@ const HomePage: React.FC = () => {
         </Link>
         <Link to="/try-practice" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
           {t('tryPractice')}
+        </Link>
+        <Link to="/explore" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
+          {t('explore')}
         </Link>
         <Link to="/settings" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
           {t('settings')}
