@@ -6,7 +6,7 @@ import LegalLanguageNotice from '@/components/LegalLanguageNotice';
 
 const COMPANY_NAME = 'MathLift';
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
-const LAST_UPDATED = 'October 3, 2026';
+const LAST_UPDATED = 'October 4, 2026';
 const WEBSITE_URL = 'https://better-math-lalith.vercel.app';
 
 const PrivacyPolicyPage: React.FC = () => {
@@ -37,11 +37,15 @@ const PrivacyPolicyPage: React.FC = () => {
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3 text-[15px] leading-relaxed text-slate-600">
           <p>
             MathLift is a classroom math app for counting, addition, and subtraction. It is designed
-            for schools. Students do not create email accounts and do not type their real names.
-            This policy explains exactly what data we collect, why, how long we keep it, who it is
-            shared with, and how to delete it. It is written to meet Apple&apos;s Developer Code of
-            Conduct (not the App Store Guidelines) and to support school obligations under FERPA and
-            COPPA (the school may act as the parent&apos;s authorized agent for children under 13).
+            for schools and also offers an individual (“Learn on my own”) mode. Students do not create
+            email accounts and do not type their real names. This policy explains exactly what data we
+            collect, why, how long we keep it, who it is shared with, and how to delete it. It is
+            written to meet Apple&apos;s Developer Code of Conduct (not the App Store Guidelines) and
+            to support school obligations under FERPA and COPPA (the school may act as the parent&apos;s
+            authorized agent for children under 13).
+          </p>
+          <p>
+            <strong>{t('individualTitle')}</strong> {t('individualBody')}
           </p>
           <p>
             Contact:{' '}

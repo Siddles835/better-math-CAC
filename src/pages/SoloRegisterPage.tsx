@@ -10,8 +10,11 @@ import {
   SOLO_CLASS_CODE,
   createSoloProgress,
   loadSoloProgress,
+  normalizeSoloPin,
+  saveSoloPending,
   saveSoloProgress,
   soloProgressToStudent,
+  verifySoloPin,
 } from '@/lib/solo';
 import { setActiveStudent } from '@/lib/session';
 import { useGame } from '@/context/GameContext';
@@ -22,6 +25,9 @@ const SoloRegisterPage: React.FC = () => {
   const { hydrateFromStudent, hydrateClassMax } = useGame();
   const existing = loadSoloProgress();
   const [username, setUsername] = useState(() => existing?.displayName || generateUsername());
+  const [pin, setPin] = useState('');
+  const [usePin, setUsePin] = useState(false);
+  const [resumePin, setResumePin] = useState('');
   const [error, setError] = useState('');
 
   const rollNewUsername = () => {
@@ -30,12 +36,7 @@ const SoloRegisterPage: React.FC = () => {
     setError('');
   };
 
-  const continueExisting = () => {
-    const progress = loadSoloProgress();
-    if (!progress) {
-      setError(tx('ui:solo_missingProgress'));
-      return;
-    }
+  const enterSolo = (progress: ReturnType<typeof createSoloProgress>) => {
     hydrateClassMax(progress.unlockPlanet);
     hydrateFromStudent(soloProgressToStudent(progress));
     setActiveStudent({
@@ -47,14 +48,35 @@ const SoloRegisterPage: React.FC = () => {
     navigate(STUDENT_HUB_PATH, { replace: true });
   };
 
-  const startFresh = () => {
+  const continueExisting = () => {
+    const progress = loadSoloProgress();
+    if (!progress) {
+      setError(tx('ui:solo_missingProgress'));
+      return;
+    }
+    if (progress.pin && !verifySoloPin(progress, resumePin)) {
+      setError(tx('ui:solo_badPin'));
+      return;
+    }
+    enterSolo(progress);
+  };
+
+  const beginWithCheck = () => {
     const name = normalizeLabel(username);
     if (!name) {
       setError(tx('ui:solo_needName'));
       return;
     }
-    // Keep a draft name for the level-check page; progress is written after placement.
-    sessionStorage.setItem('better-math:solo-pending-name', name);
+    if (usePin) {
+      const normalized = normalizeSoloPin(pin);
+      if (!normalized) {
+        setError(tx('ui:solo_pinInvalid'));
+        return;
+      }
+      saveSoloPending({ displayName: name, pin: normalized });
+    } else {
+      saveSoloPending({ displayName: name });
+    }
     navigate('/level-check', { replace: false });
   };
 
@@ -64,17 +86,20 @@ const SoloRegisterPage: React.FC = () => {
       setError(tx('ui:solo_needName'));
       return;
     }
-    const progress = createSoloProgress(name, 'sun', 'sun');
-    saveSoloProgress(progress);
-    hydrateClassMax(progress.unlockPlanet);
-    hydrateFromStudent(soloProgressToStudent(progress));
-    setActiveStudent({
-      classCode: SOLO_CLASS_CODE,
-      nickname: progress.nickname,
-      displayName: progress.displayName,
-      solo: true,
+    let optionalPin: string | undefined;
+    if (usePin) {
+      optionalPin = normalizeSoloPin(pin);
+      if (!optionalPin) {
+        setError(tx('ui:solo_pinInvalid'));
+        return;
+      }
+    }
+    const progress = createSoloProgress(name, 'sun', 'sun', {
+      pin: optionalPin,
+      placementDone: false,
     });
-    navigate(STUDENT_HUB_PATH, { replace: true });
+    saveSoloProgress(progress);
+    enterSolo(progress);
   };
 
   return (
@@ -89,6 +114,26 @@ const SoloRegisterPage: React.FC = () => {
             <p className="text-sm text-muted-foreground mb-3">
               {tx('ui:solo_foundProgress', { name: existing.displayName })}
             </p>
+            {existing.pin && (
+              <div className="mb-3">
+                <label className="block text-sm font-medium mb-1" htmlFor="solo-resume-pin">
+                  {tx('ui:solo_enterPin')}
+                </label>
+                <input
+                  id="solo-resume-pin"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  maxLength={4}
+                  value={resumePin}
+                  onChange={(e) => {
+                    setResumePin(e.target.value.replace(/\D/g, '').slice(0, 4));
+                    setError('');
+                  }}
+                  className="w-full px-4 py-3 border border-border rounded-xl bg-background text-foreground tracking-[0.4em] text-center text-xl min-h-[48px]"
+                  placeholder="••••"
+                />
+              </div>
+            )}
             <button
               type="button"
               onClick={continueExisting}
@@ -119,6 +164,42 @@ const SoloRegisterPage: React.FC = () => {
         </div>
         <p className="text-xs text-muted-foreground mb-4">{tx('ui:joinDice')}</p>
 
+        <fieldset className="mb-4 rounded-xl border border-border p-3">
+          <legend className="px-1 text-sm font-medium">{tx('ui:solo_pinLegend')}</legend>
+          <label className="flex items-start gap-3 min-h-[44px] cursor-pointer">
+            <input
+              type="checkbox"
+              checked={usePin}
+              onChange={(e) => {
+                setUsePin(e.target.checked);
+                setError('');
+              }}
+              className="mt-1.5 h-4 w-4"
+            />
+            <span className="text-sm text-muted-foreground">{tx('ui:solo_pinOptional')}</span>
+          </label>
+          {usePin && (
+            <div className="mt-3">
+              <label className="block text-sm font-medium mb-1" htmlFor="solo-new-pin">
+                {tx('ui:solo_pinLabel')}
+              </label>
+              <input
+                id="solo-new-pin"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={4}
+                value={pin}
+                onChange={(e) => {
+                  setPin(e.target.value.replace(/\D/g, '').slice(0, 4));
+                  setError('');
+                }}
+                className="w-full px-4 py-3 border border-border rounded-xl bg-background text-foreground tracking-[0.4em] text-center text-xl min-h-[48px]"
+                placeholder="1234"
+              />
+            </div>
+          )}
+        </fieldset>
+
         {error && (
           <div className="mb-4 p-3 bg-destructive/15 text-destructive rounded-xl text-sm border border-destructive/30">
             {error}
@@ -128,7 +209,7 @@ const SoloRegisterPage: React.FC = () => {
         <div className="flex flex-col gap-3 mt-4">
           <button
             type="button"
-            onClick={startFresh}
+            onClick={beginWithCheck}
             className="w-full bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-emerald-500 active:scale-[0.98] transition-all duration-200 min-h-[48px]"
           >
             {tx('ui:solo_startCheck')}

@@ -2,5 +2,7 @@
   "notice": "La versión en inglés es la que manda.",
   "privacyLead": "MathLift guarda un nombre espacial generado, el código de clase, el progreso de la lección y un historial corto de resultados (tipo de idea, planeta y hora, hasta 40). Los dibujos se quedan en el dispositivo. Las mismas reglas de borrado quitan ese historial.",
   "cookieLead": "MathLift no usa cookies de anuncios ni de analítica. La elección de idioma y la sesión se quedan en este dispositivo.",
-  "supportLead": "Para ayuda, usa el correo de esta página. Borrar un estudiante o una clase también borra ese historial de resultados."
+  "supportLead": "Para ayuda, usa el correo de esta página. Borrar un estudiante o una clase también borra ese historial de resultados.",
+  "individualTitle": "Modo individual:",
+  "individualBody": "Cuando un niño elige Aprende por tu cuenta, MathLift guarda solo un nombre espacial generado, un PIN opcional de 4 dígitos, el progreso de las lecciones y preferencias locales en este dispositivo (localStorage del navegador y, en iOS, una copia en el Llavero). En modo individual no se envía nada a nuestros servidores ni a Firestore, salvo que más tarde se una a una clase con un código (no es obligatorio). Los dibujos se quedan en el dispositivo. Usa Ajustes → Borrar mi progreso para borrar el progreso individual en este dispositivo."
 }

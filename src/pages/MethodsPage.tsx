@@ -166,6 +166,10 @@ const MethodsPage: React.FC = () => {
         <p>{t('limitPrivacy')}</p>
       </Section>
 
+      <Section title={t('soloMode')}>
+        <p>{t('soloModeBody')}</p>
+      </Section>
+
       <Section title={t('limits')}>
         <ul className="list-disc ps-5 space-y-2">
           <li>{t('limitGrade')}</li>

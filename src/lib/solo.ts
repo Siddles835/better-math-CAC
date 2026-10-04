@@ -13,6 +13,7 @@ import { isArrayUnion } from '@/lib/studentWrites';
 export const SOLO_CLASS_CODE = 'solo';
 
 export const SOLO_PROGRESS_KEY = 'better-math:solo-progress';
+export const SOLO_PENDING_KEY = 'better-math:solo-pending';
 
 export interface SoloProgress {
   nickname: string;
@@ -26,11 +27,27 @@ export interface SoloProgress {
   lastQuiz?: LastQuizSummary;
   lastDiagnosis?: Diagnosis;
   diagnosisHistory?: StudentState['diagnosisHistory'];
+  /** Optional 4-digit PIN; never synced off-device. Empty/undefined = none. */
+  pin?: string;
+  placementDone?: boolean;
   lastUpdated: number;
+}
+
+export interface SoloPending {
+  displayName: string;
+  pin?: string;
 }
 
 export const isSoloClassCode = (classCode?: string | null): boolean =>
   normalizeLabel(classCode ?? '').toLowerCase() === SOLO_CLASS_CODE;
+
+export const normalizeSoloPin = (pin?: string | null): string | undefined => {
+  if (pin == null) return undefined;
+  const digits = String(pin).replace(/\D/g, '');
+  if (digits.length === 0) return undefined;
+  if (digits.length !== 4) return undefined;
+  return digits;
+};
 
 export const loadSoloProgress = (nickname?: string): SoloProgress | null => {
   if (typeof localStorage === 'undefined') return null;
@@ -59,6 +76,29 @@ export const clearSoloProgress = (): void => {
   localStorage.removeItem(SOLO_PROGRESS_KEY);
 };
 
+export const saveSoloPending = (pending: SoloPending): void => {
+  if (typeof sessionStorage === 'undefined') return;
+  sessionStorage.setItem(SOLO_PENDING_KEY, JSON.stringify(pending));
+};
+
+export const loadSoloPending = (): SoloPending | null => {
+  if (typeof sessionStorage === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(SOLO_PENDING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SoloPending;
+    if (!parsed?.displayName) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+export const clearSoloPending = (): void => {
+  if (typeof sessionStorage === 'undefined') return;
+  sessionStorage.removeItem(SOLO_PENDING_KEY);
+};
+
 export const soloProgressToStudent = (progress: SoloProgress): StudentState => ({
   nickname: progress.displayName || progress.nickname,
   planet: progress.planet,
@@ -76,11 +116,13 @@ export const soloProgressToStudent = (progress: SoloProgress): StudentState => (
 export const createSoloProgress = (
   displayName: string,
   unlockPlanet: PlanetId,
-  startPlanet?: PlanetId
+  startPlanet?: PlanetId,
+  options?: { pin?: string; placementDone?: boolean }
 ): SoloProgress => {
   const unlock = normalizePlanetId(unlockPlanet) ?? 'sun';
   const start = normalizePlanetId(startPlanet) ?? unlock;
   const name = normalizeLabel(displayName);
+  const pin = normalizeSoloPin(options?.pin);
   return {
     nickname: nicknameKey(name),
     displayName: name,
@@ -89,8 +131,16 @@ export const createSoloProgress = (
     unlockPlanet: unlock,
     completedPlanets: planetsBefore(start),
     planetSteps: {},
+    pin,
+    placementDone: options?.placementDone ?? true,
     lastUpdated: Date.now(),
   };
+};
+
+export const verifySoloPin = (progress: SoloProgress, attempt: string): boolean => {
+  const expected = normalizeSoloPin(progress.pin);
+  if (!expected) return true;
+  return normalizeSoloPin(attempt) === expected;
 };
 
 export const patchSoloProgressFields = (
