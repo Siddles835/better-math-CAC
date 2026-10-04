@@ -1,1 +1,13 @@
-{"minConfidence": 0.55, "minMargin": 0.12, "minPoints": 8, "minSize": 16, "cleanAcceptRate": 0.9917, "badRejectRate": 0.8333, "metTarget": false, "confirmConfidence": 0.96, "confirmZoneRate": 0.2417, "highConfidenceShare": 0.7417}
+{
+  "minConfidence": 0.5,
+  "minMargin": 0.06,
+  "minPoints": 8,
+  "minSize": 16,
+  "confirmConfidence": 0.9,
+  "cleanAcceptRate": 1.0,
+  "badRejectRate": 0.1,
+  "metTarget": false,
+  "confirmZoneRate": 0.0533,
+  "highConfidenceShare": 0.9467,
+  "note": "Tuned so uncertain ok reads hit confirm; unreadable stays for tiny/empty marks."
+}

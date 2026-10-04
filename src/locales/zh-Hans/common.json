@@ -27,5 +27,7 @@
   "print": "打印 / 存成 PDF",
   "notAvailable": "暂无",
   "close": "关闭",
-  "legalNotice": "英文版本是权威版本。"
+  "legalNotice": "英文版本是权威版本。",
+  "iSee": "我看到：{{digit}}",
+  "iSeeUnreadable": "我还看不清"
 }

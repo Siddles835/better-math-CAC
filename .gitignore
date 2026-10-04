@@ -26,3 +26,5 @@ student_data.csv
 *.pkl
 ml/data/real/*.json
 ml/data/cache/
+ml/data/cache/
+*.pt

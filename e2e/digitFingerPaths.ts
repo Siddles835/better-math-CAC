@@ -83,7 +83,7 @@ export const transformDigit = (
     const pts: Pt[] = [];
     for (const p of stroke) {
       let x = (p.x - 40) * variant.scale;
-      let y = (p.y - 40) * variant.scale;
+      const y = (p.y - 40) * variant.scale;
       x = x + variant.shear * y;
       const rx = x * cos - y * sin;
       const ry = x * sin + y * cos;
@@ -117,14 +117,30 @@ export const transformDigit = (
   return out;
 };
 
-/** Place template coords into a canvas of given size (templates are ~0–80). */
+/** Place template coords into a canvas of given size (templates are ~0–80, multi wider). */
 export const toCanvasCoords = (strokes: PathStroke[], width: number, height: number): PathStroke[] => {
-  const pad = 24;
-  const scale = Math.min((width - pad * 2) / 80, (height - pad * 2) / 80);
+  const pad = 16;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const stroke of strokes) {
+    for (const p of stroke) {
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x);
+      maxY = Math.max(maxY, p.y);
+    }
+  }
+  const bw = Math.max(1, maxX - minX);
+  const bh = Math.max(1, maxY - minY);
+  const scale = Math.min((width - pad * 2) / bw, (height - pad * 2) / bh);
+  const ox = (width - bw * scale) / 2;
+  const oy = (height - bh * scale) / 2;
   return strokes.map((stroke) =>
     stroke.map((p) => ({
-      x: pad + p.x * scale,
-      y: pad + p.y * scale,
+      x: ox + (p.x - minX) * scale,
+      y: oy + (p.y - minY) * scale,
     }))
   );
 };
