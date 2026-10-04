@@ -1,0 +1,3910 @@
+{
+  "summary": {
+    "phase": "baseline_before_model_change",
+    "generatedAt": "2026-10-04T04:48:17.901Z",
+    "variantsPerDigit": 32,
+    "singleDigitSuccessRate": 0.8125,
+    "perDigit": {
+      "0": {
+        "n": 32,
+        "ok": 30,
+        "unreadable": 0,
+        "wrong": 2,
+        "rate": 0.9375
+      },
+      "1": {
+        "n": 32,
+        "ok": 24,
+        "unreadable": 4,
+        "wrong": 4,
+        "rate": 0.75
+      },
+      "2": {
+        "n": 32,
+        "ok": 26,
+        "unreadable": 2,
+        "wrong": 4,
+        "rate": 0.8125
+      },
+      "3": {
+        "n": 32,
+        "ok": 30,
+        "unreadable": 1,
+        "wrong": 1,
+        "rate": 0.9375
+      },
+      "4": {
+        "n": 32,
+        "ok": 31,
+        "unreadable": 0,
+        "wrong": 1,
+        "rate": 0.96875
+      },
+      "5": {
+        "n": 32,
+        "ok": 22,
+        "unreadable": 6,
+        "wrong": 4,
+        "rate": 0.6875
+      },
+      "6": {
+        "n": 32,
+        "ok": 20,
+        "unreadable": 5,
+        "wrong": 7,
+        "rate": 0.625
+      },
+      "7": {
+        "n": 32,
+        "ok": 18,
+        "unreadable": 1,
+        "wrong": 13,
+        "rate": 0.5625
+      },
+      "8": {
+        "n": 32,
+        "ok": 31,
+        "unreadable": 0,
+        "wrong": 1,
+        "rate": 0.96875
+      },
+      "9": {
+        "n": 32,
+        "ok": 28,
+        "unreadable": 1,
+        "wrong": 3,
+        "rate": 0.875
+      }
+    },
+    "multi": {
+      "10": {
+        "n": 12,
+        "ok": 0,
+        "rate": 0
+      },
+      "12": {
+        "n": 12,
+        "ok": 0,
+        "rate": 0
+      },
+      "45": {
+        "n": 12,
+        "ok": 0,
+        "rate": 0
+      },
+      "99": {
+        "n": 12,
+        "ok": 0,
+        "rate": 0
+      },
+      "100": {
+        "n": 12,
+        "ok": 0,
+        "rate": 0
+      }
+    },
+    "note": "Success = status ok AND digit matches. Confirm-eligible ok reads are counted as success only when digit matches (baseline model accuracy)."
+  },
+  "rows": [
+    {
+      "target": 0,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.999997732718158,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 0,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999918156007824,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999962011785983,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9998373572630749,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999921264087412,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 0,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9983604584749662,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9997117261318436,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.998914796168806,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9983033566999457,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 0,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999976171217841,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999634390599688,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9998209597318662,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.99999564690217,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 0,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.5696079668302486,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9888030483901717,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999968175189012,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9938792811738236,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 0,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9901238672837696,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999984179684319,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.996277913088809,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.99999848798072,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 0,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999961222487629,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999577123689548,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999987821125174,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999999101189015,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 0,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.997960112333459,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.93201790944035,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999957581794476,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999859877220236,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 0,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9956518561200196,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9999872381305724,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 0,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.9998637171233684,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 1,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 1,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9634984795662258,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.8968053747210414,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9950616017578938,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.7110200240035263,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 1,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9888246321673188,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9991610342303662,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v8",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.5383121877794692,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 4
+    },
+    {
+      "target": 1,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9991610342303662,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9945380372936768,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9882569770963991,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 1,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9976961685772462,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9888795791144093,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v16",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.4881614030610341,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 4
+    },
+    {
+      "target": 1,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.6172207326126337,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9991610342303662,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.6026164664592012,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9959515378158733,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 1,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.7314866083750912,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.8179680643537676,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 1,
+      "variant": "v25",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.46582578069882596,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.7975699503296518,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9977994295921396,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v28",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.5484424180915294,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 4
+    },
+    {
+      "target": 1,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.5934852926755132,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 1,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.7941116882441152,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9979071470857586,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9118953935262808,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9981885279320117,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.921456145297974,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999595744268394,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.6773725244929666,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9922327837967675,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.873038366734532,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v8",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.5252800046190881,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.8938948673870865,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9988153086766933,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9832401034528112,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9929388821127452,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9737998419103053,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.6957838987239672,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9911681969514806,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.8842946460883844,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.7667618954433716,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.7711111173793247,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9992161237943692,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999974625080696,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.995839795266309,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999961498963489,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9888572444819244,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.57685274978064,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.7318857559126523,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v26",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.4684032948076817,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9917127351302482,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9984585668461452,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 2,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9324401157147966,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9941026751122177,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 2,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9999779039896254,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9998819510464727,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 3,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9959357561755497,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.5882709867315525,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9141633974639034,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9916545855287582,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 3,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9998198369839837,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9995783424222476,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999730299664156,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9905823685196986,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 3,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.980741992820985,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9951454858823119,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9826085400910383,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9987052301511736,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 3,
+      "variant": "v13",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.3776280429116265,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999901920329753,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9996759017908218,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9950209573753626,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 3,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.7316701335419994,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.999742654594622,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9771522379500135,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9755219950351384,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 3,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9953458734965137,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9612184128379214,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.8838463541993247,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9999278726729238,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 3,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9998136113410847,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9998955568727873,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.99859707004917,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.7322549830839669,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 3,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9485729301465584,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9998279472955267,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 3,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 3,
+      "confidence": 0.9977801123715718,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 4,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999203483771135,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 4,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9995034352479234,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999521408715942,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999798420013416,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9986720904155779,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 4,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9998743693508145,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999154872290059,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.999313636139854,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.960086848106669,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 4,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999719749439642,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9996296716023296,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999679883623397,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999915648702491,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 4,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999684666976322,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9998310998036473,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999600393726052,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9983109015183576,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 4,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.708407749167582,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 4,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999854448345712,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9973257743591682,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9995461585726234,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 4,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999768583611433,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9997873867490586,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.8761969493978423,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999890629818562,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 4,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.999311726027433,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.8114362101802024,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999768583611433,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9997650951297028,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 4,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.8645178535612807,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999413406755472,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 4,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9982846302845974,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 5,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9998362438392042,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 5,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9488678478587458,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.950253118421745,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9980713400332512,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9997940492380393,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 5,
+      "variant": "v5",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 0
+    },
+    {
+      "target": 5,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9998710962645194,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.8944154725701573,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.6044877980572597,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 5,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9927096987131664,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.8158127339230405,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v11",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 0
+    },
+    {
+      "target": 5,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9972482754458998,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 5,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9646034379168786,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9996982849978183,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9999481558691584,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v16",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 0
+    },
+    {
+      "target": 5,
+      "variant": "v17",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 0
+    },
+    {
+      "target": 5,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9970747296494724,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9874778930053149,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v20",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 0
+    },
+    {
+      "target": 5,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9998371517673854,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9666561427000409,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v23",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.4960309729275155,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9997335473635091,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 5,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9258038917302552,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9987705751061454,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.998589982650377,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.5932713393640106,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 5,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.7734331754680668,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9995486276751152,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 5,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.9877095949747048,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9983250191681902,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 6,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9442092064700439,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9683306410146185,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9140929721543267,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.7067291835177607,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 6,
+      "variant": "v5",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.5148058909244196,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9958899887722855,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.8882600384050364,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v8",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.8497737778739537,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 2
+    },
+    {
+      "target": 6,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9493112216081748,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v10",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.3533927839321465,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9963666267137361,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.999448210899812,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 6,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9899192280124193,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.8461151862571895,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9984338800540805,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v16",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.9872682542538173,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 2
+    },
+    {
+      "target": 6,
+      "variant": "v17",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 0
+    },
+    {
+      "target": 6,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9399607185520263,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.8567499959917599,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9979301077712202,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 6,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9996163820837313,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9503837757911723,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9807353210974611,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9880664228221354,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 6,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.8744578041885538,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.6395168958043902,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9980986172461328,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9920374956924916,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 6,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9026909567401373,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9915813022177308,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 6,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.5734337971303612,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 7,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9993077209162904,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 7,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9980474928668628,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.661541333404443,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.6179942560318608,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9711788632927452,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 7,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9808052183632671,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9996684253786406,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.7806473779620071,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9151140407140532,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 7,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.5513312409817668,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9981550497420261,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.7056342628188048,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9549055268923105,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 7,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.8637068245787909,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9634401344314129,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9905072149236571,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9970989804256616,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 7,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 2,
+      "confidence": 0.9996390000610814,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9912636629389726,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9045025075790065,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.950534738584887,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 7,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9992167227026734,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9907815524620861,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9878006619230807,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9349769707971028,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 7,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9998509697509015,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v26",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.5184524780072604,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9983331385797679,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9094721324121613,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 7,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9657547443428077,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 7,
+      "confidence": 0.9968566699277559,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 7,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 6,
+      "confidence": 0.9787814006189376,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999982253491361,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9982026125685843,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9995785416920748,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999437156113177,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999871509491794,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999537089025254,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999991836192444,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9997657216409761,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9527638268508277,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9998952541766672,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9998621860324882,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9992241713627683,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999991809875672,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v13",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999106968755256,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9993192842215001,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999911631054886,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999616936807693,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9789130624601434,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999977068875313,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9978485888301906,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999933348189605,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999891192724657,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9993537440572232,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9961261164225582,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999993358988577,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.998850324580334,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9995108391772866,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999557400457824,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.8005213634650106,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 8,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9972169064871865,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.999997191230724,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 8,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 8,
+      "confidence": 0.9999960448032891,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9801987094471407,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 9,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9868686012580146,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9998085082562497,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9810150650350575,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9904298464143145,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 9,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9476333572191526,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9994400053343536,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9952551790324857,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.7257641905567749,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 9,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.936980215166496,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.8720774720745843,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9879405135022077,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v12",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.961986631566799,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 9,
+      "variant": "v13",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.4991156285320471,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v14",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9962985227793717,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v15",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9985302340792767,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v16",
+      "status": "ok",
+      "digit": 5,
+      "confidence": 0.7230926276673537,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 9,
+      "variant": "v17",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9866528859360474,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v18",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.8687093201241957,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v19",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.7325967911622286,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v20",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9867571856405383,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 9,
+      "variant": "v21",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9937865931110144,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v22",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9235702549342847,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v23",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9992566027295521,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v24",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9458504863049875,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 9,
+      "variant": "v25",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.787918664044934,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v26",
+      "status": "ok",
+      "digit": 0,
+      "confidence": 0.8586185146160183,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v27",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9718482805273215,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v28",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.899754457849067,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 9,
+      "variant": "v29",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.8744123703770327,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v30",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9984015683948814,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 9,
+      "variant": "v31",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.7469820322426214,
+      "success": true,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 10,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 10,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9567623924737326,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 10,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.8959721239650087,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 10,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9851643660751706,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 10,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9261403881134765,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 3
+    },
+    {
+      "target": 10,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9968250865370762,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 10,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 10,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9916375112612267,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 10,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.5939111860994789,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 10,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9991610342303662,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 10,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9926604024289271,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 10,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.998483921946839,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 12,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 11,
+      "confidence": 0.9703150927006703,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 6
+    },
+    {
+      "target": 12,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.838651010372011,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 12,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9917678121802613,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 12,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9990197507525729,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 12,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9944895562622773,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 12,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9995111046051363,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 12,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 11,
+      "confidence": 0.9968464286439357,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 3
+    },
+    {
+      "target": 12,
+      "variant": "v7",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.5317829170307338,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 2
+    },
+    {
+      "target": 12,
+      "variant": "v8",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.41678564118920386,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 4
+    },
+    {
+      "target": 12,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9991610342303662,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 12,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9967558692688882,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 12,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9875452477751911,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.99999083594487,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 45,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9998706401190645,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9998515514034227,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999670926976216,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999928789134983,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 45,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9998337192426723,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999550304443903,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999369483694491,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.6011713982863656,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 45,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9999594791321565,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9996869997266009,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 45,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 4,
+      "confidence": 0.9926177708011142,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 99,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9979665444960241,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 99,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9799139968655767,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 99,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9946233986708114,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 99,
+      "variant": "v3",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.5224532339776312,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 1
+    },
+    {
+      "target": 99,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9999820422752607,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 99,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.8526451974304659,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 99,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9987956707223418,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 99,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9934593818409593,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 99,
+      "variant": "v8",
+      "status": "unreadable",
+      "digit": 0,
+      "confidence": 0.5339335163965357,
+      "success": false,
+      "confirmEligible": false,
+      "strokeCount": 2
+    },
+    {
+      "target": 99,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.8109461968537283,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 99,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.8351220976136267,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 99,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 9,
+      "confidence": 0.9916958672280822,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 1
+    },
+    {
+      "target": 100,
+      "variant": "v0",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9977994295921396,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 100,
+      "variant": "v1",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.976569272664934,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 100,
+      "variant": "v2",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9990031378363317,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 100,
+      "variant": "v3",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 100,
+      "variant": "v4",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9423117892573757,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 100,
+      "variant": "v5",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9956728801288979,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 100,
+      "variant": "v6",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9980122790726972,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 100,
+      "variant": "v7",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9413132197656516,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 100,
+      "variant": "v8",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.8644940087377648,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 4
+    },
+    {
+      "target": 100,
+      "variant": "v9",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9989406543259951,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 100,
+      "variant": "v10",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9957817754016123,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    },
+    {
+      "target": 100,
+      "variant": "v11",
+      "status": "ok",
+      "digit": 1,
+      "confidence": 0.9947412435067011,
+      "success": false,
+      "confirmEligible": true,
+      "strokeCount": 2
+    }
+  ]
+}
