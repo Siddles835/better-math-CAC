@@ -4,7 +4,12 @@ import React, {
 import {
   AccessibilityPrefs, DEFAULT_PREFS, applyPrefsToDocument, loadPrefs, savePrefs,
 } from '@/lib/accessibility';
-import { setSpeechMuted } from '@/lib/speech';
+import {
+  setPreferredVoiceURI,
+  setSpeechMuted,
+  setSpeechRatePref,
+  stopSpeaking,
+} from '@/lib/speech';
 
 interface AccessibilityValue {
   prefs: AccessibilityPrefs;
@@ -26,7 +31,11 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     applyPrefsToDocument(prefs);
-    setSpeechMuted(prefs.muteSounds);
+    // Voice off mutes TTS; muteSounds is SFX-only and does not stop speech.
+    setSpeechMuted(!prefs.voiceEnabled);
+    setPreferredVoiceURI(prefs.voiceURI);
+    setSpeechRatePref(prefs.speechRate);
+    if (!prefs.voiceEnabled) stopSpeaking();
     savePrefs(prefs);
   }, [prefs]);
 

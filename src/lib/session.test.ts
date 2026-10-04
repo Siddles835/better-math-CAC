@@ -5,10 +5,12 @@ import {
   ACTIVE_TEACHER_KEY,
   LAST_CLASS_CODE_KEY,
   SESSION_CHANGED,
+  applyRestoredSessionValues,
   clearActiveStudent,
   clearActiveTeacher,
   getActiveStudent,
   getActiveTeacher,
+  hasNoLocalSession,
   reconcileExclusiveSession,
   setActiveStudent,
   setActiveTeacher,
@@ -84,6 +86,16 @@ describe('session localStorage helpers', () => {
     expect(localStorage.getItem(ACTIVE_TEACHER_KEY)).toBe(JSON.stringify({ classCode: 'T9' }));
   });
 
+  it('only one role at a time after successive logins', () => {
+    install();
+    setActiveStudent({ classCode: 'C1', nickname: 'Ava' });
+    setActiveTeacher({ classCode: 'T9' });
+    setActiveStudent({ classCode: 'C2', nickname: 'Bo' });
+    expect(getActiveStudent()?.nickname).toBe('Bo');
+    expect(getActiveTeacher()).toBeNull();
+    expect(localStorage.getItem(ACTIVE_ROLE_KEY)).toBe('student');
+  });
+
   it('clearActiveStudent leaves last class code for re-entry', () => {
     install();
     setActiveStudent({ classCode: 'C1', nickname: 'Ava' });
@@ -109,5 +121,54 @@ describe('session localStorage helpers', () => {
     reconcileExclusiveSession();
     expect(localStorage.getItem(ACTIVE_TEACHER_KEY)).toBeNull();
     expect(localStorage.getItem(ACTIVE_STUDENT_KEY)).toBeTruthy();
+  });
+
+  it('failed reads return null without clearing storage', () => {
+    install();
+    setActiveStudent({ classCode: 'C1', nickname: 'Ava' });
+    const bad = {
+      getItem: () => {
+        throw new Error('quota');
+      },
+      setItem: () => undefined,
+      removeItem: vi.fn(),
+      clear: () => undefined,
+      key: () => null,
+      length: 0,
+    };
+    vi.stubGlobal('localStorage', bad);
+    expect(getActiveStudent()).toBeNull();
+    expect(bad.removeItem).not.toHaveBeenCalled();
+  });
+
+  it('applyRestoredSessionValues ignores nil and keeps existing session', () => {
+    install();
+    setActiveStudent({ classCode: 'C1', nickname: 'Ava' });
+    applyRestoredSessionValues(
+      {
+        [ACTIVE_STUDENT_KEY]: null,
+        [ACTIVE_TEACHER_KEY]: null,
+        [ACTIVE_ROLE_KEY]: undefined,
+        [LAST_CLASS_CODE_KEY]: null,
+      },
+      'test-nil-restore'
+    );
+    expect(getActiveStudent()?.nickname).toBe('Ava');
+    expect(localStorage.getItem(ACTIVE_ROLE_KEY)).toBe('student');
+  });
+
+  it('applyRestoredSessionValues writes positive Keychain values', () => {
+    install();
+    const student = JSON.stringify({ classCode: 'Z9', nickname: 'Zoe' });
+    applyRestoredSessionValues(
+      {
+        [ACTIVE_STUDENT_KEY]: student,
+        [ACTIVE_ROLE_KEY]: 'student',
+        [LAST_CLASS_CODE_KEY]: 'Z9',
+      },
+      'test-positive-restore'
+    );
+    expect(getActiveStudent()).toEqual({ classCode: 'Z9', nickname: 'Zoe' });
+    expect(hasNoLocalSession()).toBe(false);
   });
 });

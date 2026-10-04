@@ -1,6 +1,6 @@
 /**
- * Learning preferences (accessibility) 
- * These options only change HOW a lesson is shown, heard, and answered 
+ * Learning preferences (accessibility)
+ * These options only change HOW a lesson is shown, heard, and answered
  * never the maths content or the objective, and they are available to
  * every student
  */
@@ -9,6 +9,7 @@ export type TextSize = 'normal' | 'large' | 'xlarge';
 export type AnswerMethod = 'any' | 'type' | 'choose' | 'draw';
 export type Pacing = 'normal' | 'relaxed';
 export type NumberStyle = 'western' | 'eastern' | 'devanagari';
+export type SpeechRatePref = 'slow' | 'normal';
 
 export interface AccessibilityPrefs {
   textSize: TextSize;
@@ -20,7 +21,17 @@ export interface AccessibilityPrefs {
   focusMode: boolean;
   autoReadAloud: boolean;
   soundAsText: boolean;
+  /** Mute tap / celebration sound effects — distinct from speaking voice. */
   muteSounds: boolean;
+  /**
+   * Speaking voice on/off (default ON). Separate from muteSounds (SFX).
+   * When false, TTS stops immediately and read-aloud stays hidden.
+   */
+  voiceEnabled: boolean;
+  /** Device-only preferred SpeechSynthesis voiceURI for the current language. */
+  voiceURI: string | null;
+  /** Slow or normal speaking pace for kids. */
+  speechRate: SpeechRatePref;
   biggerButtons: boolean;
   answerMethod: AnswerMethod;
   pacing: Pacing;
@@ -41,6 +52,9 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   autoReadAloud: false,
   soundAsText: true,
   muteSounds: false,
+  voiceEnabled: true,
+  voiceURI: null,
+  speechRate: 'normal',
   biggerButtons: false,
   answerMethod: 'any',
   pacing: 'normal',
@@ -57,8 +71,22 @@ export const loadPrefs = (): AccessibilityPrefs => {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_PREFS;
-    const parsed = JSON.parse(raw) as Partial<AccessibilityPrefs>;
-    return { ...DEFAULT_PREFS, ...parsed };
+    const parsed = JSON.parse(raw) as Partial<AccessibilityPrefs> & { voiceEnabled?: boolean };
+    const merged: AccessibilityPrefs = { ...DEFAULT_PREFS, ...parsed };
+
+    // PR #2 reused muteSounds as the voice toggle. Migrate once to voiceEnabled.
+    if (!('voiceEnabled' in parsed)) {
+      merged.voiceEnabled = !parsed.muteSounds;
+      merged.muteSounds = false;
+    }
+
+    if (merged.speechRate !== 'slow' && merged.speechRate !== 'normal') {
+      merged.speechRate = 'normal';
+    }
+    if (merged.voiceURI != null && typeof merged.voiceURI !== 'string') {
+      merged.voiceURI = null;
+    }
+    return merged;
   } catch {
     return DEFAULT_PREFS;
   }
@@ -85,4 +113,5 @@ export const applyPrefsToDocument = (prefs: AccessibilityPrefs) => {
   el.toggleAttribute('data-reduce-motion', prefs.reduceMotion);
   el.toggleAttribute('data-big-targets', prefs.biggerButtons);
   el.toggleAttribute('data-relaxed-pacing', prefs.pacing === 'relaxed');
+  el.toggleAttribute('data-voice-off', !prefs.voiceEnabled);
 };

@@ -10,10 +10,10 @@ type BoolKey = {
   [K in keyof AccessibilityPrefs]: AccessibilityPrefs[K] extends boolean ? K : never;
 }[keyof AccessibilityPrefs];
 
-/** Voice on/off is surfaced via VoiceToggle; muteSounds stays in prefs for persistence. */
+/** Voice on/off is VoiceToggle (voiceEnabled). muteSounds is SFX only. */
 const TOGGLE_IDS: BoolKey[] = [
   'easyReadSpacing', 'highContrast', 'colorSafeLabels', 'reduceMotion', 'calmBackground',
-  'focusMode', 'autoReadAloud', 'soundAsText', 'biggerButtons', 'breaks',
+  'focusMode', 'autoReadAloud', 'soundAsText', 'muteSounds', 'biggerButtons', 'breaks',
   'summaryFirst', 'workedExampleFirst',
 ];
 

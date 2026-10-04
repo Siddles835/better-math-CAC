@@ -6,6 +6,7 @@ import {
   LAST_CLASS_CODE_KEY,
 } from './session';
 import {
+  applyNativeRestore,
   mirrorSetActiveStudent,
   mirrorSetActiveTeacher,
   persistNativeSessionWrite,
@@ -61,5 +62,49 @@ describe('persistNativeSessionWrite (iOS Keychain mirror)', () => {
     expect(afterClearTeacher[ACTIVE_STUDENT_KEY]).toBe(studentJson);
     expect(afterClearTeacher[ACTIVE_ROLE_KEY]).toBe('student');
     expect(afterClearTeacher[ACTIVE_TEACHER_KEY]).toBeUndefined();
+  });
+});
+
+describe('applyNativeRestore (nil vs value)', () => {
+  it('does not clear local session when Keychain reads are notFound', () => {
+    const local: NativeSessionStore = {
+      [ACTIVE_STUDENT_KEY]: studentJson,
+      [ACTIVE_ROLE_KEY]: 'student',
+    };
+    const next = applyNativeRestore(local, {
+      [ACTIVE_STUDENT_KEY]: { status: 'notFound' },
+      [ACTIVE_TEACHER_KEY]: { status: 'notFound' },
+      [ACTIVE_ROLE_KEY]: { status: 'notFound' },
+      [LAST_CLASS_CODE_KEY]: { status: 'notFound' },
+    });
+    expect(next[ACTIVE_STUDENT_KEY]).toBe(studentJson);
+    expect(next[ACTIVE_ROLE_KEY]).toBe('student');
+  });
+
+  it('does not clear local session when Keychain is locked', () => {
+    const local: NativeSessionStore = {
+      [ACTIVE_STUDENT_KEY]: studentJson,
+      [ACTIVE_ROLE_KEY]: 'student',
+    };
+    const next = applyNativeRestore(local, {
+      [ACTIVE_STUDENT_KEY]: { status: 'interactionNotAllowed' },
+      [ACTIVE_TEACHER_KEY]: { status: 'interactionNotAllowed' },
+      [ACTIVE_ROLE_KEY]: { status: 'interactionNotAllowed' },
+      [LAST_CLASS_CODE_KEY]: { status: 'interactionNotAllowed' },
+    });
+    expect(next[ACTIVE_STUDENT_KEY]).toBe(studentJson);
+  });
+
+  it('restores positive Keychain values into empty local storage', () => {
+    const next = applyNativeRestore({}, {
+      [ACTIVE_STUDENT_KEY]: { status: 'value', value: studentJson },
+      [ACTIVE_ROLE_KEY]: { status: 'value', value: 'student' },
+      [LAST_CLASS_CODE_KEY]: { status: 'value', value: 'AB12' },
+      [ACTIVE_TEACHER_KEY]: { status: 'notFound' },
+    });
+    expect(next[ACTIVE_STUDENT_KEY]).toBe(studentJson);
+    expect(next[ACTIVE_ROLE_KEY]).toBe('student');
+    expect(next[LAST_CLASS_CODE_KEY]).toBe('AB12');
+    expect(next[ACTIVE_TEACHER_KEY]).toBeUndefined();
   });
 });
