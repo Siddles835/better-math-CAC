@@ -39,6 +39,8 @@ import PersonalPracticePage from "./pages/PersonalPracticePage";
 import PrintBriefingPage from "./pages/PrintBriefingPage";
 import SoloRegisterPage from "./pages/SoloRegisterPage";
 import LevelCheckPage from "./pages/LevelCheckPage";
+import ExplorePage from "./pages/ExplorePage";
+import ExploreActivityPage from "./pages/ExploreActivityPage";
 
 const queryClient = new QueryClient();
 const DigitCollectPage = import.meta.env.DEV
@@ -82,6 +84,8 @@ const App = () => {
               <Route path="/classroom" element={<ClassroomWalkthroughPage />} />
               <Route path="/try-practice" element={<PersonalPracticePage demo />} />
               <Route path="/practice" element={lesson(<PersonalPracticePage />)} />
+              <Route path="/explore" element={lesson(<ExplorePage />)} />
+              <Route path="/explore/:activityId" element={lesson(<ExploreActivityPage />)} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/planets" element={<StudentHubPage />} />
               <Route path="/solar-system" element={<Navigate to="/planets" replace />} />

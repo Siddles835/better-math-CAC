@@ -1,8 +1,12 @@
 {
   "notice": "La versión en inglés es la que manda.",
-  "privacyLead": "MathLift guarda un nombre espacial generado, el código de clase, el progreso de la lección y un historial corto de resultados (tipo de idea, planeta y hora, hasta 40). Los dibujos se quedan en el dispositivo. Las mismas reglas de borrado quitan ese historial.",
+  "privacyLead": "MathLift guarda un nombre espacial generado, el código de clase, el progreso de la lección y un historial corto de resultados (tipo de idea, planeta y hora, hasta 40). Los dibujos se quedan en el dispositivo. Las mismas reglas de borrado quitan ese historial. Las señales opcionales de Explorar (id de actividad, cantidad de formas, marca de tiempo) pueden quedarse en el dispositivo con el resto del progreso y siguen las mismas reglas de borrado.",
   "cookieLead": "MathLift no usa cookies de anuncios ni de analítica. La elección de idioma y la sesión se quedan en este dispositivo.",
   "supportLead": "Para ayuda, usa el correo de esta página. Borrar un estudiante o una clase también borra ese historial de resultados.",
   "individualTitle": "Modo individual:",
-  "individualBody": "Cuando un niño elige Aprende por tu cuenta, MathLift guarda solo un nombre espacial generado, un PIN opcional de 4 dígitos, el progreso de las lecciones y preferencias locales en este dispositivo (localStorage del navegador y, en iOS, una copia en el Llavero). En modo individual no se envía nada a nuestros servidores ni a Firestore, salvo que más tarde se una a una clase con un código (no es obligatorio). Los dibujos se quedan en el dispositivo. Usa Ajustes → Borrar mi progreso para borrar el progreso individual en este dispositivo."
+  "individualBody": "Cuando un niño elige Aprende por tu cuenta, MathLift guarda solo un nombre espacial generado, un PIN opcional de 4 dígitos, el progreso de las lecciones y preferencias locales en este dispositivo (localStorage del navegador y, en iOS, una copia en el Llavero). En modo individual no se envía nada a nuestros servidores ni a Firestore, salvo que más tarde se una a una clase con un código (no es obligatorio). Los dibujos se quedan en el dispositivo. Usa Ajustes → Borrar mi progreso para borrar el progreso individual en este dispositivo. Las señales opcionales de Explorar (id de actividad, formas halladas, marca de tiempo) también quedan en este dispositivo y se borran con Eliminar mi progreso.",
+  "exploreSignals": "Señales de actividad Explorar (opcional)",
+  "exploreSignalsWhere": "Solo en este dispositivo (localStorage del navegador)",
+  "exploreSignalsHow": "Se registran cuando un niño guarda o termina una actividad de Explorar",
+  "exploreSignalsWhy": "Registro breve de qué actividad de Explorar se usó, cuántas formas se hallaron y cuándo. Sin dibujos ni texto libre. Se borra con los mismos controles de Ajustes que el resto del progreso."
 }

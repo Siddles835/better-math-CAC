@@ -24,5 +24,7 @@
   "digits": "Digit model",
   "recommend": "Planet recommendation tree",
   "showTable": "Show data table",
-  "hideTable": "Hide data table"
+  "hideTable": "Hide data table",
+  "explore": "Explore (number sense)",
+  "exploreBody": "Explore is an optional, untimed moon-station area with open number-sense activities (ten-frames, subitizing looks, number talks, which-one-does-not-belong, make 10/20/100, number lines, story building, and skip-counting patterns). It celebrates many ways of thinking. It does not add diagnosis codes. Optional coarse signals (activity id, ways found, timestamp) stay on the device with other progress. Design notes cite classroom practices such as number talks and CRA as influences, not endorsements. Not tested with children in this release; not reviewed by educators as a formal study."
 }

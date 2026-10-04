@@ -21,8 +21,11 @@ import {
   getClassroomUnlockPlanet,
 } from '@/lib/planets';
 import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 
 const PlanetSelectPage: React.FC = () => {
+  const { t } = useTranslation('explore');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const {
@@ -179,7 +182,7 @@ const PlanetSelectPage: React.FC = () => {
         />
       </div>
 
-      <p className="text-sm text-muted-foreground mb-20 text-center max-w-md">
+      <p className="text-sm text-muted-foreground mb-6 text-center max-w-md">
         {solo
           ? completedList.length === 0
             ? tx('ui:hub_pick_solo_new')
@@ -188,6 +191,17 @@ const PlanetSelectPage: React.FC = () => {
             ? tx('ui:hub_pick_class_new')
             : tx('ui:hub_pick_class_return')}
       </p>
+
+      <div className="mb-20 flex justify-center">
+        <Button
+          type="button"
+          className="min-h-11"
+          data-testid="hub-explore"
+          onClick={() => navigate('/explore')}
+        >
+          {t('hub_cta')}
+        </Button>
+      </div>
 
       <NavigationArrows
         onBack={handleBack}

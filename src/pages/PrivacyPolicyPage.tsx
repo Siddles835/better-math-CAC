@@ -119,6 +119,12 @@ const PrivacyPolicyPage: React.FC = () => {
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
+                  <td className="py-2 pe-3">{t('exploreSignals')}</td>
+                  <td className="py-2 pe-3">{t('exploreSignalsWhere')}</td>
+                  <td className="py-2 pe-3">{t('exploreSignalsHow')}</td>
+                  <td className="py-2">{t('exploreSignalsWhy')}</td>
+                </tr>
+                <tr className="border-b border-slate-100">
                   <td className="py-2 pe-3">{tx('ui:s_7dba2ffb5b')}</td>
                   <td className="py-2 pe-3">{tx('ui:s_170e35edbe')}</td>
                   <td className="py-2 pe-3">{tx('ui:s_289516da74')}</td>

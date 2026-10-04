@@ -19,6 +19,7 @@ import {
 } from '@/lib/session';
 import { deleteClassroom, deleteStudent } from '@/lib/classroom';
 import { clearSoloProgress, isSoloClassCode } from '@/lib/solo';
+import { clearExploreData } from '@/lib/explore';
 import { Button } from '@/components/ui/button';
 import AccessibilityPanel from '@/components/AccessibilityPanel';
 import VoiceToggle from '@/components/VoiceToggle';
@@ -72,6 +73,7 @@ const SettingsPage: React.FC = () => {
       } else {
         await deleteStudent(student.classCode, student.nickname);
       }
+      clearExploreData();
       clearActiveStudent();
       setConfirmDelete(null);
       navigate('/', { replace: true });
