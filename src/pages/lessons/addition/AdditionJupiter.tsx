@@ -24,6 +24,7 @@ import {
   PLANET_BG_CLASS,
   getTopicDisplayName,
 } from '@/lib/planets';
+import { generateJupiterMcq } from '@/lib/answers';
 
 const AdditionJupiter: React.FC = () => {
   const navigate = useNavigate();
@@ -33,18 +34,12 @@ const AdditionJupiter: React.FC = () => {
   const [showTransition, setShowTransition] = useState(false);
   const nextPlanet = getNextPlanet('jupiter');
   
-  // MCQ state
-  const [mcqA] = useState(Math.floor(Math.random() * 4) + 1);
-  const [mcqB] = useState(Math.floor(Math.random() * 4) + 1);
-  const mcqAnswer = mcqA + mcqB;
-  const [mcqOptions] = useState(() => {
-    const opts = [mcqAnswer];
-    while (opts.length < 4) {
-      const opt = Math.floor(Math.random() * 8) + 1;
-      if (!opts.includes(opt)) opts.push(opt);
-    }
-    return opts.sort(() => Math.random() - 0.5);
-  });
+  // MCQ state — derived answer + Fisher–Yates options (never biased sort).
+  const [mcq] = useState(() => generateJupiterMcq((Math.random() * 1e9) | 0));
+  const mcqA = mcq.operands[0];
+  const mcqB = mcq.operands[1];
+  const mcqAnswer = mcq.expectedAnswer;
+  const mcqOptions = mcq.options;
   const [mcqSelected, setMcqSelected] = useState<number | null>(null);
   const [mcqChecked, setMcqChecked] = useState(false);
   const [showGuided, setShowGuided] = useState(false);

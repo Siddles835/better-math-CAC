@@ -32,15 +32,20 @@ const AdditionEarth: React.FC = () => {
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const traceRef = useRef(new LessonTrace());
   
+  // Demo / activity numbers — single source; feedback text is derived from these.
+  const demoLeft = 3;
+  const demoRight = 2;
+  const demoTotal = demoLeft + demoRight;
+
   // Animation state
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'initial' | 'animating' | 'final'>('idle');
-  const [displayCount, setDisplayCount] = useState(3);
+  const [displayCount, setDisplayCount] = useState(demoLeft);
   const [arrivedPencils, setArrivedPencils] = useState(0);
   const [landing, setLanding] = useState(false);
   const timers = useRef<number[]>([]);
   
   // Activity state
-  const [leftPencils] = useState(3);
+  const [leftPencils] = useState(demoLeft);
   const [rightPencils, setRightPencils] = useState(0);
   const [availablePencils, setAvailablePencils] = useState(5);
   
@@ -76,16 +81,16 @@ const AdditionEarth: React.FC = () => {
     setArrivedPencils(0);
     // Drop to 0 first so the counter actually announces "3" on the first play too.
     setDisplayCount(0);
-    later(() => setDisplayCount(3), 400);
+    later(() => setDisplayCount(demoLeft), 400);
     // Each new pencil lands on its own, slowly enough to see.
     later(() => {
       setAnimationPhase('animating');
       setArrivedPencils(1);
-      setDisplayCount(4);
+      setDisplayCount(demoLeft + 1);
     }, 1800);
     later(() => {
-      setArrivedPencils(2);
-      setDisplayCount(5);
+      setArrivedPencils(demoRight);
+      setDisplayCount(demoTotal);
     }, 3600);
     later(() => setAnimationPhase('final'), 5400);
   };
@@ -216,7 +221,7 @@ const AdditionEarth: React.FC = () => {
             
             <div className="bg-card rounded-xl p-10 border border-border mb-8 w-full max-w-md">
               <div className="flex justify-center items-end gap-2 sm:gap-3 mb-6 min-h-[120px] flex-wrap max-w-[16rem] sm:max-w-none mx-auto">
-                {Array.from({ length: 3 }).map((_, i) => (
+                {Array.from({ length: demoLeft }).map((_, i) => (
                   <div key={i}>
                     <Pencil className="pointer-events-none" size="lg" />
                   </div>
@@ -231,7 +236,7 @@ const AdditionEarth: React.FC = () => {
               
               {animationPhase === 'final' && (
                 <p className="mt-6 text-muted-foreground text-lg animate-fade-in">
-                  <span dir="ltr">3 + 2 = 5</span>
+                  <span dir="ltr">{demoLeft} + {demoRight} = {demoTotal}</span>
                 </p>
               )}
             </div>
