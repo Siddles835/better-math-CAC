@@ -1,122 +1,283 @@
 import { tx } from '@/i18n/tx';
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import AuthNavButton from '@/components/AuthNavButton';
+import NumberDraw from '@/components/NumberDraw';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/context/GameContext';
+import { useAnswerCheck } from '@/hooks/useAnswerCheck';
+import type { DigitRead, UnreadableReason } from '@/lib/cognition';
+import { nicknameKey, patchStudentFields } from '@/lib/classroom';
+import { arrayUnionValue } from '@/lib/studentWrites';
 import { setActiveStudent } from '@/lib/session';
 import { generateUsername } from '@/lib/usernames';
 import {
-  PLACEMENT_QUESTIONS,
-  scorePlacement,
+  createStaircase,
+  isCorrectAnswer,
+  nextStaircaseState,
+  pickQuestion,
+  resultFromStaircase,
   skippedPlacement,
+  type PlacementQuestion,
   type PlacementResult,
 } from '@/lib/placement';
+import { PLANET_LEVEL_LIST, getPlanetLevel } from '@/lib/planetLevels';
+import {
+  getLessonForPlanet,
+  PLANET_ORDER,
+  planetsBefore,
+  type PlanetId,
+} from '@/lib/planets';
 import {
   SOLO_CLASS_CODE,
+  clearSoloPending,
   createSoloProgress,
+  loadSoloPending,
   saveSoloProgress,
   soloProgressToStudent,
 } from '@/lib/solo';
-import { getLessonForPlanet } from '@/lib/planets';
+import {
+  clearClassPlacementPending,
+  loadClassPlacementPending,
+} from '@/lib/placementSession';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 import { hapticTap } from '@/lib/haptics';
 
-const PENDING_NAME_KEY = 'better-math:solo-pending-name';
-
 const LevelCheckPage: React.FC = () => {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const mode = params.get('mode') === 'class' ? 'class' : 'solo';
   const { hydrateFromStudent, hydrateClassMax } = useGame();
+  const check = useAnswerCheck();
+
+  const soloPending = useMemo(() => loadSoloPending(), []);
+  const classPending = useMemo(() => loadClassPlacementPending(), []);
+
   const displayName = useMemo(() => {
-    try {
-      return sessionStorage.getItem(PENDING_NAME_KEY) || generateUsername();
-    } catch {
-      return generateUsername();
-    }
-  }, []);
+    if (mode === 'class') return classPending?.displayName || generateUsername();
+    return soloPending?.displayName || generateUsername();
+  }, [mode, soloPending, classPending]);
 
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [staircase, setStaircase] = useState(() => createStaircase());
+  const [usedIds, setUsedIds] = useState<Set<string>>(() => new Set());
+  const [question, setQuestion] = useState<PlacementQuestion>(() =>
+    pickQuestion(createStaircase(), new Set())
+  );
   const [result, setResult] = useState<PlacementResult | null>(null);
+  const [pickingPlanet, setPickingPlanet] = useState(false);
+  const [unreadableReason, setUnreadableReason] = useState<UnreadableReason | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const question = PLACEMENT_QUESTIONS[step];
-  const done = !!result;
+  const finishWith = async (placement: PlacementResult, chosen?: PlanetId) => {
+    const startPlanet = chosen ?? placement.startPlanet;
+    const level = getPlanetLevel(startPlanet);
+    // Unlock at least through the chosen start so exploration of earlier worlds
+    // stays open; next planet opens when they finish (solo progression).
+    const unlockPlanet =
+      placement.unlockPlanet &&
+      PLANET_ORDER.indexOf(placement.unlockPlanet) > PLANET_ORDER.indexOf(startPlanet)
+        ? placement.unlockPlanet
+        : startPlanet;
 
-  const finishWith = (placement: PlacementResult) => {
-    const progress = createSoloProgress(
-      displayName,
-      placement.unlockPlanet,
-      placement.startPlanet
-    );
-    saveSoloProgress(progress);
-    hydrateClassMax(progress.unlockPlanet);
-    hydrateFromStudent(soloProgressToStudent(progress));
-    setActiveStudent({
-      classCode: SOLO_CLASS_CODE,
-      nickname: progress.nickname,
-      displayName: progress.displayName,
-      solo: true,
-    });
+    setSaving(true);
     try {
-      sessionStorage.removeItem(PENDING_NAME_KEY);
-    } catch {
-      // ignore
+      if (mode === 'class' && classPending) {
+        const key = nicknameKey(classPending.nickname);
+        await patchStudentFields(classPending.classCode, key, {
+          planet: startPlanet,
+          lesson: getLessonForPlanet(startPlanet),
+          completedPlanets: arrayUnionValue(...planetsBefore(startPlanet)),
+        });
+        hydrateFromStudent({
+          nickname: classPending.displayName,
+          planet: startPlanet,
+          lesson: getLessonForPlanet(startPlanet),
+          completedPlanets: planetsBefore(startPlanet),
+          planetSteps: {},
+          lastUpdated: Date.now(),
+        });
+        setActiveStudent({
+          classCode: classPending.classCode,
+          nickname: key,
+          displayName: classPending.displayName,
+        });
+        clearClassPlacementPending();
+      } else {
+        const progress = createSoloProgress(
+          displayName,
+          unlockPlanet,
+          startPlanet,
+          { pin: soloPending?.pin, placementDone: true }
+        );
+        saveSoloProgress(progress);
+        hydrateClassMax(progress.unlockPlanet);
+        hydrateFromStudent(soloProgressToStudent(progress));
+        setActiveStudent({
+          classCode: SOLO_CLASS_CODE,
+          nickname: progress.nickname,
+          displayName: progress.displayName,
+          solo: true,
+        });
+        clearSoloPending();
+      }
+      setResult({
+        ...placement,
+        startPlanet,
+        unlockPlanet,
+        labelKey: level.labelKey,
+      });
+    } finally {
+      setSaving(false);
     }
-    setResult(placement);
   };
 
-  const choose = (value: number) => {
-    if (!question || done) return;
-    hapticTap();
-    const nextAnswers = { ...answers, [question.id]: value };
-    setAnswers(nextAnswers);
-    if (step >= PLACEMENT_QUESTIONS.length - 1) {
-      finishWith(scorePlacement(nextAnswers));
+  const advance = (outcome: 'correct' | 'incorrect' | 'unreadable') => {
+    const next = nextStaircaseState(staircase, outcome);
+    if (outcome === 'unreadable') {
+      setStaircase(next);
       return;
     }
-    setStep(step + 1);
+    const nextUsed = new Set(usedIds);
+    nextUsed.add(question.id);
+    setUsedIds(nextUsed);
+    setStaircase(next);
+    check.reset();
+    setUnreadableReason(null);
+    if (next.done) {
+      void finishWith(resultFromStaircase(next));
+      return;
+    }
+    setQuestion(pickQuestion(next, nextUsed));
+  };
+
+  const chooseTap = (value: number) => {
+    if (result || saving) return;
+    hapticTap();
+    advance(isCorrectAnswer(question, value) ? 'correct' : 'incorrect');
+  };
+
+  const handleDraw = (read: DigitRead) => {
+    if (result || saving) return;
+    if (read.status === 'unreadable') {
+      setUnreadableReason(read.reason ?? 'low_confidence');
+      check.submit('unreadable');
+      advance('unreadable');
+      return;
+    }
+    setUnreadableReason(null);
+    const ok = isCorrectAnswer(question, read.digit);
+    check.submit(ok ? 'correct' : 'incorrect');
+    // Brief pause so the child sees the check state, then advance without revealing the answer.
+    window.setTimeout(() => advance(ok ? 'correct' : 'incorrect'), 450);
+  };
+
+  const handleTyped = (value: number) => {
+    handleDraw({
+      status: 'ok',
+      digit: value,
+      confidence: 1,
+      reversal: false,
+      strokeCount: 0,
+      startQuadrant: 0,
+      parts: String(value)
+        .split('')
+        .map((d) => Number(d)),
+    });
   };
 
   const skipAll = () => {
-    finishWith(skippedPlacement());
+    void finishWith(skippedPlacement());
   };
 
   const goHub = () => {
     navigate(STUDENT_HUB_PATH, { replace: true });
   };
 
-  if (done && result) {
+  const acceptRecommended = () => {
+    goHub();
+  };
+
+  const chooseOtherPlanet = async (planetId: PlanetId) => {
+    if (!result) return;
+    await finishWith(result, planetId);
+    navigate(STUDENT_HUB_PATH, { replace: true });
+  };
+
+  if (result) {
     const startName = tx(`ui:planet_${result.startPlanet}`);
-    const unlockName = tx(`ui:planet_${result.unlockPlanet}`);
-    const lesson = getLessonForPlanet(result.startPlanet);
+    const label = tx(`ui:${result.labelKey}`);
     return (
       <div className="min-h-screen bg-background subtle-stars flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-md bg-card/95 p-6 rounded-2xl shadow-lg border border-border animate-fade-in">
           <h2 className="text-2xl font-semibold mb-2">{tx('ui:place_doneTitle')}</h2>
-          <p className="text-muted-foreground mb-4">{tx(result.summaryKey)}</p>
+          <p className="text-muted-foreground mb-4">{tx(`ui:${result.summaryKey}`)}</p>
           <div className="rounded-xl border border-border bg-background/60 p-4 mb-6 space-y-2">
-            <p className="text-sm">
-              {tx('ui:place_startAt', {
-                planet: startName,
-                topic: tx(`ui:topic_${lesson}`),
-              })}
+            <p className="text-base font-medium">
+              {tx('ui:place_startsAt', { label })}
             </p>
             <p className="text-sm text-muted-foreground">
-              {tx('ui:place_unlockedThrough', { planet: unlockName })}
+              {tx('ui:place_startAt', {
+                planet: startName,
+                topic: tx(`ui:topic_${getLessonForPlanet(result.startPlanet)}`),
+              })}
             </p>
-            {result.summaryKey !== 'ui:place_sum_skip' && (
-              <p className="text-xs text-muted-foreground">
-                {tx('ui:place_score', { correct: result.correct, total: result.total })}
-              </p>
-            )}
+            <p className="text-sm text-muted-foreground">{tx('ui:place_exploreFree')}</p>
           </div>
-          <Button type="button" size="lg" className="w-full min-h-[48px]" onClick={goHub}>
-            {tx('ui:place_openPlanets')}
-          </Button>
+
+          {!pickingPlanet ? (
+            <div className="flex flex-col gap-3">
+              <Button
+                type="button"
+                size="lg"
+                className="w-full min-h-[48px]"
+                onClick={acceptRecommended}
+                disabled={saving}
+              >
+                {tx('ui:place_accept')}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="w-full min-h-[48px]"
+                onClick={() => setPickingPlanet(true)}
+                disabled={saving}
+              >
+                {tx('ui:place_chooseOther')}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground mb-2">{tx('ui:place_pickPlanet')}</p>
+              <ul className="max-h-72 overflow-y-auto space-y-2">
+                {PLANET_LEVEL_LIST.map((info) => (
+                  <li key={info.id}>
+                    <button
+                      type="button"
+                      onClick={() => void chooseOtherPlanet(info.id)}
+                      className="w-full text-start px-4 py-3 rounded-xl border border-border bg-background hover:bg-muted min-h-[48px]"
+                    >
+                      {tx(`ui:${info.labelKey}`)}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => setPickingPlanet(false)}
+              >
+                {tx('ui:s_77dfd2135f')}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     );
   }
+
+  const dotsShown = question.dots != null ? Math.min(question.dots, 20) : 0;
 
   return (
     <div className="min-h-screen bg-background subtle-stars flex items-center justify-center p-6 sm:p-8">
@@ -128,19 +289,19 @@ const LevelCheckPage: React.FC = () => {
         <p className="text-muted-foreground mb-6">{tx('ui:place_lead')}</p>
 
         <p className="text-xs font-medium tracking-wide text-muted-foreground mb-3">
-          {tx('ui:place_step', { step: step + 1, total: PLACEMENT_QUESTIONS.length })}
+          {tx('ui:place_step', {
+            step: Math.min(staircase.itemsAnswered + 1, staircase.config.maxItems),
+            total: staircase.config.maxItems,
+          })}
         </p>
-        <p className="text-lg font-medium mb-4">{tx(question.promptKey)}</p>
+        <p className="text-lg font-medium mb-4">{tx(`ui:${question.promptKey}`)}</p>
 
-        {question.dots != null && (
-          <div
-            className="flex flex-wrap justify-center gap-3 mb-6"
-            aria-hidden
-          >
-            {Array.from({ length: question.dots }, (_, i) => (
+        {dotsShown > 0 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-6" aria-hidden>
+            {Array.from({ length: dotsShown }, (_, i) => (
               <span
                 key={i}
-                className="inline-block w-5 h-5 rounded-full bg-emerald-400/90"
+                className="inline-block w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-emerald-400/90"
               />
             ))}
           </div>
@@ -157,16 +318,35 @@ const LevelCheckPage: React.FC = () => {
             <button
               key={choice}
               type="button"
-              onClick={() => choose(choice)}
-              className="min-h-[56px] rounded-xl border border-border bg-background text-xl font-semibold hover:bg-emerald-500/15 hover:border-emerald-500/40 active:scale-[0.98] transition-all"
+              onClick={() => chooseTap(choice)}
+              disabled={saving || check.state.inFlight}
+              className="min-h-[56px] rounded-xl border border-border bg-background text-xl font-semibold hover:bg-emerald-500/15 hover:border-emerald-500/40 active:scale-[0.98] transition-all disabled:opacity-60"
             >
               {choice}
             </button>
           ))}
         </div>
 
+        <div className="mb-6 rounded-xl border border-border bg-background/50 p-3">
+          <p className="text-sm text-muted-foreground mb-3 text-center">{tx('ui:place_orDraw')}</p>
+          <NumberDraw
+            key={question.id}
+            prompt=""
+            result={check.state.verdict}
+            unreadableReason={unreadableReason}
+            checkEnabled={check.canSubmit(true)}
+            disabled={saving}
+            showTypeHint={check.state.unreadableStreak >= 3}
+            onChange={() => check.noteChange()}
+            onRead={handleDraw}
+            onTyped={handleTyped}
+          />
+        </div>
+
         <div className="flex flex-wrap justify-between gap-3">
-          <AuthNavButton onClick={() => navigate('/solo')} />
+          <AuthNavButton
+            onClick={() => navigate(mode === 'class' ? '/student-register' : '/solo')}
+          />
           <button
             type="button"
             onClick={skipAll}

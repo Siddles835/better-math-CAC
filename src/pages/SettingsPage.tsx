@@ -176,7 +176,11 @@ const SettingsPage: React.FC = () => {
                 type="button"
                 variant="destructive"
                 onClick={() => setConfirmDelete('student')}
-              >{tx('ui:s_26cc101ce0')}</Button>
+              >
+                {isSoloClassCode(student.classCode) || student.solo
+                  ? tx('ui:solo_deleteProgress')
+                  : tx('ui:s_26cc101ce0')}
+              </Button>
             </div>
           </section>
         )}
@@ -218,7 +222,11 @@ const SettingsPage: React.FC = () => {
             </p>
             <div className="flex gap-2">
               <Button type="button" variant="destructive" disabled={busy} onClick={handleDeleteStudent}>
-                {busy ? 'Deleting…' : 'Yes, delete my account'}
+                {busy
+                  ? tx('ui:solo_deleting')
+                  : student && (isSoloClassCode(student.classCode) || student.solo)
+                    ? tx('ui:solo_deleteProgressYes')
+                    : tx('ui:solo_deleteAccountYes')}
               </Button>
               <Button type="button" variant="outline" onClick={() => setConfirmDelete(null)}>{tx('ui:s_77dfd2135f')}</Button>
             </div>

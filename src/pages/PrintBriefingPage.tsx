@@ -8,6 +8,12 @@ import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
 import { resolvedStudents } from '@/lib/cognition/trends';
 import { subscribeToClass, type Classroom } from '@/lib/classroom';
 import { requestPrint } from '@/lib/nativeShell';
+import { getPlanetLevel, PLANET_LEVEL_LIST } from '@/lib/planetLevels';
+import {
+  getClassroomUnlockPlanet,
+  getLessonForPlanet,
+  getTeacherVisiblePlanet,
+} from '@/lib/planets';
 
 const PrintBriefingPage: React.FC = () => {
   const params = useParams();
@@ -46,7 +52,49 @@ const PrintBriefingPage: React.FC = () => {
           <p className="text-sm font-medium">{tx('ui:s_95b4cf41e7')}</p>
         )}
         <p className="text-sm mt-1">{briefingHeadline(briefing)}</p>
+        {(() => {
+          const unlock = getClassroomUnlockPlanet(cls) ?? 'sun';
+          const level = getPlanetLevel(unlock);
+          return (
+            <p className="text-sm mt-1">
+              {tx('ui:planetLevel_printStart', { label: tx(`ui:${level.labelKey}`) })}
+              {cls?.usePlacementCheck ? ` · ${tx('ui:planetLevel_printPlacementOn')}` : ''}
+            </p>
+          );
+        })()}
       </header>
+      <section className="avoid-break mb-3 text-sm">
+        <h2 className="text-base font-semibold mb-1">{tx('ui:planetLevel_whatTitle')}</h2>
+        <ul className="space-y-1">
+          {PLANET_LEVEL_LIST.map((info) => (
+            <li key={info.id}>
+              {tx(`ui:${info.labelKey}`)} — {tx(`ui:${info.skillKey}`)}
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section className="avoid-break mb-3 text-sm">
+        <h2 className="text-base font-semibold mb-1">{tx('ui:planetLevel_printRoster')}</h2>
+        {students.length === 0 ? (
+          <p>{tx('ui:s_f352e0c991')}</p>
+        ) : (
+          <ul className="space-y-1">
+            {students.map((s) => {
+              const planet = getTeacherVisiblePlanet(s, getClassroomUnlockPlanet(cls));
+              const level = getPlanetLevel(planet);
+              return (
+                <li key={s.nickname}>
+                  <strong>{s.nickname}</strong>
+                  {' · '}
+                  {tx(`ui:${level.labelKey}`)}
+                  {' · '}
+                  {tx(`ui:topic_${getLessonForPlanet(planet)}`)}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
       <section className="avoid-break grid grid-cols-3 gap-2 mb-3 text-sm">
         <p>
           <strong>{briefing.total}</strong> students

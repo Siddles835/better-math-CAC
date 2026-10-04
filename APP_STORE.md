@@ -5,14 +5,15 @@ MathLift is a Vite + React web app with a native SwiftUI shell (`ios/ContentView
 ## Product quality checklist (code)
 
 - [x] Join / Login works across devices (class code + generated space name)
+- [x] Individual mode (“Learn on my own”): no email, no password, generated space name, optional 4-digit PIN; progress stays on-device (localStorage + iOS Keychain mirror). No Firestore writes in this mode.
 - [x] Students cannot type a real name; they re-roll a generated username as often as they like
 - [x] Sign Out clears session; Home shows Continue for the most recent role only
 - [x] Student and teacher logins cannot stay saved on the same device (most recent wins)
 - [x] Teacher PIN required to manage a class; PIN is not stored on the device
-- [x] Students can delete their own account; teachers can remove a student or delete a class
-- [x] Privacy Policy lists exactly what data is collected, retention/deletion, and third parties
+- [x] Students can delete their own account; solo learners can wipe on-device progress; teachers can remove a student or delete a class
+- [x] Privacy Policy lists exactly what data is collected (including individual mode: device-only), retention/deletion, and third parties
 - [x] No Firebase Analytics / advertising SDKs
-- [x] Native iOS shell: Taptic Engine + Core Haptics, Keychain sessions, file protection, ATS/HTTPS
+- [x] Native iOS shell: Taptic Engine + Core Haptics, Keychain sessions (including solo progress), file protection, ATS/HTTPS
 - [x] No YouTube / external lesson embeds (self-contained celebrations)
 - [x] Lesson routes require a student session
 - [x] Error boundary for unexpected crashes
@@ -21,6 +22,7 @@ MathLift is a Vite + React web app with a native SwiftUI shell (`ios/ContentView
 - [x] Support + Privacy + Cookie + Settings pages linked from Home
 - [x] Read-aloud TTS speaks “minus” for subtraction equations
 - [x] `ITSAppUsesNonExemptEncryption` set for export compliance
+- [x] Optional gentle placement check (~12–16 items) for solo learners and as a teacher-assigned class option
 
 ## Native SwiftUI shell
 
@@ -46,7 +48,7 @@ Do **not** add `NSAllowsArbitraryLoads` to Info.plist.
 ## App Store Connect listing
 
 - Age rating: educational / kids-appropriate (answer COPPA questionnaire honestly)
-- Privacy Nutrition Labels: class code + generated username + lesson progress + a short per-student history of diagnosis results (misconception type, planet, timestamp). No analytics. No advertising. Language choice and number style stay on the device only.
+- Privacy Nutrition Labels: **Class mode** — class code + generated username + lesson progress + a short per-student history of diagnosis results (misconception type, planet, timestamp). **Individual mode** — generated space name, optional PIN, and lesson progress stored only on the device (not sent to Firebase). No analytics. No advertising. Language choice and number style stay on the device only.
 - Supported languages: English, Simplified Chinese, Hindi, Spanish, and Modern Standard Arabic. Listing text should be localized for those storefronts. Translations in the app are not professionally reviewed.
 - iOS print uses UIPrintInteractionController. Test Print / Save as PDF from a class briefing on a Mac in Xcode before submission.
 - Support URL: deployed `/support`

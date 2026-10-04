@@ -3,14 +3,20 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import AuthNavButton from '@/components/AuthNavButton';
-import { Classroom, deleteStudent, setClassDefaultStart, subscribeToClass } from '@/lib/classroom';
+import {
+  Classroom,
+  deleteStudent,
+  setClassDefaultStart,
+  setClassUsePlacementCheck,
+  subscribeToClass,
+} from '@/lib/classroom';
 import { clearActiveTeacher, getActiveTeacher, setActiveTeacher } from '@/lib/session';
+import { getPlanetLevel, PLANET_LEVEL_LIST } from '@/lib/planetLevels';
 import {
   getClassroomUnlockPlanet,
   getLessonForPlanet,
   getTeacherVisiblePlanet,
   PLANET_META,
-  PLANET_ORDER,
   type PlanetId,
 } from '@/lib/planets';
 import { Button } from '@/components/ui/button';
@@ -36,6 +42,8 @@ const TeacherDashboard: React.FC = () => {
   const [pendingRemove, setPendingRemove] = useState<{ key: string; nickname: string } | null>(
     null
   );
+  const [usePlacement, setUsePlacement] = useState(false);
+  const [savingPlacement, setSavingPlacement] = useState(false);
 
   const sample = classCode.toUpperCase() === SAMPLE_CLASS_CODE;
 
@@ -65,6 +73,7 @@ const TeacherDashboard: React.FC = () => {
         if (unlock) {
           setDefaultPlanet(unlock);
         }
+        setUsePlacement(!!data.usePlacementCheck);
       },
       () => {
         setLoading(false);
@@ -109,6 +118,22 @@ const TeacherDashboard: React.FC = () => {
       setSaveError('Could not save unlock setting. Try again.');
     } finally {
       setSavingDefault(false);
+    }
+  };
+
+  const handlePlacementToggle = async (enabled: boolean) => {
+    setUsePlacement(enabled);
+    if (sample) return;
+    setSavingPlacement(true);
+    setSaveError('');
+    try {
+      await setClassUsePlacementCheck(classCode, enabled);
+    } catch (err) {
+      console.error(err);
+      setUsePlacement(!enabled);
+      setSaveError(tx('ui:planetLevel_placementSaveFail'));
+    } finally {
+      setSavingPlacement(false);
     }
   };
 
@@ -166,6 +191,13 @@ const TeacherDashboard: React.FC = () => {
                 onClick={() => navigate('/methods')}
                 className="underline underline-offset-2 hover:text-foreground"
               >{tx('ui:s_7e4ac6803c')}</button>
+              {' · '}
+              <a
+                href="#planet-levels"
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                {tx('ui:planetLevel_whatLink')}
+              </a>
             </p>
             {teacherPin && !sample && (
               <p className="text-sm text-sky-300 mt-1">{tx('ui:s_d3f6dc1626')}<span className="font-semibold tracking-widest">{teacherPin}</span>
@@ -199,7 +231,10 @@ const TeacherDashboard: React.FC = () => {
           </div>
         )}
 
-        <section className="mb-8 bg-card/95 p-6 rounded-2xl border border-border print:hidden">
+        <section
+          id="planet-levels"
+          className="mb-8 bg-card/95 p-6 rounded-2xl border border-border print:hidden scroll-mt-6"
+        >
           <h2 className="text-xl font-semibold mb-2">{tx('ui:s_8d52e3c61c')}</h2>
           <p className="text-sm text-muted-foreground mb-3">{tx('ui:planetLevel_lead')}</p>
           <p className="text-sm text-muted-foreground mb-4">{tx('ui:planetLevel_how')}</p>
@@ -208,12 +243,12 @@ const TeacherDashboard: React.FC = () => {
               value={defaultPlanet}
               onChange={(e) => handleDefaultChange(e.target.value)}
               disabled={savingDefault || !!loadError || sample}
-              className="border border-border rounded-xl px-3 py-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px]"
+              className="border border-border rounded-xl px-3 py-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px] max-w-full"
               aria-label={tx('ui:s_8d52e3c61c')}
             >
-              {PLANET_ORDER.map((id) => (
-                <option key={id} value={id}>
-                  {tx(`ui:planet_${id}`)} · {tx(`ui:topic_${getLessonForPlanet(id)}`)}
+              {PLANET_LEVEL_LIST.map((info) => (
+                <option key={info.id} value={info.id}>
+                  {tx(`ui:${info.labelKey}`)}
                 </option>
               ))}
             </select>
@@ -226,32 +261,58 @@ const TeacherDashboard: React.FC = () => {
             )}
             {saveError && <span className="text-sm text-destructive">{saveError}</span>}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-            <div className="rounded-xl border border-border bg-background/50 p-3">
-              <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_count')}</p>
-              <p className="text-muted-foreground">{tx('ui:planetLevel_band_count_help')}</p>
-            </div>
-            <div className="rounded-xl border border-border bg-background/50 p-3">
-              <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_add')}</p>
-              <p className="text-muted-foreground">{tx('ui:planetLevel_band_add_help')}</p>
-            </div>
-            <div className="rounded-xl border border-border bg-background/50 p-3">
-              <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_sub')}</p>
-              <p className="text-muted-foreground">{tx('ui:planetLevel_band_sub_help')}</p>
+
+          <label className="flex items-start gap-3 mb-5 min-h-[48px] cursor-pointer">
+            <input
+              type="checkbox"
+              className="mt-1.5 h-4 w-4"
+              checked={usePlacement}
+              disabled={savingPlacement || !!loadError || sample}
+              onChange={(e) => void handlePlacementToggle(e.target.checked)}
+            />
+            <span>
+              <span className="font-medium text-foreground block">
+                {tx('ui:planetLevel_usePlacement')}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {tx('ui:planetLevel_usePlacementHelp')}
+              </span>
+            </span>
+          </label>
+
+          <div className="rounded-xl border border-border bg-background/40 p-4 mb-4">
+            <h3 className="font-semibold text-foreground mb-2">{tx('ui:planetLevel_whatTitle')}</h3>
+            <p className="text-sm text-muted-foreground mb-3">{tx('ui:planetLevel_whatBody')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="rounded-xl border border-border bg-background/50 p-3">
+                <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_count')}</p>
+                <p className="text-muted-foreground">{tx('ui:planetLevel_band_count_help')}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-background/50 p-3">
+                <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_add')}</p>
+                <p className="text-muted-foreground">{tx('ui:planetLevel_band_add_help')}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-background/50 p-3">
+                <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_sub')}</p>
+                <p className="text-muted-foreground">{tx('ui:planetLevel_band_sub_help')}</p>
+              </div>
             </div>
           </div>
-          <details className="mt-4 rounded-xl border border-border bg-background/40 p-3">
+
+          <details className="rounded-xl border border-border bg-background/40 p-3" open>
             <summary className="cursor-pointer font-medium text-foreground">
               {tx('ui:planetLevel_legendTitle')}
             </summary>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              {PLANET_ORDER.map((id) => (
-                <li key={id}>
-                  <span className="font-medium text-foreground">{tx(`ui:planet_${id}`)}</span>
+              {PLANET_LEVEL_LIST.map((info) => (
+                <li key={info.id}>
+                  <span className="font-medium text-foreground">{tx(`ui:planet_${info.id}`)}</span>
                   {' · '}
-                  {tx(`ui:topic_${getLessonForPlanet(id)}`)}
+                  {tx(`ui:topic_${info.topic}`)}
+                  {' · '}
+                  {tx(`ui:${info.rangeKey}`)}
                   {' — '}
-                  {tx(`ui:teach_${id}`)}
+                  {tx(`ui:${info.skillKey}`)}
                 </li>
               ))}
             </ul>
@@ -298,11 +359,16 @@ const TeacherDashboard: React.FC = () => {
                   >
                     <div className="text-lg font-semibold text-foreground">{s.nickname}</div>
                     <div className="text-sm font-medium text-sky-300 mt-1">
+                      {tx(`ui:${getPlanetLevel(currentPlanet).labelKey}`)}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {tx('ui:planetLevel_rosterLine', {
                         planet: tx(`ui:planet_${currentPlanet}`),
                         topic: tx(`ui:topic_${lesson}`),
                       })}
-                    </div>
+                      {' · '}
+                      {tx(`ui:${getPlanetLevel(currentPlanet).rangeKey}`)}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {tx('ui:planetLevel_rosterHint')}
                     </p>
