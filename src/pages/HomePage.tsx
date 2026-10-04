@@ -14,6 +14,7 @@ import {
   type ActiveTeacher,
 } from '@/lib/session';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
+import { isSoloClassCode } from '@/lib/solo';
 
 const HomePage: React.FC = () => {
   const { t } = useTranslation('home');
@@ -88,7 +89,12 @@ const HomePage: React.FC = () => {
                 <p className="text-sm text-emerald-200/80">{t('signedStudent')}</p>
                 <p className="text-lg font-semibold text-foreground">
                   {getStudentDisplayName(studentSession)}
-                  <span className="text-muted-foreground font-normal"> · {studentSession.classCode}</span>
+                  <span className="text-muted-foreground font-normal">
+                    {' · '}
+                    {isSoloClassCode(studentSession.classCode) || studentSession.solo
+                      ? t('soloBadge')
+                      : studentSession.classCode}
+                  </span>
                 </p>
               </div>
               <div className="flex gap-2">
@@ -143,15 +149,22 @@ const HomePage: React.FC = () => {
           <h2 className="text-2xl font-semibold text-center mb-2">{t('students')}</h2>
           <button
             type="button"
-            onClick={() => navigate('/student-register')}
+            onClick={() => navigate('/solo')}
             className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 active:scale-[0.98] transition-all duration-200 shadow-sm"
+          >
+            {t('learnAlone')}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/student-register')}
+            className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-emerald-100 text-emerald-900 hover:bg-emerald-200 active:scale-[0.98] transition-all duration-200 shadow-sm"
           >
             {t('newStudent')}
           </button>
           <button
             type="button"
             onClick={() => navigate('/student-login')}
-            className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-emerald-100 text-emerald-900 hover:bg-emerald-200 active:scale-[0.98] transition-all duration-200 shadow-sm"
+            className="w-full px-6 py-3 text-lg font-semibold rounded-xl border border-border bg-card text-foreground hover:bg-muted active:scale-[0.98] transition-all duration-200 shadow-sm"
           >
             {t('returningStudent')}
           </button>

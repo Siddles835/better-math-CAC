@@ -18,6 +18,7 @@ import {
   type ActiveTeacher,
 } from '@/lib/session';
 import { deleteClassroom, deleteStudent } from '@/lib/classroom';
+import { clearSoloProgress, isSoloClassCode } from '@/lib/solo';
 import { Button } from '@/components/ui/button';
 import AccessibilityPanel from '@/components/AccessibilityPanel';
 import VoiceToggle from '@/components/VoiceToggle';
@@ -65,13 +66,17 @@ const SettingsPage: React.FC = () => {
     setBusy(true);
     setMessage('');
     try {
-      await deleteStudent(student.classCode, student.nickname);
+      if (isSoloClassCode(student.classCode) || student.solo) {
+        clearSoloProgress();
+      } else {
+        await deleteStudent(student.classCode, student.nickname);
+      }
       clearActiveStudent();
       setConfirmDelete(null);
       navigate('/', { replace: true });
     } catch (err) {
       console.error(err);
-      setMessage('Could not delete this account. Check your connection and try again.');
+      setMessage(tx('ui:settings_deleteStudentFail'));
     } finally {
       setBusy(false);
     }
@@ -151,7 +156,12 @@ const SettingsPage: React.FC = () => {
             <p className="text-sm text-emerald-200/80">{tx('ui:s_f7b63f030b')}</p>
             <p className="text-lg font-semibold mt-1">
               {getStudentDisplayName(student)}
-              <span className="text-muted-foreground font-normal"> · {student.classCode}</span>
+              <span className="text-muted-foreground font-normal">
+                {' · '}
+                {isSoloClassCode(student.classCode) || student.solo
+                  ? tx('ui:solo_badge')
+                  : student.classCode}
+              </span>
             </p>
             <div className="flex flex-wrap gap-2 mt-4">
               <Button type="button" variant="outline" onClick={handleStudentSignOut}>{tx('ui:s_61fd08ff5c')}</Button>
@@ -194,7 +204,11 @@ const SettingsPage: React.FC = () => {
         {confirmDelete === 'student' && (
           <div className="mb-6 rounded-2xl border border-destructive/40 bg-destructive/10 p-5">
             <p className="font-semibold mb-2">{tx('ui:s_790ba564c1')}</p>
-            <p className="text-sm text-muted-foreground mb-4">{tx('ui:s_12be218899')}</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              {student && (isSoloClassCode(student.classCode) || student.solo)
+                ? tx('ui:solo_deleteConfirm')
+                : tx('ui:s_12be218899')}
+            </p>
             <div className="flex gap-2">
               <Button type="button" variant="destructive" disabled={busy} onClick={handleDeleteStudent}>
                 {busy ? 'Deleting…' : 'Yes, delete my account'}
