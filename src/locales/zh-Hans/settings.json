@@ -10,5 +10,11 @@
   "signedTeacher": "已作为老师登录",
   "signOut": "退出",
   "deleteAccount": "删除我的账号",
-  "deleteClassButton": "删除这个班级"
+  "deleteClassButton": "删除这个班级",
+  "voiceTitle": "语音",
+  "voiceHelp": "打开或关闭朗读语音。你的选择会留在这台设备上。",
+  "voiceToggle": "朗读语音",
+  "voiceToggleHint": "关闭后，MathLift 不会朗读，喇叭按钮也会隐藏。",
+  "voiceOn": "语音已开",
+  "voiceOff": "语音已关"
 }

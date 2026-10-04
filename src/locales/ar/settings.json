@@ -10,5 +10,11 @@
   "signedTeacher": "دخلت كمعلم",
   "signOut": "خروج",
   "deleteAccount": "احذف حسابي",
-  "deleteClassButton": "احذف هذا الصف"
+  "deleteClassButton": "احذف هذا الصف",
+  "voiceTitle": "الصوت",
+  "voiceHelp": "شغّل صوت الكلام أو أطفئه. يبقى اختيارك على هذا الجهاز.",
+  "voiceToggle": "صوت الكلام",
+  "voiceToggleHint": "عند الإيقاف، لن يتكلم MathLift وتُخفى أزرار السماعة.",
+  "voiceOn": "الصوت يعمل",
+  "voiceOff": "الصوت متوقف"
 }

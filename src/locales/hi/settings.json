@@ -10,5 +10,11 @@
   "signedTeacher": "शिक्षक के रूप में साइन इन",
   "signOut": "बाहर जाएँ",
   "deleteAccount": "मेरा खाता हटाएँ",
-  "deleteClassButton": "इस कक्षा को हटाएँ"
+  "deleteClassButton": "इस कक्षा को हटाएँ",
+  "voiceTitle": "आवाज़",
+  "voiceHelp": "बोलने वाली आवाज़ चालू या बंद करें। आपका चुनाव इसी डिवाइस पर रहता है।",
+  "voiceToggle": "बोलने वाली आवाज़",
+  "voiceToggleHint": "बंद होने पर MathLift नहीं बोलेगा और स्पीकर बटन छिप जाएँगे।",
+  "voiceOn": "आवाज़ चालू",
+  "voiceOff": "आवाज़ बंद"
 }

@@ -4,6 +4,7 @@ import HomeButton from '@/components/HomeButton';
 import NavigationArrows from '@/components/NavigationArrows';
 import Zoomable from '@/components/Zoomable';
 import AccessibilityQuickButton from '@/components/AccessibilityQuickButton';
+import VoiceQuickButton from '@/components/VoiceQuickButton';
 import BreakCard from '@/components/BreakCard';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import type { PlanetId } from '@/lib/planets';
@@ -50,7 +51,7 @@ const LessonShell: React.FC<LessonShellProps> = ({
       <a href="#lesson-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:start-2 focus:top-2 focus:rounded-lg focus:bg-card focus:px-4 focus:py-2 focus:ring-2 focus:ring-primary">{tx('ui:s_3a35b15820')}</a>
 
-      <header className="relative flex items-center justify-center min-h-14 shrink-0 px-16 py-2">
+      <header className="relative flex items-center justify-center min-h-14 shrink-0 ps-16 pe-[6.5rem] py-2">
         <div className="absolute start-2 top-1/2 -translate-y-1/2">
           <HomeButton embedded />
         </div>
@@ -68,7 +69,8 @@ const LessonShell: React.FC<LessonShellProps> = ({
           <p className="text-xs font-medium text-muted-foreground">{stepLabel}</p>
         </div>
 
-        <div className="absolute end-2 top-1/2 -translate-y-1/2">
+        <div className="absolute end-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          <VoiceQuickButton />
           <AccessibilityQuickButton />
         </div>
       </header>
