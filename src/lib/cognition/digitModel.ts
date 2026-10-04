@@ -326,8 +326,30 @@ export const confirmConfidence = (): number => {
   return Math.min(0.97, limits.minConfidence + 0.12);
 };
 
-export const needsConfirm = (read: DigitRead): boolean =>
-  read.status === 'ok' && read.confidence < confirmConfidence();
+export const needsConfirm = (read: DigitRead): boolean => {
+  if (read.status !== 'ok') return false;
+  // Multi-digit or unusually wide ink always confirms — never silently score a merge mistake.
+  if ((read.parts?.length ?? 1) > 1 || read.wide) return true;
+  return read.confidence < confirmConfidence();
+};
+
+const inkAspect = (strokes: Stroke[]): number => {
+  const pts = strokes.flat();
+  if (pts.length === 0) return 1;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of pts) {
+    minX = Math.min(minX, p.x);
+    minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x);
+    maxY = Math.max(maxY, p.y);
+  }
+  const w = Math.max(1, maxX - minX);
+  const h = Math.max(1, maxY - minY);
+  return w / h;
+};
 
 /** Read up to three digits. Unreadable drawings are not scored as wrong. */
 export const readDrawing = (strokes: Stroke[]): DigitRead => {
@@ -345,6 +367,7 @@ export const readDrawing = (strokes: Stroke[]): DigitRead => {
   }
   const digits = parts.map((part) => part.digit);
   const value = digits.reduce((total, digit) => total * 10 + digit, 0);
+  const wide = inkAspect(strokes) >= 1.35;
   return {
     status: 'ok',
     digit: value,
@@ -354,6 +377,7 @@ export const readDrawing = (strokes: Stroke[]): DigitRead => {
     startQuadrant: startQuadrant(strokes),
     parts: digits,
     script: parts[0]?.script,
+    wide,
   };
 };
 
