@@ -20,6 +20,7 @@ import {
   getInProgressPlanet,
   getClassroomUnlockPlanet,
 } from '@/lib/planets';
+import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
 
 const PlanetSelectPage: React.FC = () => {
   const navigate = useNavigate();
@@ -49,6 +50,14 @@ const PlanetSelectPage: React.FC = () => {
       return;
     }
     setDisplayName(getStudentDisplayName(active));
+    if (isSoloClassCode(active.classCode) || active.solo) {
+      const progress = loadSoloProgress(active.nickname);
+      if (progress) {
+        hydrateClassMax(progress.unlockPlanet);
+        hydrateFromStudent(soloProgressToStudent(progress));
+      }
+      return;
+    }
     const { classCode, nickname } = active;
     const unsub = subscribeToClass(classCode, (data) => {
       setClassroom(data);
@@ -116,8 +125,9 @@ const PlanetSelectPage: React.FC = () => {
     }, 1400);
   };
 
-  const maxPlanetName = PLANET_META[classMax as PlanetId]?.name ?? 'Sun';
+  const maxPlanetLabel = tx(`ui:planet_${classMax as PlanetId}`);
   const continuePlanet = getInProgressPlanet(planetSteps, progressPlanetId, lastPlanetId);
+  const solo = isSoloClassCode(getActiveStudent()?.classCode);
 
   return (
     <div className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-center p-8">
@@ -134,13 +144,14 @@ const PlanetSelectPage: React.FC = () => {
         )}
         <h1 className="text-3xl font-semibold text-foreground mb-2">{tx('ui:s_7bb59b2f67')}</h1>
         <p className="text-muted-foreground max-w-lg mx-auto">
-          Your teacher has unlocked planets through{' '}
-          <strong className="text-foreground">{maxPlanetName}</strong>. Tap a planet to start its
-          lesson.
-          {continuePlanet && PLANET_META[continuePlanet] && (
+          {solo
+            ? tx('ui:hub_unlock_solo', { planet: maxPlanetLabel })
+            : tx('ui:hub_unlock_class', { planet: maxPlanetLabel })}
+          {continuePlanet && (
             <>
               {' '}
-              Tap <strong className="text-foreground">{PLANET_META[continuePlanet].name}</strong>{tx('ui:s_3a9548dd69')}</>
+              {tx('ui:hub_continue_tap', { planet: tx(`ui:planet_${continuePlanet}`) })}
+            </>
           )}
         </p>
         {lastDiagnosis ? (
@@ -169,9 +180,13 @@ const PlanetSelectPage: React.FC = () => {
       </div>
 
       <p className="text-sm text-muted-foreground mb-20 text-center max-w-md">
-        {completedList.length === 0
-          ? 'Pick any unlocked planet to begin. Your teacher can open more planets anytime.'
-          : 'Replay earlier planets or jump ahead to any planet your teacher has unlocked.'}
+        {solo
+          ? completedList.length === 0
+            ? tx('ui:hub_pick_solo_new')
+            : tx('ui:hub_pick_solo_return')
+          : completedList.length === 0
+            ? tx('ui:hub_pick_class_new')
+            : tx('ui:hub_pick_class_return')}
       </p>
 
       <NavigationArrows

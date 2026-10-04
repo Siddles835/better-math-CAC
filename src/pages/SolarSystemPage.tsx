@@ -20,6 +20,7 @@ import {
   getClassroomUnlockPlanet,
   getInProgressPlanet,
 } from '@/lib/planets';
+import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
 
 const BASE_SIZE = 640; // design space that fits Neptune orbit (580) + labels
 
@@ -55,6 +56,14 @@ const SolarSystemPage: React.FC = () => {
       return;
     }
     setDisplayName(getStudentDisplayName(active));
+    if (isSoloClassCode(active.classCode) || active.solo) {
+      const progress = loadSoloProgress(active.nickname);
+      if (progress) {
+        hydrateClassMax(progress.unlockPlanet);
+        hydrateFromStudent(soloProgressToStudent(progress));
+      }
+      return;
+    }
     const { classCode, nickname } = active;
     const unsub = subscribeToClass(classCode, (data) => {
       setClassroom(data);
@@ -92,8 +101,9 @@ const SolarSystemPage: React.FC = () => {
 
   const classMax =
     getClassroomUnlockPlanet(classroom) ?? classMaxPlanetId ?? 'sun';
-  const maxPlanetName = PLANET_META[classMax as PlanetId]?.name ?? 'Sun';
+  const maxPlanetLabel = tx(`ui:planet_${classMax as PlanetId}`);
   const continuePlanet = getInProgressPlanet(planetSteps, progressPlanetId, lastPlanetId);
+  const solo = isSoloClassCode(getActiveStudent()?.classCode);
 
   const maxOrbitRadius = useMemo(() => {
     let max = 0;
@@ -147,13 +157,14 @@ const SolarSystemPage: React.FC = () => {
         )}
         <h1 className="text-2xl sm:text-3xl font-semibold text-foreground mb-2">{tx('ui:s_7bb59b2f67')}</h1>
         <p className="text-muted-foreground max-w-lg mx-auto text-sm sm:text-base">
-          Your teacher has unlocked planets through{' '}
-          <strong className="text-foreground">{maxPlanetName}</strong>. Tap a planet to start or
-          continue its lesson.
-          {continuePlanet && PLANET_META[continuePlanet] && (
+          {solo
+            ? tx('ui:hub_unlock_solo', { planet: maxPlanetLabel })
+            : tx('ui:hub_unlock_class', { planet: maxPlanetLabel })}
+          {continuePlanet && (
             <>
               {' '}
-              Tap <strong className="text-foreground">{PLANET_META[continuePlanet].name}</strong>{tx('ui:s_3a9548dd69')}</>
+              {tx('ui:hub_continue_tap', { planet: tx(`ui:planet_${continuePlanet}`) })}
+            </>
           )}
         </p>
         {lastDiagnosis ? (

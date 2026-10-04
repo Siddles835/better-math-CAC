@@ -10,6 +10,7 @@ import {
   getLessonForPlanet,
   getTeacherVisiblePlanet,
   PLANET_META,
+  PLANET_ORDER,
   type PlanetId,
 } from '@/lib/planets';
 import { Button } from '@/components/ui/button';
@@ -200,26 +201,24 @@ const TeacherDashboard: React.FC = () => {
 
         <section className="mb-8 bg-card/95 p-6 rounded-2xl border border-border print:hidden">
           <h2 className="text-xl font-semibold mb-2">{tx('ui:s_8d52e3c61c')}</h2>
-          <p className="text-sm text-muted-foreground mb-4">{tx('ui:s_97cd0e54d7')}</p>
-          <div className="flex flex-wrap gap-4 items-center">
+          <p className="text-sm text-muted-foreground mb-3">{tx('ui:planetLevel_lead')}</p>
+          <p className="text-sm text-muted-foreground mb-4">{tx('ui:planetLevel_how')}</p>
+          <div className="flex flex-wrap gap-4 items-center mb-5">
             <select
               value={defaultPlanet}
               onChange={(e) => handleDefaultChange(e.target.value)}
               disabled={savingDefault || !!loadError || sample}
               className="border border-border rounded-xl px-3 py-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px]"
+              aria-label={tx('ui:s_8d52e3c61c')}
             >
-              <option value="sun">Sun</option>
-              <option value="mercury">{tx('ui:s_606cb109e2')}</option>
-              <option value="venus">{tx('ui:s_7106897246')}</option>
-              <option value="earth">{tx('ui:s_a074430f35')}</option>
-              <option value="mars">{tx('ui:s_1778011d76')}</option>
-              <option value="jupiter">{tx('ui:s_88d1577dcc')}</option>
-              <option value="saturn">{tx('ui:s_7c14ab20f3')}</option>
-              <option value="uranus">{tx('ui:s_e4458dd128')}</option>
-              <option value="neptune">{tx('ui:s_125186d5ff')}</option>
+              {PLANET_ORDER.map((id) => (
+                <option key={id} value={id}>
+                  {tx(`ui:planet_${id}`)} · {tx(`ui:topic_${getLessonForPlanet(id)}`)}
+                </option>
+              ))}
             </select>
-            <span className="text-sm font-medium text-sky-300 capitalize px-2">
-              Lesson: {derivedLesson}
+            <span className="text-sm font-medium text-sky-300 px-2">
+              {tx('ui:planetLevel_lesson', { topic: tx(`ui:topic_${derivedLesson}`) })}
             </span>
             {savingDefault && <span className="text-sm text-muted-foreground">{tx('ui:s_56a2285c5b')}</span>}
             {defaultSaved && !savingDefault && (
@@ -227,6 +226,36 @@ const TeacherDashboard: React.FC = () => {
             )}
             {saveError && <span className="text-sm text-destructive">{saveError}</span>}
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+            <div className="rounded-xl border border-border bg-background/50 p-3">
+              <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_count')}</p>
+              <p className="text-muted-foreground">{tx('ui:planetLevel_band_count_help')}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-background/50 p-3">
+              <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_add')}</p>
+              <p className="text-muted-foreground">{tx('ui:planetLevel_band_add_help')}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-background/50 p-3">
+              <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_sub')}</p>
+              <p className="text-muted-foreground">{tx('ui:planetLevel_band_sub_help')}</p>
+            </div>
+          </div>
+          <details className="mt-4 rounded-xl border border-border bg-background/40 p-3">
+            <summary className="cursor-pointer font-medium text-foreground">
+              {tx('ui:planetLevel_legendTitle')}
+            </summary>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              {PLANET_ORDER.map((id) => (
+                <li key={id}>
+                  <span className="font-medium text-foreground">{tx(`ui:planet_${id}`)}</span>
+                  {' · '}
+                  {tx(`ui:topic_${getLessonForPlanet(id)}`)}
+                  {' — '}
+                  {tx(`ui:teach_${id}`)}
+                </li>
+              ))}
+            </ul>
+          </details>
         </section>
 
         <ClassTrends students={roster} sample={sample} />
@@ -269,8 +298,14 @@ const TeacherDashboard: React.FC = () => {
                   >
                     <div className="text-lg font-semibold text-foreground">{s.nickname}</div>
                     <div className="text-sm font-medium text-sky-300 mt-1">
-                      {tx(`ui:planet_${currentPlanet}`)} · {tx(`ui:topic_${lesson}`)}
+                      {tx('ui:planetLevel_rosterLine', {
+                        planet: tx(`ui:planet_${currentPlanet}`),
+                        topic: tx(`ui:topic_${lesson}`),
+                      })}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {tx('ui:planetLevel_rosterHint')}
+                    </p>
                     {s.lastDiagnosis && (
                       <div className="mt-2 text-sm text-muted-foreground">
                         <p className="font-medium text-foreground">

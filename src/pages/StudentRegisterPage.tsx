@@ -88,8 +88,18 @@ const StudentRegisterPage: React.FC = () => {
     <div className="min-h-screen bg-background subtle-stars flex items-center justify-center p-6 sm:p-8">
       <div className="w-full max-w-md bg-card/95 p-6 rounded-2xl shadow-lg border border-border animate-fade-in backdrop-blur-sm">
         <h2 className="text-2xl font-semibold mb-2">{tx('ui:s_dd531598fa')}</h2>
-        <p className="text-muted-foreground mb-6">
+        <p className="text-muted-foreground mb-4">
           {tx('ui:joinLead')}
+        </p>
+        <p className="text-sm text-muted-foreground mb-6">
+          {tx('ui:joinSoloHint')}{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/solo')}
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            {tx('ui:joinSoloLink')}
+          </button>
         </p>
 
         <form onSubmit={handleRegister}>
