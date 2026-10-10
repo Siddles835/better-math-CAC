@@ -109,8 +109,9 @@ const StudentRegisterPage: React.FC = () => {
         </p>
 
         <form onSubmit={handleRegister}>
-          <label className="block mb-2 font-medium">{tx('ui:s_554850d9a1')}</label>
+          <label htmlFor="join-class-code" className="block mb-2 font-medium">{tx('ui:s_554850d9a1')}</label>
           <input
+            id="join-class-code"
             value={classCode}
             onChange={(e) => {
               setClassCode(e.target.value);

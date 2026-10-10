@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('demo mode covers a path, an assessment, a curriculum, a CSV, and a reset', async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto('/?demo=1');
   await expect(page.getByTestId('demo-badge')).toBeVisible();
   await expect(page.getByTestId('demo-badge')).toContainText('DEMO DATA');

@@ -90,7 +90,7 @@ const buildSpec = (id: GeneratorId, tier: 1 | 2 | 3, rng: Rng): Built => {
     };
   }
   if (id === 'addition') {
-    let a = pickInt(rng, lo, hi);
+    const a = pickInt(rng, lo, hi);
     let b = pickInt(rng, lo, hi);
     if (a + b > hi * 2) b = Math.max(1, hi - a);
     return {

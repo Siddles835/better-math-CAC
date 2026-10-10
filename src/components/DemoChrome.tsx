@@ -1,7 +1,7 @@
 import { tx } from '@/i18n/tx';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { disableDemo, enableDemo, isDemoMode } from '@/lib/demo/mode';
+import { enableDemo, isDemoMode } from '@/lib/demo/mode';
 import { resetDemoStore } from '@/lib/demo/store';
 
 export const DemoBadge = () => {
@@ -58,5 +58,3 @@ export const VersionMark = () => {
     </button>
   );
 };
-
-export const leaveDemo = () => disableDemo();
