@@ -39,6 +39,12 @@ import PersonalPracticePage from "./pages/PersonalPracticePage";
 import PrintBriefingPage from "./pages/PrintBriefingPage";
 import SoloRegisterPage from "./pages/SoloRegisterPage";
 import LevelCheckPage from "./pages/LevelCheckPage";
+import PickPathPage from "./pages/PickPathPage";
+import PathBoardPage from "./pages/PathBoardPage";
+import ProblemPlayerPage from "./pages/ProblemPlayerPage";
+import CurriculumPage from "./pages/CurriculumPage";
+import { DemoBadge } from "./components/DemoChrome";
+import ForegroundTime from "./components/ForegroundTime";
 import ExplorePage from "./pages/ExplorePage";
 import ExploreActivityPage from "./pages/ExploreActivityPage";
 
@@ -65,7 +71,9 @@ const App = () => {
           <Toaster />
           <Sonner />
           <RocketTransition />
+          <ForegroundTime />
           <BrowserRouter>
+            <DemoBadge />
             <NativeShellBridge />
             <Routes>
               <Route path="/" element={<HomePage />} />
@@ -105,6 +113,11 @@ const App = () => {
               <Route path="/planet-select" element={<Navigate to="/planets" replace />} />
               <Route path="/solo" element={<SoloRegisterPage />} />
               <Route path="/level-check" element={<LevelCheckPage />} />
+              <Route path="/pick-path" element={<PickPathPage />} />
+              <Route path="/paths" element={lesson(<PathBoardPage />)} />
+              <Route path="/play/c/:curriculumId/:nodeId" element={<ProblemPlayerPage />} />
+              <Route path="/play/:pathId/:nodeId" element={lesson(<ProblemPlayerPage />)} />
+              <Route path="/teacher/:classCode/curriculum" element={<CurriculumPage />} />
               <Route path="/student-register" element={<StudentRegisterPage />} />
               <Route path="/student-login" element={<StudentLoginPage />} />
               <Route path="/teacher-register" element={<TeacherRegisterPage />} />

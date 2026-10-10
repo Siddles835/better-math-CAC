@@ -25,6 +25,9 @@ import ClassTrends from '@/components/ClassTrends';
 import FamilyNote from '@/components/FamilyNote';
 import { misconceptionLabel, teacherLineFor } from '@/lib/cognition';
 import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
+import { PATHS } from '@/content/catalog';
+import PilotOverview from '@/components/PilotOverview';
+import { isDemoMode } from '@/lib/demo/mode';
 
 const TeacherDashboard: React.FC = () => {
   const params = useParams();
@@ -43,6 +46,7 @@ const TeacherDashboard: React.FC = () => {
     null
   );
   const [usePlacement, setUsePlacement] = useState(false);
+  const [defaultPath, setDefaultPath] = useState('foundations');
   const [savingPlacement, setSavingPlacement] = useState(false);
 
   const sample = classCode.toUpperCase() === SAMPLE_CLASS_CODE;
@@ -74,6 +78,7 @@ const TeacherDashboard: React.FC = () => {
           setDefaultPlanet(unlock);
         }
         setUsePlacement(!!data.usePlacementCheck);
+        setDefaultPath(data.defaultStart?.pathId || 'foundations');
       },
       () => {
         setLoading(false);
@@ -111,7 +116,7 @@ const TeacherDashboard: React.FC = () => {
     setSaveError('');
     setSavingDefault(true);
     try {
-      await setClassDefaultStart(classCode, planet);
+      await setClassDefaultStart(classCode, planet, defaultPath);
       setDefaultSaved(true);
     } catch (err) {
       console.error(err);
@@ -209,6 +214,13 @@ const TeacherDashboard: React.FC = () => {
             <Button
               type="button"
               variant="outline"
+              onClick={() => navigate(`/teacher/${classCode}/curriculum`)}
+              className="min-h-[48px]"
+              data-testid="open-curriculum"
+            >{tx('paths:currTitle')}</Button>
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => navigate(`/teacher/${classCode}/print`)}
               className="min-h-[48px]"
             >{tx('ui:s_e39c15d303')}</Button>
@@ -252,6 +264,33 @@ const TeacherDashboard: React.FC = () => {
                 </option>
               ))}
             </select>
+            <label className="text-sm">
+              <span className="mb-1 block">{tx('paths:defaultPath')}</span>
+              <select
+                value={defaultPath}
+                disabled={savingDefault || !!loadError || sample}
+                onChange={(e) => {
+                  const pathId = e.target.value;
+                  setDefaultPath(pathId);
+                  setDefaultSaved(false);
+                  setSaveError('');
+                  setSavingDefault(true);
+                  void setClassDefaultStart(classCode, defaultPlanet, pathId)
+                    .then(() => setDefaultSaved(true))
+                    .catch((err) => {
+                      console.error(err);
+                      setSaveError('Could not save unlock setting. Try again.');
+                    })
+                    .finally(() => setSavingDefault(false));
+                }}
+                className="border border-border rounded-xl px-3 py-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px]"
+                aria-label={tx('paths:defaultPath')}
+              >
+                {PATHS.map((path) => (
+                  <option key={path.id} value={path.id}>{tx(path.titleKey)}</option>
+                ))}
+              </select>
+            </label>
             <span className="text-sm font-medium text-sky-300 px-2">
               {tx('ui:planetLevel_lesson', { topic: tx(`ui:topic_${derivedLesson}`) })}
             </span>
@@ -318,6 +357,11 @@ const TeacherDashboard: React.FC = () => {
             </ul>
           </details>
         </section>
+
+        {!sample && <PilotOverview classCode={classCode} classroom={cls} />}
+        {isDemoMode() && !sample && (
+          <p className="mb-6 text-sm text-muted-foreground">{tx('paths:demoPin')}</p>
+        )}
 
         <ClassTrends students={roster} sample={sample} />
         {students.length > 0 && (

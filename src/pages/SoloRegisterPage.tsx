@@ -36,7 +36,7 @@ const SoloRegisterPage: React.FC = () => {
     setError('');
   };
 
-  const enterSolo = (progress: ReturnType<typeof createSoloProgress>) => {
+  const enterSolo = (progress: ReturnType<typeof createSoloProgress>, dest = STUDENT_HUB_PATH) => {
     hydrateClassMax(progress.unlockPlanet);
     hydrateFromStudent(soloProgressToStudent(progress));
     setActiveStudent({
@@ -45,7 +45,7 @@ const SoloRegisterPage: React.FC = () => {
       displayName: progress.displayName,
       solo: true,
     });
-    navigate(STUDENT_HUB_PATH, { replace: true });
+    navigate(dest, { replace: true });
   };
 
   const continueExisting = () => {
@@ -77,7 +77,7 @@ const SoloRegisterPage: React.FC = () => {
     } else {
       saveSoloPending({ displayName: name });
     }
-    navigate('/level-check', { replace: false });
+    navigate('/pick-path?mode=solo&next=check', { replace: false });
   };
 
   const startWithoutCheck = () => {
@@ -99,7 +99,7 @@ const SoloRegisterPage: React.FC = () => {
       placementDone: false,
     });
     saveSoloProgress(progress);
-    enterSolo(progress);
+    enterSolo(progress, '/pick-path?mode=switch&next=hub');
   };
 
   return (

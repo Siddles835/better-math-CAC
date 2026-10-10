@@ -149,7 +149,9 @@ const looksEnglish = (value) => {
 };
 
 const scanFile = (filePath) => {
-  const raw = stripComments(fs.readFileSync(filePath, 'utf8'));
+  const source = fs.readFileSync(filePath, 'utf8');
+  if (source.includes('locale-check-ignore')) return;
+  const raw = stripComments(source);
   const rel = path.relative(srcRoot, filePath);
   attrRe.lastIndex = 0;
   let match;

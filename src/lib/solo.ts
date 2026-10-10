@@ -1,3 +1,4 @@
+import type { LearnerRecord } from '@/content/types';
 import type { Diagnosis } from '@/lib/cognition';
 import type { LastQuizSummary, LessonType, StudentState } from '@/lib/classroom';
 import { nicknameKey, normalizeLabel } from '@/lib/classroom';
@@ -30,6 +31,8 @@ export interface SoloProgress {
   /** Optional 4-digit PIN; never synced off-device. Empty/undefined = none. */
   pin?: string;
   placementDone?: boolean;
+  /** Path progress, assessments, and daily time. Missing on older saves. */
+  learner?: LearnerRecord;
   lastUpdated: number;
 }
 

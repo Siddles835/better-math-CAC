@@ -156,6 +156,12 @@ const SolarSystemPage: React.FC = () => {
               onClick={() => navigate('/settings')}
               className="underline underline-offset-2 hover:text-foreground"
             >{tx('ui:s_c7f73bb54d')}</button>
+            {' · '}
+            <button
+              type="button"
+              onClick={() => navigate('/pick-path?mode=switch&next=hub')}
+              className="underline underline-offset-2 hover:text-foreground"
+            >{tx('paths:openPaths')}</button>
           </p>
         )}
         <h1 className="text-2xl sm:text-3xl font-semibold text-foreground mb-2">{tx('ui:s_7bb59b2f67')}</h1>

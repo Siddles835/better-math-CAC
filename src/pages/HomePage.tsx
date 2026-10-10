@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguagePicker from '@/components/LanguagePicker';
+import { VersionMark } from '@/components/DemoChrome';
+import { useAccessibility } from '@/context/AccessibilityContext';
+import { tx } from '@/i18n/tx';
 import {
   clearActiveStudent,
   clearActiveTeacher,
@@ -18,7 +21,14 @@ import { isSoloClassCode } from '@/lib/solo';
 
 const HomePage: React.FC = () => {
   const { t } = useTranslation('home');
+  const { prefs } = useAccessibility();
   const navigate = useNavigate();
+  const welcomeKey =
+    prefs.displayStyle === 'playful'
+      ? 'paths:welcomePlayful'
+      : prefs.displayStyle === 'minimal'
+        ? 'paths:welcomeMinimal'
+        : 'paths:welcomeStandard';
   const [studentSession, setStudentSession] = useState<ActiveStudent | null>(null);
   const [teacherSession, setTeacherSession] = useState<ActiveTeacher | null>(null);
 
@@ -61,6 +71,7 @@ const HomePage: React.FC = () => {
         <p className="text-lg text-muted-foreground max-w-lg mx-auto mb-3">
           {t('tagline')}
         </p>
+        <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-3">{tx(welcomeKey)}</p>
         <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-8">
           {t('privacyLine')}{' '}
           <Link to="/how-it-works" className="underline underline-offset-2 hover:text-foreground">
@@ -225,6 +236,7 @@ const HomePage: React.FC = () => {
         <Link to="/cookie-policy" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">
           {t('cookies')}
         </Link>
+        <VersionMark />
       </footer>
     </div>
   );

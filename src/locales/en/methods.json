@@ -18,7 +18,7 @@
   "limitTeacher": "Teachers make the final call.",
   "limitPrivacy": "Drawings stay on the device. The app does not send them anywhere. In individual mode (Learn on my own), the space name, optional PIN, and lesson progress also stay on the device only — nothing is sent to Firebase unless the learner later joins a class.",
   "soloMode": "Individual mode",
-  "soloModeBody": "Learn on my own keeps progress in on-device storage. There is no email, password, or cloud account. A short placement check can suggest a starting planet; children can still choose another planet and explore.",
+  "soloModeBody": "Learn on my own keeps progress in on-device storage. There is no email, password, or cloud account. A short placement check can suggest a starting planet; learners can still choose another planet and explore.",
   "sampleSize": "Sample size {{count}}",
   "tree": "Misconception tree",
   "digits": "Digit model",
@@ -26,5 +26,6 @@
   "showTable": "Show data table",
   "hideTable": "Hide data table",
   "explore": "Explore (number sense)",
-  "exploreBody": "Explore is an optional, untimed moon-station area with open number-sense activities (ten-frames, subitizing looks, number talks, which-one-does-not-belong, make 10/20/100, number lines, story building, and skip-counting patterns). It celebrates many ways of thinking. It does not add diagnosis codes. Optional coarse signals (activity id, ways found, timestamp) stay on the device with other progress. Design notes cite classroom practices such as number talks and CRA as influences, not endorsements. Not tested with children in this release; not reviewed by educators as a formal study."
+  "exploreBody": "Explore is an optional, untimed moon-station area with open number-sense activities (ten-frames, subitizing looks, number talks, which-one-does-not-belong, make 10/20/100, number lines, story building, and skip-counting patterns). It celebrates many ways of thinking. It does not add diagnosis codes. Optional coarse signals (activity id, ways found, timestamp) stay on the device with other progress. Design notes cite classroom practices such as number talks and CRA as influences, not endorsements. Not tested with children in this release; not reviewed by educators as a formal study.",
+  "scope": "The misconception model covers the Foundations path only: counting, addition, and subtraction on the nine planets. Other paths use topic mastery, which is how often answers are correct on a topic. They do not assign a misconception label."
 }

@@ -18,7 +18,7 @@
   "limitTeacher": "La maestra o el maestro decide al final.",
   "limitPrivacy": "Los dibujos se quedan en el dispositivo. La app no los envía a ningún lado. En modo individual (Aprende por tu cuenta), el nombre espacial, el PIN opcional y el progreso también se quedan solo en el dispositivo — no se envía nada a Firebase a menos que luego se una a una clase.",
   "soloMode": "Modo individual",
-  "soloModeBody": "Aprende por tu cuenta guarda el progreso en el dispositivo. No hay correo, contraseña ni cuenta en la nube. Una prueba corta puede sugerir un planeta de inicio; el niño puede elegir otro y explorar.",
+  "soloModeBody": "Aprende por tu cuenta guarda el progreso en el dispositivo. No hay correo, contraseña ni cuenta en la nube. Una prueba corta puede sugerir un planeta de inicio; quien aprende puede elegir otro y explorar.",
   "sampleSize": "Tamaño de la muestra {{count}}",
   "tree": "Árbol de ideas erróneas",
   "digits": "Modelo de dígitos",
@@ -26,5 +26,6 @@
   "showTable": "Mostrar tabla",
   "hideTable": "Ocultar tabla",
   "explore": "Explorar (sentido numérico)",
-  "exploreBody": "Explorar es un área opcional y sin tiempo, como una estación lunar, con actividades abiertas de sentido numérico (marcos de diez, miradas de subitización, charlas de números, cuál no pertenece, hacer 10/20/100, rectas numéricas, historias y patrones de conteo salteado). Celebra muchas formas de pensar. No añade códigos de diagnóstico. Las señales opcionales breves (id de actividad, formas halladas, marca de tiempo) quedan en el dispositivo con el resto del progreso. Las notas de diseño citan prácticas de aula como influencias, no como respaldos. No se probó con niños en esta versión; no fue revisado por educadores como estudio formal."
+  "exploreBody": "Explorar es un área opcional y sin tiempo, como una estación lunar, con actividades abiertas de sentido numérico (marcos de diez, miradas de subitización, charlas de números, cuál no pertenece, hacer 10/20/100, rectas numéricas, historias y patrones de conteo salteado). Celebra muchas formas de pensar. No añade códigos de diagnóstico. Las señales opcionales breves (id de actividad, formas halladas, marca de tiempo) quedan en el dispositivo con el resto del progreso. Las notas de diseño citan prácticas de aula como influencias, no como respaldos. No se probó con niños en esta versión; no fue revisado por educadores como estudio formal.",
+  "scope": "El modelo de ideas cubre solo el camino Bases: conteo, suma y resta en los nueve planetas. Los otros caminos usan dominio por tema, es decir con qué frecuencia las respuestas son correctas en un tema. No asignan una etiqueta de idea errónea."
 }

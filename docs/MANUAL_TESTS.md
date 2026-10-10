@@ -1,6 +1,6 @@
 # Manual checks
 
-Playwright is not set up. These are the checks to run on a device.
+Playwright covers the main flows in `e2e/` (`npm run test:e2e`). These checks still need a device or a browser.
 
 ## Answer checking
 
@@ -41,6 +41,15 @@ UNTESTED pending Xcode / physical iPhone. Swift changes in `ios/ContentView.swif
 5. Toggle Airplane Mode on/off (offline screen may appear; after retry) — still signed in.
 6. Explicit Sign out / Delete account — session clears and stays cleared.
 7. Optional: with a debug build, confirm console `[session]` logs on write / restore / clear.
+
+## Keyboard, focus, labels, and contrast
+
+- Tab from Home through Pick a path, a level check, Settings appearance, and the teacher curriculum editor. Focus stays visible and does not get trapped.
+- Every control has a visible name: path buttons, theme choices, mastery percent, hints, assign, and export.
+- Equations stay left to right in Arabic. Theme buttons use aria-pressed.
+- Light, dark, and high contrast meet WCAG AA (4.5:1) for text on background, muted text, card text, and primary text. The automated contrast test covers the token pairs.
+- Reduced motion follows the operating system until the person turns motion back on.
+- The dyslexia-friendly font is the self-hosted Lexend file. The network panel shows no font download.
 
 ## iOS print
 

@@ -9,6 +9,7 @@ import type {
   NumberLinePrompt,
   NumberTalkPrompt,
   PatternSkipPrompt,
+  QuickLookPrompt,
   ShowMePrompt,
   WodbOption,
   WodbPrompt,
@@ -167,9 +168,9 @@ export const generatePatternSkip = (band: ExploreBand, seed: number): PatternSki
   while (sequence.length < 5) {
     sequence.push((sequence[sequence.length - 1] ?? start) + step);
   }
-  const mode = rng() < 0.5 ? 'extend' : 'fix';
+  const mode = rng() < 0.5 ? 'extend' : 'break';
   let breakIndex = -1;
-  if (mode === 'fix') {
+  if (mode === 'break') {
     breakIndex = pickInt(rng, 1, 3);
     const bump = pickOne(rng, [1, -1, step + 1] as const);
     sequence[breakIndex] = Math.max(0, sequence[breakIndex] + bump);
@@ -239,7 +240,7 @@ export const patternExpectedNext = (prompt: PatternSkipPrompt): number =>
   prompt.start + prompt.sequence.length * prompt.step;
 
 export const patternBrokenValue = (prompt: PatternSkipPrompt): number | null => {
-  if (prompt.mode !== 'fix' || prompt.breakIndex < 0) return null;
+  if (prompt.mode !== 'break' || prompt.breakIndex < 0) return null;
   return prompt.sequence[prompt.breakIndex] ?? null;
 };
 

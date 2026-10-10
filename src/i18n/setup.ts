@@ -34,7 +34,7 @@ void i18n.use(initReactI18next).init({
   lng: initial,
   fallbackLng: 'en',
   supportedLngs: ['en', 'zh-Hans', 'hi', 'es', 'ar'],
-  ns: ['common', 'home', 'lessons', 'quiz', 'teacher', 'cognition', 'settings', 'methods', 'legal', 'ui', 'explore'],
+  ns: ['common', 'home', 'lessons', 'quiz', 'teacher', 'cognition', 'settings', 'methods', 'legal', 'ui', 'explore', 'paths'],
   defaultNS: 'common',
   interpolation: { escapeValue: false },
   returnNull: false,

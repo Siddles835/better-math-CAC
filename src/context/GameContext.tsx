@@ -4,7 +4,6 @@ import {
   applyClassStartIfNeeded,
   findStudentKey,
   nicknameKey,
-  patchStudentFields,
   LessonType,
   StudentState,
   LastQuizSummary,
@@ -29,9 +28,9 @@ import { hapticMedium } from '@/lib/haptics';
 import {
   isSoloClassCode,
   loadSoloProgress,
-  patchSoloProgressFields,
   soloProgressToStudent,
 } from '@/lib/solo';
+import { getPort } from '@/lib/data/port';
 
 interface GameContextType {
   currentLesson: LessonType | null;
@@ -134,11 +133,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       writerKeyRef.current = key;
       writerRef.current = createStudentWriter({
         write: async (fields) => {
-          if (solo) {
-            patchSoloProgressFields(fields);
-            return;
-          }
-          await patchStudentFields(active.classCode, nicknameKey(active.nickname), fields);
+          await getPort(active.classCode, solo).patchStudent(
+            active.classCode,
+            nicknameKey(active.nickname),
+            fields
+          );
         },
       });
     }

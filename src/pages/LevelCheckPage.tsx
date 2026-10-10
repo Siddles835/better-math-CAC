@@ -17,6 +17,7 @@ import {
   nextStaircaseState,
   pickQuestion,
   resultFromStaircase,
+  runStaircase,
   skippedPlacement,
   type PlacementQuestion,
   type PlacementResult,
@@ -42,8 +43,13 @@ import {
 } from '@/lib/placementSession';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 import { hapticTap } from '@/lib/haptics';
+import BandCheckPage from '@/pages/BandCheckPage';
+import { isDemoMode } from '@/lib/demo/mode';
+import { loadActiveLearner, saveActiveLearner } from '@/lib/paths/activeLearner';
+import { appendAssessment } from '@/lib/paths/progress';
+import { FOUNDATION_BANDS, summarizeBands } from '@/lib/placementBands';
 
-const LevelCheckPage: React.FC = () => {
+const FoundationsLevelCheck: React.FC = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const mode = params.get('mode') === 'class' ? 'class' : 'solo';
@@ -119,6 +125,17 @@ const LevelCheckPage: React.FC = () => {
           solo: true,
         });
         clearSoloPending();
+      }
+      try {
+        const loaded = await loadActiveLearner();
+        if (loaded) {
+          const summary = summarizeBands(FOUNDATION_BANDS, placement.clearedLevelIndex, Date.now());
+          summary.recommendedPathId = 'foundations';
+          summary.recommendedNodeId = startPlanet;
+          await saveActiveLearner(appendAssessment(loaded.record, summary));
+        }
+      } catch (error) {
+        console.error('Could not save assessment', error);
       }
       setResult({
         ...placement,
@@ -354,10 +371,29 @@ const LevelCheckPage: React.FC = () => {
           >
             {tx('ui:place_skip')}
           </button>
+          {isDemoMode() && (
+            <button
+              type="button"
+              data-testid="demo-fast-forward"
+              className="text-sm underline underline-offset-2 min-h-[44px]"
+              onClick={() => void finishWith(runStaircase(['correct']).result)}
+            >
+              {tx('paths:demoFast')}
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
+};
+
+const LevelCheckPage: React.FC = () => {
+  const [params] = useSearchParams();
+  const pathParam = params.get('path');
+  if (pathParam && pathParam !== 'foundations') {
+    return <BandCheckPage pathId={pathParam} />;
+  }
+  return <FoundationsLevelCheck />;
 };
 
 export default LevelCheckPage;

@@ -21,6 +21,14 @@ const ANIMALS = [
 
 const pick = <T,>(items: T[]): T => items[Math.floor(Math.random() * items.length)];
 
+/** Same word lists as generateUsername, driven by a caller-supplied RNG. */
+export const seededUsername = (rng: () => number): string => {
+  const adjective = ADJECTIVES[Math.floor(rng() * ADJECTIVES.length)] ?? 'Calm';
+  const animal = ANIMALS[Math.floor(rng() * ANIMALS.length)] ?? 'Otter';
+  const number = 10 + Math.floor(rng() * 90);
+  return `${adjective}${animal}${number}`;
+};
+
 /** e.g. "BraveTiger42" — no real names, unlimited re-rolls. */
 export const generateUsername = (): string => {
   const number = Math.floor(Math.random() * 90) + 10; // 10–99

@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Lexend';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/lexend-latin-400.woff2') format('woff2');
+}
+
 @layer base {
   :root {
     /* Calm, warm color palette for autism-friendly design */
@@ -338,14 +346,23 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  html:not([data-motion='allow']) *,
+  html:not([data-motion='allow']) *::before,
+  html:not([data-motion='allow']) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+html[data-reduce-motion] *,
+html[data-reduce-motion] *::before,
+html[data-reduce-motion] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* 
@@ -363,18 +380,74 @@ html[data-easy-read] body {
   line-height: 1.75;
 }
 
+html[data-theme='light'] {
+  --background: 40 33% 97%;
+  --foreground: 230 25% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 230 25% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 230 25% 12%;
+  --primary: 200 55% 28%;
+  --primary-foreground: 0 0% 100%;
+  --muted: 40 20% 92%;
+  --muted-foreground: 220 12% 28%;
+  --border: 220 12% 70%;
+  --input: 220 12% 70%;
+  --ring: 200 55% 28%;
+}
+
+html[data-theme='dark'] {
+  --background: 230 25% 10%;
+  --foreground: 220 15% 96%;
+  --card: 230 20% 14%;
+  --card-foreground: 220 15% 96%;
+  --popover: 230 20% 14%;
+  --popover-foreground: 220 15% 96%;
+  --primary: 200 70% 62%;
+  --primary-foreground: 230 30% 8%;
+  --muted: 230 15% 20%;
+  --muted-foreground: 220 12% 78%;
+  --border: 230 12% 32%;
+  --input: 230 12% 32%;
+  --ring: 200 70% 62%;
+}
+
+html[data-theme='contrast'],
 html[data-high-contrast] {
-  --background: 0 0% 4%;
+  --background: 0 0% 0%;
   --foreground: 0 0% 100%;
-  --card: 0 0% 10%;
+  --card: 0 0% 0%;
   --card-foreground: 0 0% 100%;
-  --muted: 0 0% 18%;
-  --muted-foreground: 0 0% 88%;
-  --border: 0 0% 70%;
-  --input: 0 0% 70%;
-  --primary: 205 100% 72%;
-  --primary-foreground: 0 0% 4%;
-  --ring: 205 100% 72%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 0 0% 100%;
+  --muted: 0 0% 0%;
+  --muted-foreground: 0 0% 100%;
+  --border: 0 0% 100%;
+  --input: 0 0% 100%;
+  --primary: 55 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  --ring: 55 100% 50%;
+}
+
+html[data-dyslexia-font] body {
+  font-family: 'Lexend', 'Atkinson Hyperlegible', system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  word-spacing: 0.16em;
+  line-height: 1.75;
+}
+
+html[data-display='standard'] {
+  --radius: 0.5rem;
+}
+
+html[data-display='minimal'] {
+  --radius: 0.25rem;
+}
+
+html[data-display='minimal'] .animate-gentle-float,
+html[data-display='standard'] .animate-gentle-float,
+html[data-display='minimal'] .subtle-stars {
+  animation: none !important;
 }
 
 html[data-calm] .subtle-stars,
