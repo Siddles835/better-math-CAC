@@ -1,5 +1,5 @@
 import { tx } from '@/i18n/tx';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PATHS } from '@/content/catalog';
 import type { Assignment, Curriculum, CurriculumNode, Problem } from '@/content/types';
@@ -60,7 +60,7 @@ const CurriculumPage = () => {
   const [dirty, setDirty] = useState(false);
   const [studentKey, setStudentKey] = useState('');
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setError('');
     try {
       const port = getPort(classCode, false);
@@ -75,7 +75,7 @@ const CurriculumPage = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : tx('paths:currError'));
     }
-  };
+  }, [classCode]);
 
   useEffect(() => {
     void load();
@@ -86,7 +86,7 @@ const CurriculumPage = () => {
       window.removeEventListener('online', onOff);
       window.removeEventListener('offline', onOff);
     };
-  }, [classCode]);
+  }, [load]);
 
   useEffect(() => {
     if (!current || !dirty) return;

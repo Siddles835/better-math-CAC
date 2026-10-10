@@ -46,8 +46,9 @@ const TeacherLoginPage: React.FC = () => {
         <p className="text-muted-foreground mb-6">{tx('ui:s_7d9694d715')}</p>
 
         <form onSubmit={handleLogin}>
-          <label className="block mb-2 font-medium">{tx('ui:s_554850d9a1')}</label>
+          <label htmlFor="teacher-class-code" className="block mb-2 font-medium">{tx('ui:s_554850d9a1')}</label>
           <input
+            id="teacher-class-code"
             value={classCode}
             onChange={(e) => {
               setClassCode(e.target.value);
@@ -61,8 +62,9 @@ const TeacherLoginPage: React.FC = () => {
             autoCapitalize="none"
           />
 
-          <label className="block mb-2 font-medium">{tx('ui:s_d4573570bc')}</label>
+          <label htmlFor="teacher-pin" className="block mb-2 font-medium">{tx('ui:s_d4573570bc')}</label>
           <input
+            id="teacher-pin"
             value={teacherPin}
             onChange={(e) => {
               setTeacherPin(e.target.value);
