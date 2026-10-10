@@ -1,4 +1,15 @@
-export type Operator = 'count' | '+' | '−';
+export type Operator =
+  | 'count'
+  | '+'
+  | '−'
+  | '×'
+  | '÷'
+  | 'solve-add'
+  | 'solve-sub'
+  | 'solve-mul'
+  | 'perimeter'
+  | 'area'
+  | 'angle';
 
 /** Single source of truth: expected answer from operands + operator. */
 export const computeExpectedAnswer = (
@@ -8,7 +19,19 @@ export const computeExpectedAnswer = (
 ): number => {
   if (operator === 'count') return num1;
   if (operator === '+') return num1 + num2;
-  return num1 - num2;
+  if (operator === '−') return num1 - num2;
+  if (operator === '×' || operator === 'area') return num1 * num2;
+  if (operator === '÷' || operator === 'solve-mul') {
+    if (num2 === 0 || num1 % num2 !== 0) {
+      throw new Error(`division not exact: ${num1} / ${num2}`);
+    }
+    return num1 / num2;
+  }
+  if (operator === 'solve-add') return num1 - num2;
+  if (operator === 'solve-sub') return num1 + num2;
+  if (operator === 'perimeter') return 2 * (num1 + num2);
+  if (operator === 'angle') return 180 - num1 - num2;
+  throw new Error(`unknown operator ${operator}`);
 };
 
 export const assertNonNegativeResult = (operator: Operator, num1: number, num2: number): void => {

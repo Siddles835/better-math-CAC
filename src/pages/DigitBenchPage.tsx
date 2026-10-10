@@ -4,7 +4,7 @@ import type { DigitRead } from '@/lib/cognition';
 import type { Point, Stroke } from '@/lib/cognition/strokes';
 
 /**
- * Dev-only harness for Playwright finger-drawing benchmarks.
+ * locale-check-ignore: dev-only Playwright harness, not learner-facing copy.
  * Exposes window.__digitBench so tests can clear, inspect strokes, and read.
  */
 const DigitBenchPage = () => {

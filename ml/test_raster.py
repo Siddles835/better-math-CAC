@@ -26,19 +26,27 @@ if failed:
 print(f"Python rasterizer matched {len(golden)} golden grids within 1e-3.")
 
 # Optional CNN forward golden (written by train_digit_cnn.py).
+# The raster parity check above does not need PyTorch. Skip the CNN check
+# when PyTorch is missing so `npm test` does not crash on a clean machine.
 cnn_gold = ROOT / "golden_cnn_forward.json"
 weights = ROOT.parent / "src" / "lib" / "cognition" / "models" / "digit_mlp.json"
 if cnn_gold.exists() and weights.exists():
-    from train_digit_cnn import cnn_numpy_forward  # noqa: E402
-    import numpy as np
+    try:
+        import torch  # noqa: F401
+    except ImportError:
+        print("Skipping CNN forward golden: PyTorch is not installed.")
+        torch = None
+    if torch is not None:
+        from train_digit_cnn import cnn_numpy_forward  # noqa: E402
+        import numpy as np
 
-    payload = json.loads(weights.read_text())
-    if payload.get("kind") == "cnn":
-        data = json.loads(cnn_gold.read_text())
-        probs = cnn_numpy_forward(payload, np.array(data["inputs"], dtype=np.float64))
-        expected = np.array(data["probs"], dtype=np.float64)
-        max_diff = float(np.max(np.abs(probs - expected)))
-        if max_diff > 1e-4:
-            print(f"CNN forward golden mismatch max_diff={max_diff}")
-            sys.exit(1)
-        print(f"CNN forward golden matched within 1e-4 (max_diff={max_diff:.2e}).")
+        payload = json.loads(weights.read_text())
+        if payload.get("kind") == "cnn":
+            data = json.loads(cnn_gold.read_text())
+            probs = cnn_numpy_forward(payload, np.array(data["inputs"], dtype=np.float64))
+            expected = np.array(data["probs"], dtype=np.float64)
+            max_diff = float(np.max(np.abs(probs - expected)))
+            if max_diff > 1e-4:
+                print(f"CNN forward golden mismatch max_diff={max_diff}")
+                sys.exit(1)
+            print(f"CNN forward golden matched within 1e-4 (max_diff={max_diff:.2e}).")

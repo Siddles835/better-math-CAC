@@ -11,6 +11,20 @@ import {
 } from 'firebase/firestore';
 import { isArrayUnion } from './studentWrites';
 import { db } from './firebase';
+import { deleteClassOwnedDocs, deleteLearnerDoc } from './data/firestoreExtra';
+import { isDemoMode } from './demo/mode';
+import {
+  demoDeleteClass,
+  demoDeleteStudent,
+  demoGetClass,
+  demoPatchStudent,
+  demoRegisterStudent,
+  demoResolveClass,
+  demoSetDefaultStart,
+  demoSetPlacement,
+  demoSubscribe,
+  demoVerifyPin,
+} from './demo/store';
 import type { Diagnosis, DiagnosisSnapshot } from './cognition';
 import {
   getClassroomUnlockPlanet,
@@ -56,7 +70,7 @@ export interface StudentState {
 export interface Classroom {
   classCode: string;
   teacherCode: string;
-  defaultStart?: { planet: string; lesson: LessonType };
+  defaultStart?: { planet: string; lesson: LessonType; pathId?: string };
   /** Legacy field some older docs may still have */
   defaultPlanet?: string;
   /**
@@ -85,6 +99,7 @@ export const findStudentKey = (
 };
 
 export const resolveClassCode = async (input: string): Promise<string | null> => {
+  if (isDemoMode()) return demoResolveClass(input);
   const exact = normalizeLabel(input);
   if (!exact) return null;
 
@@ -128,6 +143,7 @@ export const checkStudentExists = async (classCode: string, nickname: string): P
 };
 
 const getClassById = async (id: string): Promise<Classroom | null> => {
+  if (isDemoMode()) return demoResolveClass(id) ? demoGetClass() : null;
   const docSnap = await getDoc(doc(db, 'classrooms', id));
   return docSnap.exists() ? (docSnap.data() as Classroom) : null;
 };
@@ -136,6 +152,7 @@ export const createClass = async (
   classCode: string,
   teacherCode?: string
 ): Promise<{ classCode: string; teacherCode: string }> => {
+  if (isDemoMode()) return { classCode: 'demo', teacherCode: 'DEMO01' };
   const key = classCodeKey(classCode);
   const pin = teacherCode || generateTeacherPin();
   await setDoc(doc(db, 'classrooms', key), {
@@ -156,6 +173,7 @@ export const verifyTeacherPin = async (
   classCode: string,
   teacherPin: string
 ): Promise<{ ok: true; classCode: string; teacherCode: string } | { ok: false; reason: string }> => {
+  if (isDemoMode()) return demoVerifyPin(classCode, teacherPin);
   const resolved = await resolveClassCode(classCode);
   if (!resolved) {
     return { ok: false, reason: `Class code "${normalizeLabel(classCode)}" does not exist.` };
@@ -231,6 +249,7 @@ export const syncStudentsToClassStart = async (
   classCode: string,
   startPlanet: string
 ): Promise<number> => {
+  if (isDemoMode()) return 0;
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   const cls = await getClassById(resolved);
   if (!cls?.students) return 0;
@@ -267,6 +286,10 @@ export const registerStudent = async (
   classCode: string,
   nickname: string
 ): Promise<{ student: StudentState; classCode: string } | null> => {
+  if (isDemoMode()) {
+    if (!demoResolveClass(classCode)) return null;
+    return demoRegisterStudent(nickname);
+  }
   const resolved = await resolveClassCode(classCode);
   if (!resolved) return null;
 
@@ -286,8 +309,12 @@ export const updateStudentState = async (
   student: StudentState,
   studentKey?: string
 ) => {
-  const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   const key = studentKey || nicknameKey(student.nickname);
+  if (isDemoMode()) {
+    demoPatchStudent(key, { ...student, lastUpdated: Date.now() });
+    return;
+  }
+  const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   // Don't mutate the caller's object (it is often React state / a snapshot).
   const payload: StudentState = { ...student, lastUpdated: Date.now() };
   await updateDoc(doc(db, 'classrooms', resolved), {
@@ -304,6 +331,10 @@ export const patchStudentFields = async (
   studentKey: string,
   fields: Record<string, unknown>
 ) => {
+  if (isDemoMode()) {
+    demoPatchStudent(studentKey, fields);
+    return;
+  }
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   const payload: Record<string, unknown> = {};
   for (const [field, value] of Object.entries(fields)) {
@@ -314,12 +345,18 @@ export const patchStudentFields = async (
   await updateDoc(doc(db, 'classrooms', resolved), payload);
 };
 
-export const setClassDefaultStart = async (classCode: string, planet: string) => {
+export const setClassDefaultStart = async (classCode: string, planet: string, pathId?: string) => {
+  if (isDemoMode()) {
+    demoSetDefaultStart(planet, pathId);
+    return;
+  }
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   const normalized = normalizePlanetId(planet) ?? 'sun';
   const lesson = getLessonForPlanet(normalized);
+  const existing = await getClassById(resolved);
+  const nextPath = pathId ?? existing?.defaultStart?.pathId;
   await updateDoc(doc(db, 'classrooms', resolved), {
-    defaultStart: { planet: normalized, lesson },
+    defaultStart: { planet: normalized, lesson, ...(nextPath ? { pathId: nextPath } : {}) },
     // Keep legacy field in sync for older readers
     defaultPlanet: normalized,
   });
@@ -332,6 +369,10 @@ export const setClassUsePlacementCheck = async (
   classCode: string,
   enabled: boolean
 ): Promise<void> => {
+  if (isDemoMode()) {
+    demoSetPlacement(enabled);
+    return;
+  }
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   await updateDoc(doc(db, 'classrooms', resolved), {
     usePlacementCheck: enabled,
@@ -353,9 +394,11 @@ export const deleteStudent = async (classCode: string, nicknameOrKey: string): P
       ? nicknameOrKey
       : findStudentKey(students, nicknameOrKey);
   if (!key) return false;
+  if (isDemoMode()) return demoDeleteStudent(key);
   await updateDoc(doc(db, 'classrooms', resolved), {
     [`students.${key}`]: deleteField(),
   });
+  await deleteLearnerDoc(resolved, key);
   return true;
 };
 
@@ -366,6 +409,8 @@ export const deleteStudent = async (classCode: string, nicknameOrKey: string): P
 export const deleteClassroom = async (classCode: string): Promise<boolean> => {
   const resolved = await resolveClassCode(classCode);
   if (!resolved) return false;
+  if (isDemoMode()) return demoDeleteClass();
+  await deleteClassOwnedDocs(resolved);
   await deleteDoc(doc(db, 'classrooms', resolved));
   return true;
 };
@@ -375,6 +420,7 @@ export const subscribeToClass = (
   callback: (data: Classroom | null) => void,
   onError?: (error: Error) => void
 ): Unsubscribe => {
+  if (isDemoMode()) return demoSubscribe(classCode, callback);
   let activeUnsub: Unsubscribe | null = null;
   let cancelled = false;
 

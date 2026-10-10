@@ -12,7 +12,7 @@ type BoolKey = {
 
 /** Voice on/off is VoiceToggle (voiceEnabled). muteSounds is SFX only. */
 const TOGGLE_IDS: BoolKey[] = [
-  'easyReadSpacing', 'highContrast', 'colorSafeLabels', 'reduceMotion', 'calmBackground',
+  'easyReadSpacing', 'colorSafeLabels', 'reduceMotion', 'calmBackground',
   'focusMode', 'autoReadAloud', 'soundAsText', 'muteSounds', 'biggerButtons', 'breaks',
   'summaryFirst', 'workedExampleFirst',
 ];

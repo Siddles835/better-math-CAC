@@ -75,16 +75,12 @@ const StudentRegisterPage: React.FC = () => {
         nickname: nicknameKey(name),
         displayName: result.student.nickname,
       });
-      if (cls?.usePlacementCheck) {
-        saveClassPlacementPending({
-          classCode: result.classCode,
-          nickname: nicknameKey(name),
-          displayName: result.student.nickname,
-        });
-        navigate('/level-check?mode=class', { replace: true });
-        return;
-      }
-      navigate(STUDENT_HUB_PATH, { replace: true });
+      saveClassPlacementPending({
+        classCode: result.classCode,
+        nickname: nicknameKey(name),
+        displayName: result.student.nickname,
+      });
+      navigate(`/pick-path?mode=class&next=${cls?.usePlacementCheck ? 'check' : 'hub'}`, { replace: true });
     } catch (err: unknown) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'Check your connection.';

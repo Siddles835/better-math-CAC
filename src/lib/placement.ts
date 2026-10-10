@@ -56,6 +56,8 @@ export interface StaircaseState {
   clearedLevelIndex: number;
   itemsAnswered: number;
   done: boolean;
+  /** How many bands this run can climb. Defaults to the foundations list. */
+  levelCount: number;
   config: StaircaseConfig;
 }
 
@@ -288,7 +290,8 @@ export const PLACEMENT_QUESTIONS = PLACEMENT_BANK.filter((q) =>
 );
 
 export const createStaircase = (
-  config: Partial<StaircaseConfig> = {}
+  config: Partial<StaircaseConfig> = {},
+  levelCount = PLACEMENT_LEVELS.length
 ): StaircaseState => ({
   levelIndex: 0,
   successesAtLevel: 0,
@@ -297,6 +300,7 @@ export const createStaircase = (
   clearedLevelIndex: -1,
   itemsAnswered: 0,
   done: false,
+  levelCount,
   config: { ...DEFAULT_STAIRCASE, ...config },
 });
 
@@ -316,6 +320,7 @@ export const nextStaircaseState = (
   if (outcome === 'unreadable') return { ...state };
 
   const { successThreshold, missThreshold, minItems, maxItems } = state.config;
+  const levelCount = state.levelCount || PLACEMENT_LEVELS.length;
   let levelIndex = state.levelIndex;
   let successesAtLevel = state.successesAtLevel;
   let missesAtLevel = state.missesAtLevel;
@@ -327,7 +332,7 @@ export const nextStaircaseState = (
     successesAtLevel += 1;
     if (successesAtLevel >= successThreshold) {
       clearedLevelIndex = Math.max(clearedLevelIndex, levelIndex);
-      if (!stopHarder && levelIndex < PLACEMENT_LEVELS.length - 1) {
+      if (!stopHarder && levelIndex < levelCount - 1) {
         levelIndex += 1;
         successesAtLevel = 0;
         missesAtLevel = 0;
@@ -340,7 +345,7 @@ export const nextStaircaseState = (
     }
   }
 
-  const atTop = clearedLevelIndex >= PLACEMENT_LEVELS.length - 1;
+  const atTop = clearedLevelIndex >= levelCount - 1;
   const canStopEarly = stopHarder || atTop;
   const done =
     itemsAnswered >= maxItems || (itemsAnswered >= minItems && canStopEarly);
@@ -353,6 +358,7 @@ export const nextStaircaseState = (
     clearedLevelIndex,
     itemsAnswered,
     done,
+    levelCount,
     config: state.config,
   };
 };

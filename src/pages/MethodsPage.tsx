@@ -176,6 +176,7 @@ const MethodsPage: React.FC = () => {
 
       <Section title={t('limits')}>
         <ul className="list-disc ps-5 space-y-2">
+          <li>{t('scope')}</li>
           <li>{t('limitGrade')}</li>
           <li>{t('limitDisability')}</li>
           <li>{t('limitTeacher')}</li>

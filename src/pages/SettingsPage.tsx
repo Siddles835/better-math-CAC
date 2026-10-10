@@ -22,6 +22,8 @@ import { clearSoloProgress, isSoloClassCode } from '@/lib/solo';
 import { clearExploreData } from '@/lib/explore';
 import { Button } from '@/components/ui/button';
 import AccessibilityPanel from '@/components/AccessibilityPanel';
+import AppearanceSection from '@/components/AppearanceSection';
+import { VersionMark } from '@/components/DemoChrome';
 import VoiceToggle from '@/components/VoiceToggle';
 import VoiceSettings from '@/components/VoiceSettings';
 
@@ -158,6 +160,7 @@ const SettingsPage: React.FC = () => {
           <h2 className="text-xl font-semibold mb-1">{tx('ui:s_d8f9cb9790')}</h2>
           <p className="text-sm text-muted-foreground mb-4">{tx('ui:s_a37b07078c')}</p>
           <AccessibilityPanel />
+          <AppearanceSection />
         </section>
 
         {student && (
@@ -269,6 +272,9 @@ const SettingsPage: React.FC = () => {
             )}
           </div>
         </section>
+        <div className="mb-8">
+          <VersionMark />
+        </div>
       </main>
     </div>
   );

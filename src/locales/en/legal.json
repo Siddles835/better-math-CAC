@@ -1,12 +1,19 @@
 {
   "notice": "The English version is the authoritative one.",
-  "privacyLead": "MathLift stores a generated space name, class code, lesson progress, and a short history of diagnosis results (misconception type, planet, and timestamp, up to 40). Drawings stay on the device. The same deletion rules remove that history. Optional Explore signals (activity id, ways-found count, timestamp) may stay on the device with other progress and follow the same deletion rules.",
+  "privacyLead": "MathLift stores a generated space name, class code, lesson progress, and a short history of diagnosis results (misconception type, planet, and timestamp, up to 40). Drawings stay on the device. The same deletion rules remove that history. Optional Explore signals (activity id, ways-found count, timestamp) may stay on the device with other progress and follow the same deletion rules. Path progress, assessment summaries (up to 12, no item answers), per-day foreground time, teacher curricula, assignments, and class goals are stored with the class. Deleting a student removes that learner record. Deleting a class removes the curricula it owns. Demo mode stays in memory and is not written to the class database. Appearance choices stay on this device.",
   "cookieLead": "MathLift does not use advertising or analytics cookies. A language choice and a sign-in session stay on this device.",
   "supportLead": "For help, use the support email on this page. Deleting a student or a class also deletes that diagnosis history.",
   "individualTitle": "Individual mode:",
-  "individualBody": "When a child chooses Learn on my own, MathLift stores only a generated space name, an optional 4-digit PIN, lesson progress, and local preferences on this device (browser localStorage, and on iOS a Keychain mirror of that progress). Nothing from individual mode is sent to our servers or written to Firestore unless the learner later joins a class with a class code (not required). Drawings stay on the device. Use Settings → Delete my progress to wipe individual progress on this device. Optional Explore signals (activity id, ways found, timestamp) also stay on this device and are wiped with Delete my progress.",
+  "individualBody": "When a learner chooses Learn on my own, MathLift stores only a generated space name, an optional 4-digit PIN, lesson progress, and local preferences on this device (browser localStorage, and on iOS a Keychain mirror of that progress). Nothing from individual mode is sent to our servers or written to Firestore unless the learner later joins a class with a class code (not required). Drawings stay on the device. Use Settings → Delete my progress to wipe individual progress on this device. Optional Explore signals (activity id, ways found, timestamp) also stay on this device and are wiped with Delete my progress.",
   "exploreSignals": "Explore activity signals (optional)",
   "exploreSignalsWhere": "On this device only (browser localStorage)",
-  "exploreSignalsHow": "Recorded when a child saves or finishes an Explore activity",
-  "exploreSignalsWhy": "Coarse record of which Explore activity was used, how many ways were found, and when. No drawings or free text. Deleted with the same Settings controls as other progress."
+  "exploreSignalsHow": "Recorded when a learner saves or finishes an Explore activity",
+  "exploreSignalsWhy": "Coarse record of which Explore activity was used, how many ways were found, and when. No drawings or free text. Deleted with the same Settings controls as other progress.",
+  "privacyPaths": "Active path, node progress, and topic counts. Missing on older records, which still use planet progress.",
+  "privacyAssess": "Assessment summary: recommended path and planet, topic levels, and time. Up to 12. Item answers are not stored.",
+  "privacyTime": "Foreground time as a total number of seconds per calendar day. Idle time after one minute is not counted.",
+  "privacyCurriculum": "Teacher curricula (problems, hints, examples) and assignments. Owned by the class.",
+  "privacyGoals": "Optional class notes: where we are and where we want to be.",
+  "privacyDemo": "Demo mode keeps a sample class in memory on this device. It does not read or write the class database.",
+  "privacyDeleteExtra": "Deleting a student removes path progress, assessments, daily time, and curriculum progress for that space name. Deleting a class removes curricula, assignments, goals, and every learner record in that class."
 }

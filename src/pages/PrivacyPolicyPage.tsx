@@ -6,7 +6,7 @@ import LegalLanguageNotice from '@/components/LegalLanguageNotice';
 
 const COMPANY_NAME = 'MathLift';
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
-const LAST_UPDATED = 'October 4, 2026';
+const LAST_UPDATED = 'October 10, 2026';
 const WEBSITE_URL = 'https://better-math-lalith.vercel.app';
 
 const PrivacyPolicyPage: React.FC = () => {
@@ -58,6 +58,16 @@ const PrivacyPolicyPage: React.FC = () => {
             </a>
             .
           </p>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3 text-[15px] leading-relaxed text-slate-600">
+          <p>{t('privacyPaths')}</p>
+          <p>{t('privacyAssess')}</p>
+          <p>{t('privacyTime')}</p>
+          <p>{t('privacyCurriculum')}</p>
+          <p>{t('privacyGoals')}</p>
+          <p>{t('privacyDemo')}</p>
+          <p>{t('privacyDeleteExtra')}</p>
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">

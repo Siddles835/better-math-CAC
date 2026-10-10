@@ -37,6 +37,11 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     setSpeechRatePref(prefs.speechRate);
     if (!prefs.voiceEnabled) stopSpeaking();
     savePrefs(prefs);
+    if (prefs.colorTheme !== 'system' || typeof window.matchMedia !== 'function') return;
+    const media = window.matchMedia('(prefers-color-scheme: light)');
+    const onChange = () => applyPrefsToDocument(prefs);
+    media.addEventListener?.('change', onChange);
+    return () => media.removeEventListener?.('change', onChange);
   }, [prefs]);
 
   const setPref = useCallback(

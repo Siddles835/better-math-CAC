@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pilot rules. A teacher PIN checked in the app is not access control.
+    // These rules stay open so the current pilot can read and write class data,
+    // including learner, curriculum, assignment, and goals documents.
+    // Deploying this file does not add security. Replace it with authenticated
+    // rules before treating the database as private.
+    match /classrooms/{classCode} {
+      allow read, write: if true;
+      match /learners/{studentKey} {
+        allow read, write: if true;
+      }
+      match /curricula/{curriculumId} {
+        allow read, write: if true;
+      }
+      match /assignments/{assignmentId} {
+        allow read, write: if true;
+      }
+      match /meta/{docId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}
