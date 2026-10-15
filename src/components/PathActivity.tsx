@@ -6,7 +6,8 @@ import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
 import { useAnswerCheck } from '@/hooks/useAnswerCheck';
 import type { DigitRead, UnreadableReason } from '@/lib/cognition';
-import type { ItemOutcome, PathItem } from '@/lib/cognition/personalPath';
+import { gradeDrawnAnswer } from '@/lib/cognition/gradeDrawing';
+import { expectedFor, type ItemOutcome, type PathItem } from '@/lib/cognition/personalPath';
 
 interface PathActivityProps {
   item: PathItem;
@@ -43,9 +44,9 @@ const PathActivity: React.FC<PathActivityProps> = ({
   const initial =
     item.kind === 'count_on' || item.kind === 'take_away' || item.kind === 'tens_ones' ? item.start : 0;
   const [count, setCount] = React.useState(initial);
-  const drawnExpected = item.kind === 'write_digit' ? (item.digit ?? item.target) : item.target;
-  const multiDigit =
-    (item.kind === 'write_digit' || item.kind === 'neighbor') && drawnExpected >= 10;
+  const answer = expectedFor(item);
+  const multiDigit = (item.kind === 'write_digit' || item.kind === 'neighbor') && answer >= 10;
+  const usesDrawing = (item.kind === 'write_digit' || item.kind === 'neighbor') && !multiDigit;
 
   useEffect(() => {
     setCount(
@@ -84,13 +85,13 @@ const PathActivity: React.FC<PathActivityProps> = ({
   };
 
   const finish = (value: number, extra?: Partial<ItemOutcome>) => {
-    const correct = extra?.correct ?? value === item.target;
+    const correct = extra?.correct ?? value === answer;
     const next = check.submit(correct ? 'correct' : 'incorrect');
     if (!next) return;
     onResult(
       {
         correct,
-        overshoot: value > item.target,
+        overshoot: value > answer,
         reversal: extra?.reversal ?? false,
       },
       value
@@ -104,10 +105,9 @@ const PathActivity: React.FC<PathActivityProps> = ({
       return;
     }
     setReason(null);
-    onTraceDraw(read, drawnExpected);
-    const single = drawnExpected <= 9;
-    const ok = single && read.digit === drawnExpected && !read.reversal;
-    finish(read.digit, { correct: ok, reversal: single && !!read.reversal });
+    onTraceDraw(read, answer);
+    const graded = gradeDrawnAnswer(read.digit, read.reversal, answer);
+    finish(read.digit, graded);
   };
 
   const handleTyped = (value: number) => {
@@ -257,11 +257,11 @@ const PathActivity: React.FC<PathActivityProps> = ({
         </>
       )}
 
-      {(item.kind !== 'write_digit' || multiDigit) && check.state.verdict === 'incorrect' && (
+      {!usesDrawing && check.state.verdict === 'incorrect' && (
         <p className="mt-4 text-base font-medium text-foreground">{tx('ui:s_978780d5aa')}</p>
       )}
-      {success && <p className="mt-4 text-base font-medium text-emerald-400">{tx('ui:s_b897d22764')}</p>}
-      {check.state.verdict === 'unreadable' && item.kind !== 'write_digit' && (
+      {!usesDrawing && success && <p className="mt-4 text-base font-medium text-emerald-400">{tx('ui:s_b897d22764')}</p>}
+      {!usesDrawing && check.state.verdict === 'unreadable' && (
         <p className="mt-4 text-base font-medium">{tx('ui:s_0703bb7bd5')}</p>
       )}
     </div>
