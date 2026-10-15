@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_STAIRCASE,
+  PLACEMENT_BANK,
   PLACEMENT_LEVELS,
+  answerFromPlacementEquation,
   createStaircase,
   nextStaircaseState,
   planetForClearedLevel,
@@ -10,6 +12,35 @@ import {
   skippedPlacement,
   type PlacementOutcome,
 } from './placement';
+import en from '../locales/en/ui.json';
+
+describe('placement equations', () => {
+  it('parses every equation to the stored answer', () => {
+    for (const item of PLACEMENT_BANK) {
+      if (!item.equation) continue;
+      expect(answerFromPlacementEquation(item.equation), item.id).toBe(item.answer);
+    }
+  });
+
+  it('asks children to count dots up to 20 and to name larger numerals', () => {
+    expect(en.place_q_howMany).toBe('What number is this?');
+    for (const item of PLACEMENT_BANK) {
+      if (item.level !== 'count20' && item.level !== 'count100') continue;
+      if (item.equation && /^\d+$/.test(item.equation)) {
+        const value = Number(item.equation);
+        if (value <= 20) {
+          expect(item.dots, item.id).toBe(value);
+        } else {
+          expect(item.promptKey, item.id).toBe('place_q_howMany');
+        }
+      }
+      if (item.dots != null && item.dots <= 20) {
+        expect(item.equation, item.id).toBeUndefined();
+        expect(item.dots).toBe(item.answer);
+      }
+    }
+  });
+});
 
 describe('nextStaircaseState', () => {
   it('ignores unreadable outcomes (never counts as wrong)', () => {

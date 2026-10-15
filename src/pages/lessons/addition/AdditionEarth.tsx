@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Check, X, Play, RotateCcw, ArrowRight } from 'lucide-react';
 import { diagnoseTrace, LessonTrace, type Diagnosis, type DigitRead } from '@/lib/cognition';
 import { useAnswerCheck } from '@/hooks/useAnswerCheck';
+import { EARTH, earthDemoTotal } from '@/lib/answers';
 
 const AdditionEarth: React.FC = () => {
   const navigate = useNavigate();
@@ -32,10 +33,9 @@ const AdditionEarth: React.FC = () => {
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const traceRef = useRef(new LessonTrace());
   
-  // Demo / activity numbers — single source; feedback text is derived from these.
-  const demoLeft = 3;
-  const demoRight = 2;
-  const demoTotal = demoLeft + demoRight;
+  const demoLeft = EARTH.demoLeft;
+  const demoRight = EARTH.demoRight;
+  const demoTotal = earthDemoTotal;
 
   // Animation state
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'initial' | 'animating' | 'final'>('idle');
@@ -47,17 +47,17 @@ const AdditionEarth: React.FC = () => {
   // Activity state
   const [leftPencils] = useState(demoLeft);
   const [rightPencils, setRightPencils] = useState(0);
-  const [availablePencils, setAvailablePencils] = useState(5);
+  const [availablePencils, setAvailablePencils] = useState(EARTH.practiceAvailable);
   
   // Target activity state
-  const [activity2Left] = useState(2);
+  const [activity2Left] = useState(EARTH.buildStart);
   const [activity2Right, setActivity2Right] = useState(0);
-  const [activity2Available, setActivity2Available] = useState(6);
-  const [activity2Target] = useState(6);
+  const [activity2Available, setActivity2Available] = useState(EARTH.buildAvailable);
+  const [activity2Target] = useState(EARTH.buildTarget);
   const [activity2Checked, setActivity2Checked] = useState(false);
   const [showGuided, setShowGuided] = useState(false);
   const drawCheck = useAnswerCheck();
-  const activity2TotalRef = useRef(2);
+  const activity2TotalRef = useRef(EARTH.buildStart);
 
   const [drillReady, setDrillReady] = useState(false);
   const coreSteps = 4;
@@ -167,7 +167,7 @@ const AdditionEarth: React.FC = () => {
   const resetDraw = drawCheck.reset;
   const resetActivity2 = useCallback(() => {
     setActivity2Right(0);
-    setActivity2Available(6);
+    setActivity2Available(EARTH.buildAvailable);
     setActivity2Checked(false);
     setShowGuided(false);
     setDiagnosis(null);
@@ -259,7 +259,7 @@ const AdditionEarth: React.FC = () => {
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-6">
               <h2 className="text-3xl font-semibold text-foreground">{tx('ui:s_a3bea1c401')}</h2>
-              <ReadAloudButton text={tx('ui:s_b67c39e1b8')} />
+              <ReadAloudButton text={tx('ui:s_b67c39e1b8', { start: demoLeft })} />
             </div>
             <p className="text-lg text-muted-foreground mb-10">{tx('ui:s_1475df6691')}</p>
             
@@ -300,12 +300,12 @@ const AdditionEarth: React.FC = () => {
           <div data-testid="practice-activity" className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-4">
               <h2 className="text-3xl font-semibold text-foreground">
-                Make {activity2Target} Pencils
+                {tx('ui:earthMake', { target: activity2Target })}
               </h2>
-              <ReadAloudButton text={`Add until you have ${activity2Target} pencils. You start with ${activity2Left}.`} />
+              <ReadAloudButton text={tx('ui:earthAddSpeak', { target: activity2Target, start: activity2Left })} />
             </div>
             <p className="text-lg text-muted-foreground mb-8">
-              Add until you have {activity2Target}
+              {tx('ui:earthAddUntil', { target: activity2Target })}
             </p>
             
             <div className="flex justify-center gap-8 mb-8">

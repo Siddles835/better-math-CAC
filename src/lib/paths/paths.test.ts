@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { PATHS, getPath } from '@/content/catalog';
 import { duplicatePath, resolveAssignment, afterCurriculumDelete, validateCurriculum } from '@/lib/curriculum/logic';
 import { PATH_GENERATOR_IDS, auditItem, generatePathItem } from '@/lib/paths/generators';
+import { computeExpectedAnswer } from '@/lib/answers/compute';
 import {
   addTimeSeconds,
   appendAssessment,
@@ -200,6 +201,46 @@ describe('path generator audit', () => {
       console.log(JSON.stringify(result.violations.slice(0, 8), null, 2));
     }
     expect(result.violations).toEqual([]);
+  });
+});
+
+describe('worked examples and geometry equations', () => {
+  it('shows the real operation and a different positive example', () => {
+    const player = fs.readFileSync(path.resolve(process.cwd(), 'src/pages/ProblemPlayerPage.tsx'), 'utf8');
+    expect(player).toContain('problem.equation');
+    for (const id of PATH_GENERATOR_IDS) {
+      for (const tier of [1, 2, 3] as const) {
+        for (let seed = 0; seed < 40; seed += 1) {
+          const { problem } = generatePathItem(id, tier, seed);
+          const [n1, n2] = problem.operands ?? [0, 0];
+          const expected = Number(problem.answer);
+          expect(expected).toBe(computeExpectedAnswer(problem.operator ?? '+', n1, n2));
+          if (problem.operator === 'perimeter') {
+            expect(problem.equation).toBe(`2 × (${n1} + ${n2})`);
+          }
+          if (problem.operator === 'angle') {
+            expect(problem.equation).toBe(`180 − ${n1} − ${n2}`);
+          }
+          if (problem.operator === 'solve-add') {
+            expect(problem.equation).toBe(`x + ${n2} = ${n1}`);
+          }
+          if (problem.operator === 'solve-sub') {
+            expect(problem.equation).toBe(`x − ${n2} = ${n1}`);
+          }
+          const example = problem.workedExample?.promptValues ?? {};
+          const ea = Number(example.a);
+          const eb = Number(example.b);
+          const answer = Number(example.answer);
+          expect(Number.isInteger(answer)).toBe(true);
+          expect(answer).toBeGreaterThan(0);
+          expect(answer).toBe(computeExpectedAnswer(problem.operator ?? '+', ea, eb));
+          const real = [n1, n2].filter((n) => n !== 0);
+          const sample = [ea, eb].filter((n) => n !== 0);
+          expect(sample.some((n) => real.includes(n))).toBe(false);
+          expect(problem.workedExample?.promptKey).not.toBe('paths:ex_prompt');
+        }
+      }
+    }
   });
 });
 

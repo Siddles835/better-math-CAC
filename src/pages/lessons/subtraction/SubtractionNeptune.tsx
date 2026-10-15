@@ -17,7 +17,7 @@ import GuidedPractice from '@/components/GuidedPractice';
 import { Button } from '@/components/ui/button';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { diagnoseFromQuiz } from '@/lib/cognition';
-import { generateNeptuneMcq } from '@/lib/answers';
+import { mulberry32, rollNeptune } from '@/lib/answers';
 
 const SubtractionNeptune: React.FC = () => {
   const navigate = useNavigate();
@@ -26,10 +26,10 @@ const SubtractionNeptune: React.FC = () => {
   const [step, setStep] = useLessonStep('neptune');
   
   // MCQ state — derived non-negative difference + unique options.
-  const [mcq] = useState(() => generateNeptuneMcq((Math.random() * 1e9) | 0));
-  const mcqA = mcq.operands[0];
-  const mcqB = mcq.operands[1];
-  const mcqAnswer = mcq.expectedAnswer;
+  const [mcq] = useState(() => rollNeptune(mulberry32((Math.random() * 1e9) | 0)));
+  const mcqA = mcq.a;
+  const mcqB = mcq.b;
+  const mcqAnswer = mcq.answer;
   const mcqOptions = mcq.options;
   const [mcqSelected, setMcqSelected] = useState<number | null>(null);
   const [mcqChecked, setMcqChecked] = useState(false);

@@ -21,6 +21,7 @@ import ThoughtCard from '@/components/ThoughtCard';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
 import { diagnoseTrace, LessonTrace, type Diagnosis } from '@/lib/cognition';
+import { MARS, marsNeed } from '@/lib/answers';
 
 const AdditionMars: React.FC = () => {
   const navigate = useNavigate();
@@ -33,17 +34,20 @@ const AdditionMars: React.FC = () => {
   const traceRef = useRef(new LessonTrace());
   
   // Word problem state
-  const [wordLeft] = useState(3);
-  const [wordTarget] = useState(7);
+  const [wordLeft] = useState(MARS.start);
+  const [wordTarget] = useState(MARS.target);
   const [wordRight, setWordRight] = useState(0);
-  const [wordAvailable, setWordAvailable] = useState(5);
+  const [wordAvailable, setWordAvailable] = useState(MARS.available);
   const [wordChecked, setWordChecked] = useState(false);
   const [wordPhase, setWordPhase] = useState<'equation' | 'solve'>('equation');
   const [showGuided, setShowGuided] = useState(false);
 
-  const wordNeed = wordTarget - wordLeft;
-  const wordStoryText =
-    `Emma has ${wordLeft} pencils. She wants ${wordTarget} pencils total. How many more does she need?`;
+  const wordNeed = marsNeed;
+  const wordStoryText = [
+    tx('ui:s_b6b0de9779', { start: wordLeft }),
+    tx('ui:s_774f021d13', { target: wordTarget }),
+    tx('ui:s_b741c8fa0f'),
+  ].join(' ');
 
   const [drillReady, setDrillReady] = useState(false);
   const coreSteps = 2;
@@ -161,9 +165,9 @@ const AdditionMars: React.FC = () => {
             <div className="bg-card rounded-xl p-8 border border-border mb-6 max-w-lg mx-auto">
               <div className="flex items-start justify-between gap-3">
                 <div className="text-start flex-1">
-                  <p className="text-lg text-foreground">{tx('ui:s_b6b0de9779')}<span className="font-bold text-mars">{wordLeft} pencils</span>.
+                  <p className="text-lg text-foreground">{tx('ui:s_b6b0de9779', { start: wordLeft })}
                   </p>
-                  <p className="text-lg text-foreground mt-3">{tx('ui:s_774f021d13')}<span className="font-bold text-mars">{wordTarget} pencils</span> total.
+                  <p className="text-lg text-foreground mt-3">{tx('ui:s_774f021d13', { target: wordTarget })}
                   </p>
                   <p className="text-muted-foreground mt-4 text-base">{tx('ui:s_b741c8fa0f')}</p>
                 </div>

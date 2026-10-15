@@ -19,7 +19,7 @@ import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { Check, X } from 'lucide-react';
-import { generateMercury } from '@/lib/answers';
+import { mulberry32, rollMercury } from '@/lib/answers';
 
 const CountingMercury: React.FC = () => {
   const navigate = useNavigate();
@@ -29,9 +29,10 @@ const CountingMercury: React.FC = () => {
   const [showTransition, setShowTransition] = useState(false);
   
   // Word problem state — range 3..6 from shared generator.
-  const [targetCount] = useState(() => generateMercury((Math.random() * 1e9) | 0).expectedAnswer);
+  const [mercury] = useState(() => rollMercury(mulberry32((Math.random() * 1e9) | 0)));
+  const targetCount = mercury.target;
   const [wordProblemCount, setWordProblemCount] = useState(0);
-  const [wordProblemAvailable, setWordProblemAvailable] = useState(7);
+  const [wordProblemAvailable, setWordProblemAvailable] = useState(mercury.available);
   const [wordProblemChecked, setWordProblemChecked] = useState(false);
   const [wordProblemCorrect, setWordProblemCorrect] = useState(false);
 
@@ -64,7 +65,7 @@ const CountingMercury: React.FC = () => {
 
   const resetWordProblem = () => {
     setWordProblemCount(0);
-    setWordProblemAvailable(7);
+    setWordProblemAvailable(mercury.available);
     setWordProblemChecked(false);
     setWordProblemCorrect(false);
   };

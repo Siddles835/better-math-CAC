@@ -11,8 +11,8 @@ import {
   generateNeptuneMcq,
   generatePersonalPathQuestions,
   generateVenusMcq,
+  planetAuditQuestions,
   runAudit,
-  staticPlanetProblems,
   QUIZ_DEFS,
 } from './index';
 import { needsConfirm as digitNeedsConfirm } from '@/lib/cognition/digitModel';
@@ -36,7 +36,7 @@ describe('answer audit', () => {
   });
 
   it('reports zero violations on static quiz + planet problems', () => {
-    const qs = [...allQuizQuestions(), ...staticPlanetProblems()];
+    const qs = [...allQuizQuestions(), ...planetAuditQuestions()];
     const beforeNote = 'static set';
     const result = runAudit(qs);
     console.log(
@@ -50,15 +50,23 @@ describe('answer audit', () => {
 
   it('locale story numbers match operands in every locale', () => {
     const qs = allQuizQuestions();
+    const ids = qs.map((q) => q.id).sort();
     const violations = [];
     for (const locale of LOCALES) {
       const pack = loadQuizLocale(locale);
+      const storyIds = Object.keys(pack)
+        .filter((key) => key.endsWith('_story'))
+        .map((key) => key.slice(0, -'_story'.length))
+        .sort();
+      const questionIds = Object.keys(pack)
+        .filter((key) => key.endsWith('_question'))
+        .map((key) => key.slice(0, -'_question'.length))
+        .sort();
+      expect(storyIds, `${locale} story keys`).toEqual(ids);
+      expect(questionIds, `${locale} question keys`).toEqual(ids);
       for (const q of qs) {
         const story = pack[`${q.id}_story`];
         const question = pack[`${q.id}_question`];
-        expect(story, `${locale} missing ${q.id}_story`).toBeTruthy();
-        expect(question, `${locale} missing ${q.id}_question`).toBeTruthy();
-        // English source in QUIZ_DEFS must match en locale for numbers.
         violations.push(...checkLocaleText(q, locale, story, question));
       }
     }
@@ -101,9 +109,10 @@ describe('answer audit', () => {
     expect(result.violations).toEqual([]);
   });
 
-  it(`brute-force personalPath over ${SEEDS} seeds`, () => {
+  it('brute-force personalPath with recent and adaptPath', () => {
     const questions = [];
-    for (let seed = 0; seed < SEEDS; seed++) {
+    // Each seed already walks every misconception code, a recent rebuild, and three adaptations.
+    for (let seed = 0; seed < 80; seed++) {
       questions.push(...generatePersonalPathQuestions(seed));
     }
     // Personal path: verify derived targets, non-negative take-away, in-band answers.

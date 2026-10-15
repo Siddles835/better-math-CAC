@@ -1,8 +1,18 @@
-import { computeExpectedAnswer } from './compute';
-import { buildMcqOptions } from './options';
-import { mulberry32, pickInt, type Rng } from './rng';
+import type { Operator } from './compute';
 import type { AuditableQuestion } from './quizQuestions';
-import { buildPersonalPath } from '@/lib/cognition/personalPath';
+import {
+  jupiterQuestion,
+  mercuryQuestion,
+  neptuneQuestion,
+  venusQuestion,
+} from './planetProblems';
+import {
+  adaptPath,
+  buildPersonalPath,
+  expectedFor,
+  itemSignature,
+  type PathItem,
+} from '@/lib/cognition/personalPath';
 import type { Diagnosis, MisconceptionCode } from '@/lib/cognition/types';
 
 const stubDiagnosis = (code: MisconceptionCode): Diagnosis => ({
@@ -17,179 +27,17 @@ const stubDiagnosis = (code: MisconceptionCode): Diagnosis => ({
   updatedAt: 0,
 });
 
-/** CountingMercury: target count in 3..6 */
-export const generateMercury = (seed: number): AuditableQuestion => {
-  const rng = mulberry32(seed);
-  const target = pickInt(rng, 3, 6);
-  return {
-    id: `mercury-${seed}`,
-    lesson: 'counting/mercury',
-    kind: 'counting',
-    operands: [target],
-    operator: 'count',
-    shownText: `Jo needs ${target} pie pieces`,
-    expectedAnswer: target,
-    options: [target],
-    pictureCounts: [target],
-    range: [3, 6],
-    story: '',
-    question: `Need ${target}`,
-  };
-};
+/** CountingMercury. Numbers come from rollMercury. */
+export const generateMercury = mercuryQuestion;
 
-/** CountingVenus MCQ: count 2..7 with 4 unique options */
-export const generateVenusMcq = (seed: number): AuditableQuestion => {
-  const rng = mulberry32(seed);
-  const count = pickInt(rng, 2, 7);
-  const options = buildMcqOptions(count, rng, 1, 8);
-  return {
-    id: `venus-${seed}`,
-    lesson: 'counting/venus',
-    kind: 'counting',
-    operands: [count],
-    operator: 'count',
-    shownText: `Count the items: ${count}`,
-    expectedAnswer: count,
-    options,
-    pictureCounts: [count],
-    range: [2, 7],
-    story: '',
-    question: `How many?`,
-  };
-};
+/** CountingVenus MCQ. Numbers and options come from rollVenus. */
+export const generateVenusMcq = venusQuestion;
 
-/** AdditionJupiter MCQ: a,b in 1..4 */
-export const generateJupiterMcq = (seed: number): AuditableQuestion => {
-  const rng = mulberry32(seed);
-  const a = pickInt(rng, 1, 4);
-  const b = pickInt(rng, 1, 4);
-  const answer = computeExpectedAnswer('+', a, b);
-  const options = buildMcqOptions(answer, rng, 1, 8);
-  return {
-    id: `jupiter-${seed}`,
-    lesson: 'addition/jupiter',
-    kind: 'addition',
-    operands: [a, b],
-    operator: '+',
-    shownText: `What is ${a} + ${b}?`,
-    expectedAnswer: answer,
-    options,
-    pictureCounts: [],
-    range: [1, 8],
-    story: '',
-    question: `${a} + ${b}`,
-  };
-};
+/** AdditionJupiter MCQ. Numbers come from rollJupiter. */
+export const generateJupiterMcq = jupiterQuestion;
 
-/** SubtractionNeptune MCQ: a in 5..8, b in 1..3, non-negative */
-export const generateNeptuneMcq = (seed: number): AuditableQuestion => {
-  const rng = mulberry32(seed);
-  const a = pickInt(rng, 5, 8);
-  const b = pickInt(rng, 1, 3);
-  const answer = computeExpectedAnswer('−', a, b);
-  const options = buildMcqOptions(answer, rng, 0, 8);
-  return {
-    id: `neptune-${seed}`,
-    lesson: 'subtraction/neptune',
-    kind: 'subtraction',
-    operands: [a, b],
-    operator: '−',
-    shownText: `What is ${a} − ${b}?`,
-    expectedAnswer: answer,
-    options,
-    pictureCounts: [],
-    range: [0, 8],
-    story: '',
-    question: `${a} − ${b}`,
-  };
-};
-
-/** Static planet demo problems (Earth/Mars/Saturn/Uranus explanatory + build tasks). */
-export const staticPlanetProblems = (): AuditableQuestion[] => {
-  const earthDemoLeft = 3;
-  const earthDemoRight = 2;
-  const earthTargetLeft = 2;
-  const earthTarget = 6;
-  const marsLeft = 3;
-  const marsTarget = 7;
-  const saturnStart = 7;
-  const saturnTarget = 4;
-  const uranusStart = 8;
-  const uranusKeep = 5;
-
-  return [
-    {
-      id: 'earth-demo',
-      lesson: 'addition/earth',
-      kind: 'addition',
-      operands: [earthDemoLeft, earthDemoRight],
-      operator: '+',
-      shownText: `${earthDemoLeft} + ${earthDemoRight} = ${earthDemoLeft + earthDemoRight}`,
-      expectedAnswer: earthDemoLeft + earthDemoRight,
-      options: [earthDemoLeft + earthDemoRight],
-      pictureCounts: [earthDemoLeft, earthDemoRight],
-      range: [0, 10],
-      story: '',
-      question: 'demo',
-    },
-    {
-      id: 'earth-build',
-      lesson: 'addition/earth',
-      kind: 'addition',
-      operands: [earthTargetLeft, earthTarget - earthTargetLeft],
-      operator: '+',
-      shownText: `Add until ${earthTarget}, start ${earthTargetLeft}`,
-      expectedAnswer: earthTarget,
-      options: [earthTarget],
-      pictureCounts: [earthTargetLeft],
-      range: [0, 10],
-      story: '',
-      question: 'build',
-    },
-    {
-      id: 'mars-word',
-      lesson: 'addition/mars',
-      kind: 'addition',
-      operands: [marsLeft, marsTarget - marsLeft],
-      operator: '+',
-      shownText: `Emma has ${marsLeft} pencils. She needs ${marsTarget - marsLeft} more to make ${marsTarget}.`,
-      expectedAnswer: marsTarget,
-      options: [marsTarget],
-      pictureCounts: [marsLeft],
-      range: [0, 10],
-      story: '',
-      question: 'how many more',
-    },
-    {
-      id: 'saturn-build',
-      lesson: 'subtraction/saturn',
-      kind: 'subtraction',
-      operands: [saturnStart, saturnStart - saturnTarget],
-      operator: '−',
-      shownText: `Start with ${saturnStart}. Take away ${saturnStart - saturnTarget}. Leave ${saturnTarget}.`,
-      expectedAnswer: saturnTarget,
-      options: [saturnTarget],
-      pictureCounts: [saturnStart],
-      range: [0, 10],
-      story: '',
-      question: 'take away',
-    },
-    {
-      id: 'uranus-word',
-      lesson: 'subtraction/uranus',
-      kind: 'subtraction',
-      operands: [uranusStart, uranusStart - uranusKeep],
-      operator: '−',
-      shownText: `Mr. Chen has ${uranusStart} pencils. He gives away ${uranusStart - uranusKeep} to keep ${uranusKeep}.`,
-      expectedAnswer: uranusKeep,
-      options: [uranusKeep],
-      pictureCounts: [uranusStart],
-      range: [0, 10],
-      story: '',
-      question: 'give away',
-    },
-  ];
-};
+/** SubtractionNeptune MCQ. Numbers come from rollNeptune. */
+export const generateNeptuneMcq = neptuneQuestion;
 
 const CODES: MisconceptionCode[] = [
   'COUNT_ALL',
@@ -202,45 +50,98 @@ const CODES: MisconceptionCode[] = [
   'STEADY',
 ];
 
+const pathBuildOptions = (seed: number, recent?: string[]) => ({
+  demo: true as const,
+  round: seed % 5,
+  entropy: seed,
+  accuracy: (seed % 100) / 100,
+  recent,
+});
+
+/**
+ * Operands recompute to expectedFor(item). expectedAnswer stays item.target,
+ * so a prompt/answer split fails expected_matches_operands.
+ */
+const personalPathQuestion = (item: PathItem, id: string, code: string): AuditableQuestion => {
+  const canonical = expectedFor(item);
+  let operator: Operator = 'count';
+  let operands = [canonical];
+  if (item.kind === 'count_on' || item.kind === 'same_sum' || item.kind === 'tens_ones') {
+    operator = '+';
+    operands = [item.start, item.add];
+  } else if (item.kind === 'take_away') {
+    operator = '−';
+    operands = [item.start, item.add];
+  } else if (item.kind === 'neighbor') {
+    operator = '+';
+    operands = [item.start, item.add < 0 ? -1 : 1];
+  } else if (item.kind === 'write_digit') {
+    operands = [item.digit ?? canonical];
+  } else if (item.kind === 'exact_total' || item.kind === 'hear_build') {
+    operands = [item.add];
+  } else if (item.kind === 'compare') {
+    operands = [canonical];
+  }
+  return {
+    id,
+    lesson: `personalPath/${code}`,
+    kind: operator === '−' ? 'subtraction' : operator === '+' ? 'addition' : 'counting',
+    operands,
+    operator,
+    shownText: item.prompt || item.speak || `${item.kind} ${item.start} ${item.add}`,
+    expectedAnswer: item.target,
+    options: [item.target],
+    pictureCounts: [],
+    range: [0, 100],
+    story: '',
+    question: item.kind,
+  };
+};
+
+const OUTCOMES = [
+  { tag: 'overshoot', correct: false, overshoot: true, reversal: false },
+  { tag: 'reversal', correct: false, overshoot: false, reversal: true },
+  { tag: 'miss', correct: false, overshoot: false, reversal: false },
+] as const;
+
+/**
+ * Builds a path, rebuilds it with that path's signatures in `recent`, then
+ * adapts the second path for overshoot, reversal, and a plain miss.
+ * Every code is included. Each item's checked target must equal expectedFor.
+ */
 export const generatePersonalPathQuestions = (seed: number): AuditableQuestion[] => {
-  const code = CODES[seed % CODES.length];
-  const path = buildPersonalPath(`audit${seed}`, stubDiagnosis(code), '2026-01-01', {
-    demo: true,
-    round: seed % 5,
-    entropy: seed,
-    accuracy: (seed % 100) / 100,
-  });
-  return path.items.map((item, i) => {
-    let operator: AuditableQuestion['operator'] = 'count';
-    let operands = [item.target];
-    if (item.kind === 'take_away') {
-      operator = '−';
-      operands = [item.start, item.add];
-    } else if (item.kind === 'count_on' || item.kind === 'same_sum' || item.kind === 'tens_ones') {
-      operator = '+';
-      operands = [item.start, item.add];
-    } else if (item.kind === 'write_digit') {
-      operands = [item.digit ?? item.target];
+  const out: AuditableQuestion[] = [];
+  for (const code of CODES) {
+    const first = buildPersonalPath(`audit${seed}`, stubDiagnosis(code), '2026-01-01', pathBuildOptions(seed));
+    const recent = first.items.map(itemSignature);
+    const second = buildPersonalPath(
+      `audit${seed}`,
+      stubDiagnosis(code),
+      '2026-01-01',
+      pathBuildOptions(seed, recent)
+    );
+    const bundles: Array<[string, PathItem[]]> = [
+      ['first', first.items],
+      ['recent', second.items],
+      ...OUTCOMES.map(
+        (outcome) =>
+          [
+            outcome.tag,
+            adaptPath(second, 0, {
+              correct: outcome.correct,
+              overshoot: outcome.overshoot,
+              reversal: outcome.reversal,
+            }).items,
+          ] as [string, PathItem[]]
+      ),
+    ];
+    for (const [tag, items] of bundles) {
+      items.forEach((item, index) => {
+        out.push(personalPathQuestion(item, `path-${seed}-${code}-${tag}-${index}-${item.id}`, code));
+      });
     }
-    const expected =
-      item.kind === 'write_digit' ? (item.digit ?? item.target) : item.target;
-    return {
-      id: `path-${seed}-${i}-${item.id}`,
-      lesson: `personalPath/${path.code}`,
-      kind:
-        operator === '−' ? 'subtraction' : operator === '+' ? 'addition' : 'counting',
-      operands,
-      operator,
-      shownText: item.prompt || item.speak || `target ${item.target}`,
-      // Must equal recomputed value from operands (audit enforces).
-      expectedAnswer: expected,
-      options: [expected],
-      pictureCounts: item.kind === 'write_digit' ? [] : [item.start],
-      range: [0, 100] as [number, number],
-      story: '',
-      question: item.kind,
-    };
-  });
+  }
+  return out;
 };
 
 export const generateForLesson = (
@@ -262,5 +163,3 @@ export const generateForLesson = (
       throw new Error(`Unknown generator lesson ${lesson}`);
   }
 };
-
-export type { Rng };

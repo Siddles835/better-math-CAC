@@ -24,7 +24,7 @@ import {
   PLANET_BG_CLASS,
   getTopicDisplayName,
 } from '@/lib/planets';
-import { generateJupiterMcq } from '@/lib/answers';
+import { mulberry32, rollJupiter } from '@/lib/answers';
 
 const AdditionJupiter: React.FC = () => {
   const navigate = useNavigate();
@@ -35,10 +35,10 @@ const AdditionJupiter: React.FC = () => {
   const nextPlanet = getNextPlanet('jupiter');
   
   // MCQ state — derived answer + Fisher–Yates options (never biased sort).
-  const [mcq] = useState(() => generateJupiterMcq((Math.random() * 1e9) | 0));
-  const mcqA = mcq.operands[0];
-  const mcqB = mcq.operands[1];
-  const mcqAnswer = mcq.expectedAnswer;
+  const [mcq] = useState(() => rollJupiter(mulberry32((Math.random() * 1e9) | 0)));
+  const mcqA = mcq.a;
+  const mcqB = mcq.b;
+  const mcqAnswer = mcq.answer;
   const mcqOptions = mcq.options;
   const [mcqSelected, setMcqSelected] = useState<number | null>(null);
   const [mcqChecked, setMcqChecked] = useState(false);

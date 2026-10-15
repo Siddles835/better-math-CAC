@@ -24,7 +24,7 @@ import {
   PLANET_BG_CLASS,
   getTopicDisplayName,
 } from '@/lib/planets';
-import { generateVenusMcq } from '@/lib/answers';
+import { mulberry32, rollVenus } from '@/lib/answers';
 
 const CountingVenus: React.FC = () => {
   const navigate = useNavigate();
@@ -36,8 +36,7 @@ const CountingVenus: React.FC = () => {
   
   // MCQ state — seeded generator guarantees unique options + answer present.
   const [mcqQuestion] = useState(() => {
-    const q = generateVenusMcq((Math.random() * 1e9) | 0);
-    return { count: q.expectedAnswer, options: q.options };
+    return rollVenus(mulberry32((Math.random() * 1e9) | 0));
   });
   const [mcqAnswer, setMcqAnswer] = useState<number | null>(null);
   const [mcqChecked, setMcqChecked] = useState(false);

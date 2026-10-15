@@ -185,7 +185,7 @@ const buildSpec = (id: GeneratorId, tier: 1 | 2 | 3, rng: Rng): Built => {
     return {
       operator: 'perimeter',
       operands: [w, h],
-      equation: `${w} × ${h}`,
+      equation: `2 × (${w} + ${h})`,
       promptValues: { a: w, b: h, ask: 'perimeter' },
       diagram: { shape: 'rect', labels: { width: w, height: h, ask: '?' } },
       type: 'numeric',
@@ -210,7 +210,7 @@ const buildSpec = (id: GeneratorId, tier: 1 | 2 | 3, rng: Rng): Built => {
   return {
     operator: 'angle',
     operands: [a, b],
-    equation: `${a} + ${b}`,
+    equation: `180 − ${a} − ${b}`,
     promptValues: { a, b, ask: 'angle' },
     diagram: { shape: 'angle', labels: { a, b, ask: '?' } },
     type: 'numeric',
@@ -218,28 +218,90 @@ const buildSpec = (id: GeneratorId, tier: 1 | 2 | 3, rng: Rng): Built => {
   };
 };
 
-const examplePair = (operator: Operator, a: number, b: number): [number, number] => {
-  let ea = a + 2;
-  let eb = b + 3;
+const EXAMPLE_KEY: Record<Operator, string> = {
+  count: 'paths:ex_count',
+  '+': 'paths:ex_add',
+  '−': 'paths:ex_sub',
+  '×': 'paths:ex_mul',
+  '÷': 'paths:ex_div',
+  'solve-add': 'paths:ex_solve_add',
+  'solve-sub': 'paths:ex_solve_sub',
+  'solve-mul': 'paths:ex_solve_mul',
+  perimeter: 'paths:ex_perim',
+  area: 'paths:ex_area',
+  angle: 'paths:ex_angle',
+};
+
+const sharesOperand = (ea: number, eb: number, n1: number, n2: number) => {
+  const example = [ea, eb].filter((n) => n !== 0);
+  const real = [n1, n2].filter((n) => n !== 0);
+  return example.some((n) => real.includes(n));
+};
+
+const fallbackExample = (operator: Operator, n1: number, n2: number): [number, number] => {
+  const avoid = new Set([n1, n2, 0]);
+  const pick = (start: number) => {
+    let value = Math.max(1, start);
+    while (avoid.has(value)) value += 1;
+    return value;
+  };
+  if (operator === 'count') return [pick(4), 0];
   if (operator === '÷' || operator === 'solve-mul') {
-    ea = b + 1;
-    eb = a === 0 ? 2 : Math.max(1, Math.round(a / Math.max(b, 1)) + 1);
-    if (ea === b && eb * ea === a) eb += 1;
-    return [ea * eb, ea];
+    const divisor = pick(2);
+    let quotient = pick(divisor + 2);
+    if (quotient === divisor) quotient += 1;
+    return [divisor * quotient, divisor];
+  }
+  if (operator === 'solve-add') {
+    const addend = pick(2);
+    const unknown = pick(addend + 2);
+    return [unknown + addend, addend];
   }
   if (operator === 'solve-sub') {
-    return [a + 2, b + 3];
+    const sub = pick(2);
+    const result = pick(3);
+    return [result, sub];
   }
-  if (operator === '−' && eb > ea) [ea, eb] = [eb, ea];
-  if (operator === 'angle' && ea + eb >= 180) {
-    ea = 30;
-    eb = 40;
+  if (operator === '−') {
+    const take = pick(1);
+    return [pick(take + 4), take];
   }
-  if (ea === a || eb === b || ea === b || eb === a) {
-    ea += 4;
-    eb += 5;
+  if (operator === 'angle') return [pick(20), pick(35)];
+  const left = pick(3);
+  return [left, pick(left + 2)];
+};
+
+const workedExample = (
+  id: GeneratorId,
+  tier: 1 | 2 | 3,
+  operator: Operator,
+  n1: number,
+  n2: number,
+  seed: number
+): { a: number; b: number; answer: number } => {
+  for (let attempt = 1; attempt <= 16; attempt += 1) {
+    const spec = buildSpec(id, tier, mulberry32((seed + attempt * 104729) >>> 0));
+    if (spec.operator !== operator) continue;
+    const [ea, eb] = spec.operands;
+    let answer: number;
+    try {
+      answer = computeExpectedAnswer(operator, ea, eb);
+    } catch {
+      continue;
+    }
+    if (!Number.isInteger(answer) || answer <= 0) continue;
+    if (sharesOperand(ea, eb, n1, n2)) continue;
+    return { a: ea, b: eb, answer };
   }
-  return [ea, eb];
+  for (let extra = 0; extra < 8; extra += 1) {
+    const [ea, eb] = fallbackExample(operator, n1 + extra, n2 + extra * 3);
+    const answer = computeExpectedAnswer(operator, ea, eb);
+    if (Number.isInteger(answer) && answer > 0 && !sharesOperand(ea, eb, n1, n2)) {
+      return { a: ea, b: eb, answer };
+    }
+  }
+  const [ea, eb] = fallbackExample(operator, n1 + 11, n2 + 17);
+  return { a: ea, b: eb, answer: computeExpectedAnswer(operator, ea, eb) };
 };
 
 export interface GeneratedItem {
@@ -256,8 +318,7 @@ export const generatePathItem = (
   const spec = buildSpec(id, tier, rng);
   const [n1, n2] = spec.operands;
   const expected = computeExpectedAnswer(spec.operator, n1, n2);
-  const [ea, eb] = examplePair(spec.operator, n1, n2);
-  const exampleAnswer = computeExpectedAnswer(spec.operator, ea, eb);
+  const example = workedExample(id, tier, spec.operator, n1, n2, seed);
   let choices: string[] | undefined;
   if (spec.type === 'multipleChoice') {
     const lo = Math.max(0, expected - 8);
@@ -281,8 +342,8 @@ export const generatePathItem = (
     choices,
     hintKeys: HINTS[id],
     workedExample: {
-      promptKey: 'paths:ex_prompt',
-      promptValues: { a: ea, b: eb, answer: exampleAnswer },
+      promptKey: EXAMPLE_KEY[spec.operator],
+      promptValues: { a: example.a, b: example.b, answer: example.answer },
       stepKeys: ['paths:ex_step'],
     },
     difficulty: difficultyFor(tier),

@@ -43,7 +43,7 @@ const HearLessonPrompt: React.FC<{ text: string }> = ({ text }) => {
     <div className="flex flex-col items-center gap-1 animate-fade-in pt-2">
       <ReadAloudButton text={text} autoPlay onPlayed={() => setHeard(true)} />
       <span className="text-xs sm:text-sm text-muted-foreground">
-        {heard ? 'Tap to hear this again' : 'Tap to hear this'}
+        {heard ? tx('ui:hearTapAgain') : tx('ui:hearTap')}
       </span>
     </div>
   );

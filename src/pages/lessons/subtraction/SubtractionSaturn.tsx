@@ -21,6 +21,7 @@ import GuidedPractice from '@/components/GuidedPractice';
 import { Button } from '@/components/ui/button';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { Check, X, Play, RotateCcw } from 'lucide-react';
+import { SATURN, saturnDemoLeft } from '@/lib/answers';
 
 const SubtractionSaturn: React.FC = () => {
   const navigate = useNavigate();
@@ -33,20 +34,20 @@ const SubtractionSaturn: React.FC = () => {
   
   // Animation state
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'initial' | 'animating' | 'final'>('idle');
-  const [displayCount, setDisplayCount] = useState(5);
+  const [displayCount, setDisplayCount] = useState(SATURN.demoStart);
   const [hidePencils, setHidePencils] = useState(false);
   
   // Activity state
-  const [leftPencils, setLeftPencils] = useState(6);
+  const [leftPencils, setLeftPencils] = useState(SATURN.practiceStart);
   const [removedPencils, setRemovedPencils] = useState(0);
   
   // Target activity state
-  const [activity2Pencils, setActivity2Pencils] = useState(7);
+  const [activity2Pencils, setActivity2Pencils] = useState(SATURN.buildStart);
   const [activity2Removed, setActivity2Removed] = useState(0);
-  const [activity2Target] = useState(4);
+  const [activity2Target] = useState(SATURN.buildTarget);
   const [activity2Checked, setActivity2Checked] = useState(false);
   const [showGuided, setShowGuided] = useState(false);
-  const activity2Start = 7;
+  const activity2Start = SATURN.buildStart;
 
   const [drillReady, setDrillReady] = useState(false);
   const coreSteps = 4;
@@ -57,7 +58,7 @@ const SubtractionSaturn: React.FC = () => {
     setHidePencils(false);
     // Drop to 0 first so the counter actually announces "5" on the first play too.
     setDisplayCount(0);
-    window.setTimeout(() => setDisplayCount(5), 50);
+    window.setTimeout(() => setDisplayCount(SATURN.demoStart), 50);
 
     setTimeout(() => {
       setAnimationPhase('animating');
@@ -65,7 +66,7 @@ const SubtractionSaturn: React.FC = () => {
     }, 1000);
 
     setTimeout(() => {
-      setDisplayCount(3);
+      setDisplayCount(saturnDemoLeft);
     }, 2000);
 
     setTimeout(() => {
@@ -119,7 +120,7 @@ const SubtractionSaturn: React.FC = () => {
   };
 
   const resetPractice = () => {
-    setLeftPencils(6);
+    setLeftPencils(SATURN.practiceStart);
     setRemovedPencils(0);
   };
 
@@ -159,25 +160,25 @@ const SubtractionSaturn: React.FC = () => {
             
             <div className="bg-card rounded-xl p-10 border border-border mb-8 w-full max-w-md">
               <div className="flex justify-center items-end gap-3 mb-6 min-h-[120px]">
-                {Array.from({ length: 3 }).map((_, i) => (
+                {Array.from({ length: saturnDemoLeft }).map((_, i) => (
                   <div key={i}>
                     <Pencil className="pointer-events-none" size="lg" />
                   </div>
                 ))}
                 {!hidePencils && animationPhase !== 'final' && (
                   <>
-                    <div className={hidePencils ? 'animate-pencil-disappear' : ''}>
-                      <Pencil className="pointer-events-none" size="lg" />
-                    </div>
-                    <div className={hidePencils ? 'animate-pencil-disappear' : ''}>
-                      <Pencil className="pointer-events-none" size="lg" />
-                    </div>
+                    {Array.from({ length: SATURN.demoTake }).map((_, i) => (
+                      <div key={`take-${i}`} className={hidePencils ? 'animate-pencil-disappear' : ''}>
+                        <Pencil className="pointer-events-none" size="lg" />
+                      </div>
+                    ))}
                   </>
                 )}
                 {animationPhase === 'animating' && (
                   <div className="flex gap-3 animate-pencil-disappear">
-                    <Pencil className="pointer-events-none opacity-50" size="lg" />
-                    <Pencil className="pointer-events-none opacity-50" size="lg" />
+                    {Array.from({ length: SATURN.demoTake }).map((_, i) => (
+                      <Pencil key={`gone-${i}`} className="pointer-events-none opacity-50" size="lg" />
+                    ))}
                   </div>
                 )}
               </div>
@@ -185,7 +186,7 @@ const SubtractionSaturn: React.FC = () => {
               
               {animationPhase === 'final' && (
                 <p className="mt-6 text-muted-foreground text-lg animate-fade-in">
-                  5 - 2 = 3 left!
+                  <span dir="ltr">{SATURN.demoStart} − {SATURN.demoTake} = {saturnDemoLeft}</span> {tx('ui:leftLabel')}
                 </p>
               )}
             </div>
@@ -208,7 +209,7 @@ const SubtractionSaturn: React.FC = () => {
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-6">
               <h2 className="text-3xl font-semibold text-foreground">{tx('ui:s_1fb209cef8')}</h2>
-              <ReadAloudButton text={tx('ui:s_82a2705c39')} />
+              <ReadAloudButton text={tx('ui:s_82a2705c39', { start: SATURN.practiceStart })} />
             </div>
             <p className="text-lg text-muted-foreground mb-10">{tx('ui:s_4037095c80')}</p>
             
@@ -217,7 +218,7 @@ const SubtractionSaturn: React.FC = () => {
                   taken pencils show up grayed on the right of the minus sign. */}
               <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
                 <div className="flex flex-wrap justify-center gap-2 min-w-[8rem] max-w-[12rem] sm:max-w-none">
-                  {Array.from({ length: 6 }).map((_, i) => {
+                  {Array.from({ length: SATURN.practiceStart }).map((_, i) => {
                     const taken = i >= leftPencils;
                     return (
                       <Pencil
@@ -246,7 +247,7 @@ const SubtractionSaturn: React.FC = () => {
             </div>
             
             <p className="text-lg text-muted-foreground">
-              Started: 6, Took: {removedPencils}, Left: {leftPencils}
+              {tx('ui:saturnProgress', { start: SATURN.practiceStart, took: removedPencils, left: leftPencils })}
             </p>
           </div>
         );
@@ -256,12 +257,12 @@ const SubtractionSaturn: React.FC = () => {
           <div className="text-center animate-fade-in flex flex-col items-center justify-center flex-1">
             <div className="flex items-center justify-center gap-3 mb-4">
               <h2 className="text-3xl font-semibold text-foreground">
-                Leave {activity2Target} Pencils
+                {tx('ui:saturnLeave', { target: activity2Target })}
               </h2>
-              <ReadAloudButton text={`Take away until you have ${activity2Target} pencils. You start with ${activity2Start}.`} />
+              <ReadAloudButton text={tx('ui:saturnTakeSpeak', { target: activity2Target, start: activity2Start })} />
             </div>
             <p className="text-lg text-muted-foreground mb-8">
-              Take away until you have {activity2Target}
+              {tx('ui:saturnTakeUntil', { target: activity2Target })}
             </p>
             
             <div className="flex justify-center gap-8 mb-8">

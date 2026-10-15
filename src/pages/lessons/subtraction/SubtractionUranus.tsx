@@ -20,6 +20,7 @@ import GuidedPractice from '@/components/GuidedPractice';
 import { Button } from '@/components/ui/button';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { Check, X } from 'lucide-react';
+import { URANUS, uranusGiveAway } from '@/lib/answers';
 
 const SubtractionUranus: React.FC = () => {
   const navigate = useNavigate();
@@ -30,17 +31,20 @@ const SubtractionUranus: React.FC = () => {
   const [showTransition, setShowTransition] = useState(false);
   
   // Word problem state
-  const [wordStart] = useState(8);
-  const [wordPencils, setWordPencils] = useState(8);
+  const [wordStart] = useState(URANUS.start);
+  const [wordPencils, setWordPencils] = useState(URANUS.start);
   const [wordRemoved, setWordRemoved] = useState(0);
-  const [wordTarget] = useState(5);
+  const [wordTarget] = useState(URANUS.keep);
   const [wordChecked, setWordChecked] = useState(false);
   const [wordPhase, setWordPhase] = useState<'equation' | 'solve'>('equation');
   const [showGuided, setShowGuided] = useState(false);
 
-  const wordGiveAway = wordStart - wordTarget;
-  const wordStoryText =
-    `Mr. Chen has ${wordStart} pencils. He wants to keep ${wordTarget} pencils. How many can he give away?`;
+  const wordGiveAway = uranusGiveAway;
+  const wordStoryText = [
+    tx('ui:s_f2ff43810c', { start: wordStart }),
+    tx('ui:s_e3c8484d53', { target: wordTarget }),
+    tx('ui:s_78d44e2435'),
+  ].join(' ');
 
   const [drillReady, setDrillReady] = useState(false);
   const coreSteps = 2;
@@ -153,9 +157,9 @@ const SubtractionUranus: React.FC = () => {
             <div className="bg-card rounded-xl p-8 border border-border mb-6 max-w-lg mx-auto">
               <div className="flex items-start justify-between gap-3">
                 <div className="text-start flex-1">
-                  <p className="text-lg text-foreground">{tx('ui:s_f2ff43810c')}<span className="font-bold text-uranus">{wordStart} pencils</span>.
+                  <p className="text-lg text-foreground">{tx('ui:s_f2ff43810c', { start: wordStart })}
                   </p>
-                  <p className="text-lg text-foreground mt-3">{tx('ui:s_e3c8484d53')}<span className="font-bold text-uranus">{wordTarget} pencils</span>.
+                  <p className="text-lg text-foreground mt-3">{tx('ui:s_e3c8484d53', { target: wordTarget })}
                   </p>
                   <p className="text-muted-foreground mt-4 text-base">{tx('ui:s_78d44e2435')}</p>
                 </div>
@@ -225,7 +229,7 @@ const SubtractionUranus: React.FC = () => {
                   {wordPencils === wordTarget ? (
                     <>
                       <Check className="w-8 h-8" />
-                      <span className="text-xl font-semibold">Great! Mr. Chen gave away {wordRemoved}!</span>
+                      <span className="text-xl font-semibold">{tx('ui:uranusGave', { count: wordRemoved })}</span>
                     </>
                   ) : (
                     <>

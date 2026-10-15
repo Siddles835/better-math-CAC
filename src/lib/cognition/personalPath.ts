@@ -95,6 +95,47 @@ const item = (
 
 const signature = (entry: PathItem) => `${entry.kind}:${entry.start}:${entry.add}:${entry.target}`;
 
+/** Canonical answer for a practice item. Prompts are built from the same fields. */
+export const expectedFor = (entry: PathItem): number => {
+  switch (entry.kind) {
+    case 'count_on':
+    case 'same_sum':
+    case 'tens_ones':
+      return entry.start + entry.add;
+    case 'take_away':
+      return entry.start - entry.add;
+    case 'exact_total':
+    case 'hear_build':
+      return entry.target;
+    case 'neighbor':
+      return entry.start + (entry.add < 0 ? -1 : 1);
+    case 'compare':
+      return Math.max(entry.start, entry.add);
+    case 'write_digit':
+      return entry.digit ?? entry.target;
+    default:
+      return entry.target;
+  }
+};
+
+/** Force target (and write_digit's digit) to agree with expectedFor. */
+export const normalizeItem = (entry: PathItem): PathItem => {
+  let next = { ...entry };
+  if (next.kind === 'compare' && next.start === next.add) {
+    next = { ...next, add: next.add + 1 };
+  }
+  if (next.kind === 'exact_total' || next.kind === 'hear_build') {
+    next = { ...next, add: next.target };
+  }
+  const target = expectedFor(next);
+  next = { ...next, target };
+  if (next.kind === 'write_digit') {
+    const digit = next.digit ?? target;
+    next = { ...next, digit, target: digit };
+  }
+  return next;
+};
+
 const rangeFor = (accuracy: number, round: number): [number, number] => {
   const lift = Math.max(0, Math.min(4, Math.round(accuracy * 4) + Math.floor(round / 3)));
   const hi = [20, 40, 60, 80, 100][lift] ?? 20;
@@ -109,9 +150,43 @@ const buildItems = (
 ): PathItem[] => {
   const hi = Math.max(10, band[1]);
   const small = Math.min(12, hi);
+  const reroll = (entry: PathItem): PathItem => {
+    if (entry.kind === 'exact_total' || entry.kind === 'hear_build') {
+      const target = pickInt(rng, 1, Math.max(1, small));
+      return { ...entry, start: 0, add: target, target };
+    }
+    if (entry.kind === 'write_digit') {
+      const digit = pickInt(rng, 0, Math.min(99, hi));
+      return { ...entry, digit, target: digit };
+    }
+    if (entry.kind === 'compare') {
+      const start = pickInt(rng, 1, hi);
+      let add = pickInt(rng, 1, hi);
+      if (start === add) add = add >= hi ? Math.max(1, add - 1) : add + 1;
+      return { ...entry, start, add, target: Math.max(start, add) };
+    }
+    if (entry.kind === 'neighbor') {
+      const start = pickInt(rng, 1, Math.max(1, hi - 1));
+      const add = entry.add < 0 ? -1 : 1;
+      return { ...entry, start, add, target: start + (add < 0 ? -1 : 1) };
+    }
+    if (entry.kind === 'take_away') {
+      const start = pickInt(rng, 2, Math.max(2, Math.min(20, hi)));
+      const add = pickInt(rng, 1, Math.max(1, start - 1));
+      return { ...entry, start, add, target: start - add };
+    }
+    const start = pickInt(rng, 1, Math.max(1, hi - 1));
+    const add = pickInt(rng, 0, Math.max(0, hi - start));
+    return { ...entry, start, add, target: start + add };
+  };
   const fresh = (entry: PathItem) => {
-    if (!blocked.has(signature(entry))) return entry;
-    return { ...entry, id: `${entry.id}b`, target: Math.min(hi, entry.target + 1) };
+    let current = normalizeItem(entry);
+    if (!blocked.has(signature(current))) return current;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      current = normalizeItem({ ...reroll(entry), id: `${entry.id}b` });
+      if (!blocked.has(signature(current))) return current;
+    }
+    return current;
   };
   const pack = (entries: PathItem[]) => entries.map(fresh);
 
@@ -125,11 +200,7 @@ const buildItems = (
       item('c4', 'count_on', '', '', pickInt(rng, 3, Math.min(15, hi - 1)), pickInt(rng, 1, 3)),
       item('c5', 'neighbor', '', '', pickInt(rng, 1, hi - 1), 1, { target: 0 }),
       item('c6', 'compare', '', '', pickInt(rng, 1, hi), pickInt(rng, 1, hi)),
-    ]).map((entry) =>
-      entry.kind === 'neighbor' ? { ...entry, target: entry.start + 1 } : entry.kind === 'compare'
-        ? { ...entry, target: Math.max(entry.start, entry.add) }
-        : entry
-    );
+    ]);
   }
 
   if (code === 'OVERSHOOT') {
@@ -141,12 +212,7 @@ const buildItems = (
       item('o4', 'tens_ones', '', '', 10 * pickInt(rng, 1, Math.max(1, Math.floor(hi / 10))), pickInt(rng, 0, 9)),
       item('o5', 'neighbor', '', '', pickInt(rng, 1, hi - 1), 1),
       item('o6', 'compare', '', '', pickInt(rng, 1, hi), pickInt(rng, 1, hi)),
-    ]).map((entry) => {
-      if (entry.kind === 'tens_ones') return { ...entry, target: entry.start + entry.add };
-      if (entry.kind === 'neighbor') return { ...entry, target: entry.start + 1 };
-      if (entry.kind === 'compare') return { ...entry, target: Math.max(entry.start, entry.add) };
-      return entry;
-    });
+    ]);
   }
 
   if (code === 'SUB_FLIP') {
@@ -155,17 +221,11 @@ const buildItems = (
     return pack([
       item('s1', 'take_away', '', '', have, take, { target: have - take }),
       item('s2', 'take_away', '', '', pickInt(rng, 6, Math.min(18, hi)), pickInt(rng, 1, 3)),
-      item('s3', 'exact_total', '', '', 0, pickInt(rng, 2, small), { target: pickInt(rng, 2, small) }),
+      item('s3', 'exact_total', '', '', 0, 0, { target: pickInt(rng, 2, small) }),
       item('s4', 'neighbor', '', '', pickInt(rng, 2, hi), -1),
       item('s5', 'compare', '', '', pickInt(rng, 1, hi), pickInt(rng, 1, hi)),
       item('s6', 'write_digit', '', '', 0, 0, { digit: pickInt(rng, 0, 9), target: 0 }),
-    ]).map((entry) => {
-      if (entry.kind === 'take_away') return { ...entry, target: entry.start - entry.add };
-      if (entry.kind === 'neighbor') return { ...entry, target: Math.max(0, entry.start + entry.add) };
-      if (entry.kind === 'compare') return { ...entry, target: Math.max(entry.start, entry.add) };
-      if (entry.kind === 'write_digit') return { ...entry, target: entry.digit ?? 0 };
-      return entry;
-    });
+    ]);
   }
 
   if (code === 'COMMUTE') {
@@ -206,24 +266,19 @@ const buildItems = (
       item('p4', 'write_digit', '', '', 0, 0, { digit: tens * 10 + ones, target: tens * 10 + ones }),
       item('p5', 'compare', '', '', tens * 10 + ones, tens2 * 10 + ones2),
       item('p6', 'neighbor', '', '', tens * 10, 1, { target: tens * 10 + 1 }),
-    ]).map((entry) => (entry.kind === 'compare' ? { ...entry, target: Math.max(entry.start, entry.add) } : entry));
+    ]);
   }
 
   const start = pickInt(rng, 1, Math.min(10, hi));
   const add = pickInt(rng, 1, Math.min(5, hi - start));
   return pack([
     item('st1', 'count_on', '', '', start, add),
-    item('st2', 'exact_total', '', '', 0, pickInt(rng, 2, small), { target: pickInt(rng, 2, small) }),
+    item('st2', 'exact_total', '', '', 0, 0, { target: pickInt(rng, 2, small) }),
     item('st3', 'same_sum', '', '', 2, 4, { target: 6 }),
     item('st4', 'take_away', '', '', pickInt(rng, 4, Math.min(12, hi)), 2),
     item('st5', 'compare', '', '', pickInt(rng, 1, hi), pickInt(rng, 1, hi)),
     item('st6', 'neighbor', '', '', pickInt(rng, 1, hi - 1), 1),
-  ]).map((entry) => {
-    if (entry.kind === 'take_away') return { ...entry, target: entry.start - entry.add };
-    if (entry.kind === 'neighbor') return { ...entry, target: entry.start + 1 };
-    if (entry.kind === 'compare') return { ...entry, target: Math.max(entry.start, entry.add) };
-    return entry;
-  });
+  ]);
 };
 
 export const STARTER_HINT: Diagnosis = {
@@ -291,7 +346,7 @@ export const buildPersonalPath = (
   const items = buildItems(code, rng, band, blocked);
   const cover = (round % band[1]) + 1;
   const last = items[items.length - 1];
-  items[items.length - 1] = {
+  items[items.length - 1] = normalizeItem({
     ...last,
     id: `${last.id}-cover`,
     kind: 'write_digit',
@@ -301,7 +356,7 @@ export const buildPersonalPath = (
     add: 0,
     digit: cover,
     target: cover,
-  };
+  });
   return {
     code,
     title: TITLES[code],
@@ -316,31 +371,32 @@ export const buildPersonalPath = (
 export const adaptPath = (path: PersonalPath, index: number, outcome: ItemOutcome): PersonalPath => {
   if (outcome.correct) return path;
   const items = path.items.map((entry, i) => {
-    if (i <= index) return entry;
+    if (i <= index) return normalizeItem(entry);
     if (outcome.overshoot && entry.kind === 'exact_total') {
-      return { ...entry, hardStop: true, prompt: `Make exactly ${entry.target}. Stop on ${entry.target}.` };
+      return normalizeItem({ ...entry, hardStop: true, prompt: `Make exactly ${entry.target}. Stop on ${entry.target}.` });
     }
-    if (outcome.reversal && entry.kind === 'write_digit' && entry.digit != null) {
+    if (outcome.reversal && entry.kind === 'write_digit' && entry.digit != null && entry.digit <= 9) {
       const pair: Record<number, number> = { 6: 9, 9: 6, 2: 5, 5: 2 };
       const next = pair[entry.digit] ?? entry.digit;
-      return {
+      return normalizeItem({
         ...entry,
         digit: next,
         target: next,
         prompt: `Write ${next}. Start at the top.`,
         speak: `Write ${next}.`,
-      };
+      });
     }
-    if (entry.kind === 'count_on' && entry.add > 1) {
-      return {
+    if (entry.kind === 'count_on' && entry.add > 1 && entry.start + 1 <= 7) {
+      const start = entry.start + 1;
+      const add = entry.add - 1;
+      return normalizeItem({
         ...entry,
-        start: Math.min(7, entry.start + 1),
-        add: entry.add - 1,
-        target: Math.min(7, entry.start + 1) + (entry.add - 1),
-        prompt: `You already have ${Math.min(7, entry.start + 1)}. Add ${entry.add - 1}.`,
-      };
+        start,
+        add,
+        prompt: `You already have ${start}. Add ${add}.`,
+      });
     }
-    return entry;
+    return normalizeItem(entry);
   });
   return { ...path, items };
 };

@@ -24,6 +24,7 @@ import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
 import { speak } from '@/lib/speech';
 import { Volume2 } from 'lucide-react';
+import { SUN, sunExpected } from '@/lib/answers';
 
 const CountingSun: React.FC = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const CountingSun: React.FC = () => {
   const { leave } = usePlanetHandoff();
   const [step, setStep] = useLessonStep('sun');
   const [basketCount, setBasketCount] = useState(0);
-  const [availableApples, setAvailableApples] = useState(7);
+  const [availableApples, setAvailableApples] = useState(SUN.available);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const basketRef = useRef(0);
   const drawCheck = useAnswerCheck();
@@ -55,7 +56,7 @@ const CountingSun: React.FC = () => {
 
   const addAppleToBasket = () => {
     if (drawCheck.state.lockedSuccess) return;
-    if (availableApples > 0 && basketCount < 9) {
+    if (availableApples > 0 && basketCount < SUN.maxInBasket) {
       const next = basketCount + 1;
       setBasketCount(next);
       setAvailableApples(prev => prev - 1);
@@ -71,7 +72,7 @@ const CountingSun: React.FC = () => {
       drawCheck.submit('unreadable');
       return;
     }
-    const correct = read.digit === target;
+    const correct = read.digit === sunExpected(target);
     const next = drawCheck.submit(correct ? 'correct' : 'incorrect');
     if (!next) return;
     traceRef.current.setDigit(read, target);
@@ -93,7 +94,7 @@ const CountingSun: React.FC = () => {
 
   const practiceAgain = () => {
     setBasketCount(0);
-    setAvailableApples(7);
+    setAvailableApples(SUN.available);
     setDiagnosis(null);
     drawCheck.reset();
     traceRef.current.reset();

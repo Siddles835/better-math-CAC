@@ -111,16 +111,16 @@ export const PLACEMENT_BANK: PlacementQuestion[] = [
   {
     id: 'c20-a',
     level: 'count20',
-    promptKey: 'place_q_howMany',
-    equation: '14',
+    promptKey: 'place_q_count',
+    dots: 14,
     answer: 14,
     choices: [12, 14, 16, 18],
   },
   {
     id: 'c20-b',
     level: 'count20',
-    promptKey: 'place_q_howMany',
-    equation: '17',
+    promptKey: 'place_q_count',
+    dots: 17,
     answer: 17,
     choices: [15, 16, 17, 19],
   },
@@ -283,6 +283,23 @@ export const PLACEMENT_BANK: PlacementQuestion[] = [
     choices: [9, 27, 72, 207],
   },
 ];
+
+/**
+ * Value shown by a placement equation.
+ * Forms: `a + b`, `a − b`, `N ten(s) + M one(s)`, `N → ?`, or a bare numeral.
+ */
+export const answerFromPlacementEquation = (equation: string): number => {
+  const add = equation.match(/^(\d+) \+ (\d+)$/);
+  if (add) return Number(add[1]) + Number(add[2]);
+  const sub = equation.match(/^(\d+) − (\d+)$/);
+  if (sub) return Number(sub[1]) - Number(sub[2]);
+  const place = equation.match(/^(\d+) tens? \+ (\d+) ones?$/);
+  if (place) return Number(place[1]) * 10 + Number(place[2]);
+  const next = equation.match(/^(\d+) → \?$/);
+  if (next) return Number(next[1]) + 1;
+  if (/^\d+$/.test(equation)) return Number(equation);
+  throw new Error(`Unrecognized placement equation: ${equation}`);
+};
 
 /** @deprecated Prefer PLACEMENT_BANK + staircase; kept for any leftover imports. */
 export const PLACEMENT_QUESTIONS = PLACEMENT_BANK.filter((q) =>
