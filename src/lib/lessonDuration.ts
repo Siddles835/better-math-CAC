@@ -4,7 +4,7 @@ import type { Diagnosis, MisconceptionCode } from '@/lib/cognition/types';
 
 /** Estimated seconds for one activity. These are planning estimates, not times measured with children. */
 export const ACTIVITY_SECONDS = {
-  teach: 90,
+  teach: 120,
   watch: 110,
   build: 85,
   draw: 80,
@@ -46,7 +46,7 @@ const CORE: Record<PlanetId, ActivityKind[]> = {
   neptune: ['teach', 'quiz', 'celebrate'],
 };
 
-const MAX_NUMBER: Record<PlanetId, number> = {
+export const MAX_NUMBER: Record<PlanetId, number> = {
   sun: 10,
   mercury: 10,
   venus: 12,
