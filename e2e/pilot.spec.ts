@@ -27,7 +27,8 @@ test('demo mode covers a path, an assessment, a curriculum, a CSV, and a reset',
   await page.getByTestId('duplicate-path').selectOption('addition');
   await page.getByTestId('curriculum-save').click();
   await page.getByTestId('assign-class').click();
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Back to list' }).click();
+  await page.getByRole('button', { name: 'Back' }).click();
   await expect(page.getByTestId('pilot-overview')).toContainText('Addition');
 
   const downloadPromise = page.waitForEvent('download');
