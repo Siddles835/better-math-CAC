@@ -615,5 +615,7 @@
   "saturnProgress": "Started with {{start}}. Took {{took}}. Left {{left}}.",
   "earthMake": "Make {{target}} pencils",
   "earthAddUntil": "Add until you have {{target}}",
-  "earthAddSpeak": "Add until you have {{target}} pencils. You start with {{start}}."
+  "earthAddSpeak": "Add until you have {{target}} pencils. You start with {{start}}.",
+  "basketCount": "{{count}} apples in the basket",
+  "basketRemoveOne": "Take one apple out"
 }

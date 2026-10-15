@@ -615,5 +615,7 @@
   "saturnProgress": "{{start}} से शुरू किया। {{took}} हटाए। {{left}} बचे।",
   "earthMake": "{{target}} पेंसिल बनाओ",
   "earthAddUntil": "तब तक जोड़ो जब तक {{target}} न हो जाएँ",
-  "earthAddSpeak": "तब तक जोड़ो जब तक {{target}} पेंसिल न हो जाएँ। तुम {{start}} से शुरू करते हो।"
+  "earthAddSpeak": "तब तक जोड़ो जब तक {{target}} पेंसिल न हो जाएँ। तुम {{start}} से शुरू करते हो।",
+  "basketCount": "टोकरी में {{count}} सेब",
+  "basketRemoveOne": "एक सेब निकालो"
 }

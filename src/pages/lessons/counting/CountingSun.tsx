@@ -66,6 +66,16 @@ const CountingSun: React.FC = () => {
     }
   };
 
+  const removeAppleFromBasket = () => {
+    if (drawCheck.state.lockedSuccess || basketCount <= 0) return;
+    const next = basketCount - 1;
+    setBasketCount(next);
+    setAvailableApples((prev) => prev + 1);
+    traceRef.current.tap(next, next);
+    const stayed = drawCheck.noteChange();
+    if (!stayed.lockedSuccess) setDiagnosis(null);
+  };
+
   const recordReadable = (read: DigitRead) => {
     const target = basketRef.current;
     if (read.status === 'unreadable') {
@@ -135,15 +145,14 @@ const CountingSun: React.FC = () => {
             <div className="flex flex-col items-center gap-4 sm:gap-6">
               <Counter count={basketCount} label={tx('ui:applesLabel')} />
               
-              <Basket>
-                {Array.from({ length: basketCount }).map((_, i) => (
-                  <Apple key={i} size="sm" className="pointer-events-none" />
-                ))}
-              </Basket>
+              <Basket
+                count={basketCount}
+                onRemove={drawCheck.state.lockedSuccess ? undefined : removeAppleFromBasket}
+              />
               
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-sm">
                 {Array.from({ length: availableApples }).map((_, i) => (
-                  <Apple key={i} onClick={addAppleToBasket} size="md" />
+                  <Apple key={i} onClick={addAppleToBasket} size="md" label={tx('ui:s_476432a3e8')} />
                 ))}
               </div>
               {basketCount > 0 && (

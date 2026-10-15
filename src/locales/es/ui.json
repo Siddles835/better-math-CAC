@@ -615,5 +615,7 @@
   "saturnProgress": "Empezaste con {{start}}. Quitaste {{took}}. Quedan {{left}}.",
   "earthMake": "Forma {{target}} lápices",
   "earthAddUntil": "Agrega hasta tener {{target}}",
-  "earthAddSpeak": "Agrega hasta tener {{target}} lápices. Empiezas con {{start}}."
+  "earthAddSpeak": "Agrega hasta tener {{target}} lápices. Empiezas con {{start}}.",
+  "basketCount": "{{count}} manzanas en la cesta",
+  "basketRemoveOne": "Saca una manzana"
 }

@@ -612,5 +612,7 @@
   "saturnProgress": "开始有 {{start}}。拿走了 {{took}}。剩下 {{left}}。",
   "earthMake": "凑成 {{target}} 支铅笔",
   "earthAddUntil": "加到一共有 {{target}}",
-  "earthAddSpeak": "加到一共有 {{target}} 支铅笔。你从 {{start}} 支开始。"
+  "earthAddSpeak": "加到一共有 {{target}} 支铅笔。你从 {{start}} 支开始。",
+  "basketCount": "篮子里有 {{count}} 个苹果",
+  "basketRemoveOne": "拿出一个苹果"
 }

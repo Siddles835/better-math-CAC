@@ -50,6 +50,15 @@ const CountingMercury: React.FC = () => {
     }
   };
 
+  const removeAppleFromWordProblem = () => {
+    if (wordProblemCorrect || wordProblemCount <= 0) return;
+    const next = wordProblemCount - 1;
+    setWordProblemCount(next);
+    setWordProblemAvailable((prev) => prev + 1);
+    trace.tap(next, targetCount);
+    if (wordProblemChecked) setWordProblemChecked(false);
+  };
+
   const checkWordProblem = () => {
     setWordProblemChecked(true);
     const correct = wordProblemCount === targetCount;
@@ -123,16 +132,15 @@ const CountingMercury: React.FC = () => {
                 <Counter count={targetCount} label={tx('ui:youNeed')} />
               </div>
               
-              <Basket>
-                {Array.from({ length: wordProblemCount }).map((_, i) => (
-                  <Apple key={i} size="sm" className="pointer-events-none" />
-                ))}
-              </Basket>
+              <Basket
+                count={wordProblemCount}
+                onRemove={wordProblemCorrect ? undefined : removeAppleFromWordProblem}
+              />
               
               {!wordProblemCorrect && (
                 <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-md">
                   {Array.from({ length: wordProblemAvailable }).map((_, i) => (
-                    <Apple key={i} onClick={addAppleToWordProblem} size="md" />
+                    <Apple key={i} onClick={addAppleToWordProblem} size="md" label={tx('ui:s_476432a3e8')} />
                   ))}
                 </div>
               )}

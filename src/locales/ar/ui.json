@@ -627,5 +627,7 @@
   "saturnProgress": "بدأت بـ {{start}}. أخذت {{took}}. بقي {{left}}.",
   "earthMake": "كوّن {{target}} أقلام",
   "earthAddUntil": "أضف حتى يصبح لديك {{target}}",
-  "earthAddSpeak": "أضف حتى يصبح لديك {{target}} أقلام. تبدأ بـ {{start}}."
+  "earthAddSpeak": "أضف حتى يصبح لديك {{target}} أقلام. تبدأ بـ {{start}}.",
+  "basketCount": "{{count}} تفاحات في السلة",
+  "basketRemoveOne": "أخرج تفاحة واحدة"
 }
