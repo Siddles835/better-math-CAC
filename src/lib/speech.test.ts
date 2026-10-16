@@ -5,9 +5,11 @@ import {
   K2_SPEECH_RATE_SLOW,
   normalizeSpeechText,
   numberWord,
+  packSpeechChunks,
   pickVoice,
   scoreVoice,
   setSpeechMuted,
+  smoothProsodyText,
   speak,
   splitClauses,
   splitLongChunk,
@@ -96,9 +98,9 @@ describe('pickVoice ranking', () => {
 
 describe('K–2 speech defaults', () => {
   it('uses a gentle rate and warm pitch', () => {
-    expect(K2_SPEECH_RATE).toBeCloseTo(0.9);
-    expect(K2_SPEECH_RATE_SLOW).toBeCloseTo(0.8);
-    expect(K2_SPEECH_PITCH).toBeCloseTo(1.05);
+    expect(K2_SPEECH_RATE).toBeCloseTo(0.86);
+    expect(K2_SPEECH_RATE_SLOW).toBeCloseTo(0.76);
+    expect(K2_SPEECH_PITCH).toBeCloseTo(1.04);
     expect(K2_SPEECH_PITCH).toBeLessThanOrEqual(1.1);
   });
 });
@@ -119,6 +121,12 @@ describe('sentence splitting', () => {
   it('splits only very long sentences', () => {
     const long = `${'word '.repeat(50)}end.`.trim();
     expect(splitLongChunk(long, 40).length).toBeGreaterThan(1);
+  });
+
+  it('packs short multi-sentence lines into one utterance', () => {
+    const packed = packSpeechChunks('Hello. Count with me! Ready?');
+    expect(packed).toHaveLength(1);
+    expect(smoothProsodyText(packed[0])).toMatch(/Hello,/);
   });
 
   it('does not treat decimal periods as sentence ends after normalization', () => {

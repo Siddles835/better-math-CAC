@@ -5,6 +5,7 @@ import {
   AccessibilityPrefs, DEFAULT_PREFS, applyPrefsToDocument, loadPrefs, savePrefs,
 } from '@/lib/accessibility';
 import {
+  prefetchSpeechManifest,
   setPreferredVoiceURI,
   setSpeechMuted,
   setSpeechRatePref,
@@ -28,6 +29,10 @@ const AccessibilityContext = createContext<AccessibilityValue>({
 export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [prefs, setPrefs] = useState<AccessibilityPrefs>(() => loadPrefs());
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    prefetchSpeechManifest();
+  }, []);
 
   useEffect(() => {
     applyPrefsToDocument(prefs);

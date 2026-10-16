@@ -17,12 +17,17 @@ let speechToken = 0;
 
 export type SpeechRatePref = 'slow' | 'normal';
 
-/** Gentle K–2 defaults: clear, warm, not rushed. */
-export const K2_SPEECH_RATE = 0.9;
-export const K2_SPEECH_RATE_SLOW = 0.8;
-export const K2_SPEECH_PITCH = 1.05;
-export const SENTENCE_GAP_MS = 200;
-export const LONG_CHUNK_CHARS = 180;
+/**
+ * Gentle K–2 defaults. Slightly under 0.9 keeps device voices from sounding
+ * clipped; pitch stays warm but under 1.1.
+ */
+export const K2_SPEECH_RATE = 0.86;
+export const K2_SPEECH_RATE_SLOW = 0.76;
+export const K2_SPEECH_PITCH = 1.04;
+/** Tiny gap only when a long passage must be split (keeps intonation continuous). */
+export const SENTENCE_GAP_MS = 70;
+/** Prefer one utterance; Chrome can cut off much longer strings. */
+export const LONG_CHUNK_CHARS = 240;
 
 export const setSpeechMuted = (muted: boolean) => {
   speechMuted = muted;
@@ -365,6 +370,46 @@ export const splitLongChunk = (sentence: string, maxChars = LONG_CHUNK_CHARS): s
   return chunks;
 };
 
+/**
+ * Pack speech into as few utterances as possible. Short multi-sentence lines
+ * stay in one utterance so the voice does not reset on every period.
+ */
+export const packSpeechChunks = (text: string, maxChars = LONG_CHUNK_CHARS): string[] => {
+  const trimmed = text.replace(/\s+/g, ' ').trim();
+  if (!trimmed) return [];
+  if (trimmed.length <= maxChars) return [trimmed];
+
+  const sentences = splitSentences(trimmed);
+  const packed: string[] = [];
+  let current = '';
+  for (const sentence of sentences) {
+    const pieces = splitLongChunk(sentence, maxChars);
+    for (const piece of pieces) {
+      const next = current ? `${current} ${piece}` : piece;
+      if (next.length > maxChars && current) {
+        packed.push(current);
+        current = piece;
+      } else {
+        current = next;
+      }
+    }
+  }
+  if (current) packed.push(current);
+  return packed;
+};
+
+/** Soften harsh mid-line punctuation so one utterance flows more naturally. */
+export const smoothProsodyText = (text: string): string =>
+  text
+    // Keep the final sentence end; soften earlier full stops into gentle pauses.
+    .replace(/([.!?。！？])\s+(?=\S)/g, (_all, mark: string, offset: number, full: string) => {
+      const rest = full.slice(offset + String(mark).length);
+      if (!/[.!?。！？]/.test(rest)) return `${mark} `;
+      return ', ';
+    })
+    .replace(/\s+/g, ' ')
+    .trim();
+
 /** @deprecated Prefer splitLongChunk; kept for callers that still import it. */
 export const splitClauses = (sentence: string): string[] => splitLongChunk(sentence);
 
@@ -475,6 +520,7 @@ const clearQueueTimers = () => {
 let activeAudio: HTMLAudioElement | null = null;
 let audioUnlocked = false;
 let manifestPromise: Promise<Record<string, { file: string; duration?: number }> | null> | null = null;
+let manifestCache: Record<string, { file: string; duration?: number }> | null | undefined;
 
 /** Unlock HTMLAudioElement playback on the first user gesture (iOS/WKWebView). */
 export const unlockAudio = () => {
@@ -501,15 +547,32 @@ if (typeof window !== 'undefined') {
 }
 
 const loadManifest = async () => {
+  if (manifestCache !== undefined) return manifestCache;
   if (!manifestPromise) {
     manifestPromise = fetch('/audio/manifest.json')
       .then(async (response) => {
-        if (!response.ok) return null;
-        return (await response.json()) as Record<string, { file: string; duration?: number }>;
+        if (!response.ok) {
+          manifestCache = null;
+          return null;
+        }
+        const data = (await response.json()) as Record<string, { file: string; duration?: number }>;
+        manifestCache = data && Object.keys(data).length > 0 ? data : null;
+        return manifestCache;
       })
-      .catch(() => null);
+      .catch(() => {
+        manifestCache = null;
+        return null;
+      });
   }
   return manifestPromise;
+};
+
+const manifestHasClips = (): boolean =>
+  !!manifestCache && Object.keys(manifestCache).length > 0;
+
+/** Warm the audio manifest early so speak() can skip a network wait. */
+export const prefetchSpeechManifest = (): void => {
+  void loadManifest();
 };
 
 /** SHA-1 style hex via SubtleCrypto when available; sync fallback for tests/SSR. */
@@ -603,7 +666,7 @@ const speakChunk = (
   speechSynthesis.speak(utterance);
 };
 
-/** Speak normalized text sentence-by-sentence with short gaps. */
+/** Speak in as few utterances as possible for smoother intonation. */
 const speakNormalized = (
   cleaned: string,
   voice: SpeechSynthesisVoice,
@@ -611,11 +674,7 @@ const speakNormalized = (
   token: number,
   onEnd?: () => void
 ) => {
-  const sentences = splitSentences(cleaned);
-  const chunks: string[] = [];
-  for (const sentence of sentences) {
-    chunks.push(...splitLongChunk(sentence));
-  }
+  const chunks = packSpeechChunks(smoothProsodyText(cleaned));
   if (chunks.length === 0) {
     if (token === speechToken) onEnd?.();
     return;
@@ -733,8 +792,11 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
   }
 
   const ratePref = options?.ratePref ?? speechRatePref;
-  void playPreRendered(lang, cleaned, ratePref, token, options?.onEnd).then((played) => {
-    if (played || token !== speechToken) return;
+
+  // Empty/missing manifest: start device voice immediately (no fetch delay).
+  // When clips exist, try the neural file first, then fall back.
+  const startDevice = () => {
+    if (token !== speechToken) return;
     if (!isSpeechSupported()) {
       options?.onUnavailable?.();
       unavailableHandler?.();
@@ -742,9 +804,24 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
       return;
     }
     speakDevice(cleaned, lang, options, token);
-  });
+  };
 
-  // Clip or device will finish; treat as spoken unless muted/empty above.
+  if (manifestCache === null || (manifestCache !== undefined && !manifestHasClips())) {
+    startDevice();
+    return 'spoken';
+  }
+
+  if (manifestHasClips()) {
+    void playPreRendered(lang, cleaned, ratePref, token, options?.onEnd).then((played) => {
+      if (played || token !== speechToken) return;
+      startDevice();
+    });
+    return 'spoken';
+  }
+
+  // Manifest not loaded yet: speak on device now, warm the cache in the background.
+  startDevice();
+  void loadManifest();
   return 'spoken';
 };
 
