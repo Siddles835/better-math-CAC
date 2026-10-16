@@ -108,7 +108,7 @@ const App = () => {
               <Route path="/explore" element={lesson(<ExplorePage />)} />
               <Route path="/explore/:activityId" element={lesson(<ExploreActivityPage />)} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/planets" element={<StudentHubPage />} />
+              <Route path="/planets" element={lesson(<StudentHubPage />)} />
               <Route path="/solar-system" element={<Navigate to="/planets" replace />} />
               <Route path="/planet-select" element={<Navigate to="/planets" replace />} />
               <Route path="/solo" element={<SoloRegisterPage />} />

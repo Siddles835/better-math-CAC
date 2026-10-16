@@ -6,9 +6,16 @@ import { Button } from '@/components/ui/button';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { getClass } from '@/lib/classroom';
 import { isDemoMode } from '@/lib/demo/mode';
-import { loadActiveLearner, saveActiveLearner, savePendingPath } from '@/lib/paths/activeLearner';
+import {
+  clearPendingPath,
+  loadActiveLearner,
+  normalizePathId,
+  saveActiveLearner,
+  savePendingPath,
+} from '@/lib/paths/activeLearner';
 import { switchPath } from '@/lib/paths/progress';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
+import { withTimeoutFallback } from '@/lib/asyncTimeout';
 
 const PickPathPage = () => {
   const navigate = useNavigate();
@@ -17,6 +24,7 @@ const PickPathPage = () => {
   const next = params.get('next');
   const [placementOn, setPlacementOn] = useState(mode !== 'class');
   const [pathNow, setPathNow] = useState('');
+  const [choosing, setChoosing] = useState(false);
 
   useEffect(() => {
     let cancel = false;
@@ -24,9 +32,14 @@ const PickPathPage = () => {
       if (mode === 'class' || mode === 'switch') {
         const loaded = await loadActiveLearner();
         if (cancel) return;
-        if (loaded) setPathNow(loaded.record.activePathId);
+        if (loaded) setPathNow(normalizePathId(loaded.record.activePathId));
         if (mode === 'class' && loaded) {
-          const cls = await getClass(loaded.classCode);
+          const cls = await withTimeoutFallback(
+            getClass(loaded.classCode),
+            4000,
+            null,
+            'getClass'
+          );
           if (!cancel) setPlacementOn(!!cls?.usePlacementCheck || isDemoMode());
         }
       }
@@ -37,24 +50,40 @@ const PickPathPage = () => {
   }, [mode]);
 
   const choose = async (pathId: string) => {
-    savePendingPath(pathId);
-    if (pathId !== 'all') {
-      const loaded = await loadActiveLearner();
-      if (loaded) {
-        await saveActiveLearner(switchPath(loaded.record, pathId));
+    if (choosing) return;
+    setChoosing(true);
+    try {
+      savePendingPath(pathId);
+      const wantsCheck =
+        pathId === 'all' ||
+        next === 'check' ||
+        (mode === 'class' && placementOn) ||
+        (mode === 'solo' && next !== 'hub');
+
+      if (pathId === 'all' || wantsCheck) {
+        const checkPath = pathId === 'all' ? 'all' : pathId;
+        navigate(`/level-check?mode=${mode === 'class' ? 'class' : 'solo'}&path=${checkPath}`);
+        return;
       }
+
+      // Save path choice without blocking navigation forever on Firestore.
+      if (pathId !== 'all') {
+        const loaded = await loadActiveLearner();
+        if (loaded) {
+          await saveActiveLearner(switchPath(loaded.record, normalizePathId(pathId)));
+          clearPendingPath();
+        }
+      }
+      navigate(STUDENT_HUB_PATH, { replace: true });
+    } catch (error) {
+      console.error('Could not choose path', error);
+      navigate(STUDENT_HUB_PATH, { replace: true });
+    } finally {
+      setChoosing(false);
     }
-    const wantsCheck = pathId === 'all' || next === 'check' || (mode === 'class' && placementOn) || (mode === 'solo' && next !== 'hub');
-    if (pathId === 'all' || wantsCheck) {
-      const checkPath = pathId === 'all' ? 'all' : pathId;
-      navigate(`/level-check?mode=${mode === 'class' ? 'class' : 'solo'}&path=${checkPath}`);
-      return;
-    }
-    navigate(STUDENT_HUB_PATH, { replace: true });
   };
 
-  const welcomeKey =
-    'paths:pickLead';
+  const welcomeKey = 'paths:pickLead';
 
   return (
     <div className="min-h-screen bg-background subtle-stars p-6">
@@ -70,8 +99,9 @@ const PickPathPage = () => {
               <button
                 type="button"
                 data-testid={`pick-${path.id}`}
+                disabled={choosing}
                 onClick={() => void choose(path.id)}
-                className="w-full rounded-2xl border border-border bg-card px-4 py-4 text-start min-h-[48px]"
+                className="w-full rounded-2xl border border-border bg-card px-4 py-4 text-start min-h-[48px] disabled:opacity-60"
                 style={{ borderColor: `hsl(${path.theme.accent})` }}
                 aria-current={pathNow === path.id ? 'true' : undefined}
               >
@@ -81,7 +111,14 @@ const PickPathPage = () => {
             </li>
           ))}
         </ul>
-        <Button type="button" variant="outline" className="mt-6 w-full min-h-[48px]" data-testid="pick-not-sure" onClick={() => void choose('all')}>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-6 w-full min-h-[48px]"
+          data-testid="pick-not-sure"
+          disabled={choosing}
+          onClick={() => void choose('all')}
+        >
           {tx('paths:notSure')}
         </Button>
       </div>

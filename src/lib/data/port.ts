@@ -27,6 +27,7 @@ import { db } from '@/lib/firebase';
 import { stripUndefined } from '@/lib/data/stripUndefined';
 import { isSoloClassCode, loadSoloProgress, saveSoloProgress } from '@/lib/solo';
 import { patchStudentFields } from '@/lib/classroom';
+import { withTimeout } from '@/lib/asyncTimeout';
 
 export interface DataPort {
   kind: 'firestore' | 'solo' | 'demo';
@@ -55,11 +56,16 @@ const firestorePort: DataPort = {
     await patchStudentFields(classCode, studentKey, stripUndefined(fields));
   },
   async getLearner(classCode, studentKey) {
-    const snap = await getDoc(learnerDoc(classCode, studentKey));
+    const snap = await withTimeout(getDoc(learnerDoc(classCode, studentKey)), 5000, 'firestore.getLearner');
     return snap.exists() ? (snap.data() as LearnerRecord) : null;
   },
   async saveLearner(classCode, studentKey, record) {
-    await setDoc(learnerDoc(classCode, studentKey), stripUndefined(record));
+    // Do not hang forever when offline; local UX must keep moving.
+    await withTimeout(
+      setDoc(learnerDoc(classCode, studentKey), stripUndefined(record)),
+      4000,
+      'firestore.saveLearner'
+    );
   },
   async listLearners(classCode) {
     const snap = await getDocs(collection(db, 'classrooms', classCode, 'learners'));

@@ -146,7 +146,10 @@ const SolarSystemPage: React.FC = () => {
   const orbitPlanets = PLANET_ORDER.filter((id) => id !== 'sun');
 
   return (
-    <div className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-center p-4 sm:p-8 overflow-hidden pb-28">
+    <div
+      className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-center p-4 sm:p-8 overflow-hidden pb-28"
+      data-testid="solar-system"
+    >
       <div className="animate-fade-in z-20 text-center mb-6 sm:mb-8">
         {displayName && (
           <p className="text-sm text-muted-foreground mb-2">{tx('ui:s_b82e180967')}<strong className="text-foreground">{displayName}</strong>

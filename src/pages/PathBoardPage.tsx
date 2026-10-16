@@ -6,10 +6,13 @@ import type { Curriculum, LearnerRecord } from '@/content/types';
 import { getPort } from '@/lib/data/port';
 import { resolveAssignment } from '@/lib/curriculum/logic';
 import { isNodeUnlocked, progressFor } from '@/lib/paths/progress';
-import { loadActiveLearner } from '@/lib/paths/activeLearner';
+import { loadActiveLearner, normalizePathId } from '@/lib/paths/activeLearner';
 import { getLessonRoute } from '@/lib/planets';
 import type { PlanetId } from '@/lib/planets';
 import { Button } from '@/components/ui/button';
+import { withTimeoutFallback } from '@/lib/asyncTimeout';
+import { STUDENT_HUB_PATH } from '@/lib/studentHub';
+import { getActiveStudent } from '@/lib/session';
 
 const PathBoardPage = () => {
   const navigate = useNavigate();
@@ -17,32 +20,72 @@ const PathBoardPage = () => {
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null);
   const [mode, setMode] = useState<'replace' | 'alongside' | null>(null);
   const [solo, setSolo] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancel = false;
     void (async () => {
-      const loaded = await loadActiveLearner();
-      if (!loaded || cancel) return;
-      setRecord(loaded.record);
-      setSolo(loaded.solo);
-      if (loaded.solo) return;
-      const port = getPort(loaded.classCode, false);
-      const assignments = await port.listAssignments(loaded.classCode);
-      const chosen = resolveAssignment(assignments, loaded.studentKey, false);
-      if (!chosen) return;
-      const curricula = await port.listCurricula(loaded.classCode);
-      const found = curricula.find((item) => item.id === chosen.curriculumId) ?? null;
-      if (cancel) return;
-      setCurriculum(found);
-      setMode(found ? chosen.mode : null);
+      try {
+        if (!getActiveStudent()) {
+          if (!cancel) {
+            setReady(true);
+            navigate('/student-login', { replace: true });
+          }
+          return;
+        }
+        const loaded = await loadActiveLearner();
+        if (cancel) return;
+        if (!loaded) {
+          // Fall back to the planet hub instead of an empty board.
+          navigate(STUDENT_HUB_PATH, { replace: true });
+          return;
+        }
+        setRecord({
+          ...loaded.record,
+          activePathId: normalizePathId(loaded.record.activePathId),
+        });
+        setSolo(loaded.solo);
+        if (!loaded.solo) {
+          const port = getPort(loaded.classCode, false);
+          const assignments = await withTimeoutFallback(
+            port.listAssignments(loaded.classCode),
+            4000,
+            [],
+            'listAssignments'
+          );
+          const chosen = resolveAssignment(assignments, loaded.studentKey, false);
+          if (chosen) {
+            const curricula = await withTimeoutFallback(
+              port.listCurricula(loaded.classCode),
+              4000,
+              [],
+              'listCurricula'
+            );
+            const found = curricula.find((item) => item.id === chosen.curriculumId) ?? null;
+            if (!cancel) {
+              setCurriculum(found);
+              setMode(found ? chosen.mode : null);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Path board failed to load', error);
+        if (!cancel) navigate(STUDENT_HUB_PATH, { replace: true });
+      } finally {
+        if (!cancel) setReady(true);
+      }
     })();
     return () => {
       cancel = true;
     };
-  }, []);
+  }, [navigate]);
 
-  if (!record) {
-    return <div className="min-h-screen bg-background p-8 text-muted-foreground">{tx('paths:noneYet')}</div>;
+  if (!ready || !record) {
+    return (
+      <div className="min-h-screen bg-background p-8 text-muted-foreground" data-testid="path-board-loading">
+        {tx('ui:s_a981d720b9')}
+      </div>
+    );
   }
 
   const path = getPathOrFoundations(record.activePathId);

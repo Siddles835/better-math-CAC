@@ -14,6 +14,7 @@ import { getLastClassCode, setActiveStudent } from '@/lib/session';
 import { useGame } from '@/context/GameContext';
 import AuthNavButton from '@/components/AuthNavButton';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
+import { withTimeout } from '@/lib/asyncTimeout';
 
 type LoginLocationState = { classCode?: string; nickname?: string };
 
@@ -37,13 +38,13 @@ const StudentLoginPage: React.FC = () => {
     setError('');
 
     try {
-      const resolved = await resolveClassCode(code);
+      const resolved = await withTimeout(resolveClassCode(code), 8000, 'resolveClassCode');
       if (!resolved) {
         setError(`Class code "${code}" does not exist.`);
         return;
       }
 
-      const cls = await getClass(resolved);
+      const cls = await withTimeout(getClass(resolved), 8000, 'getClass');
       const key = findStudentKey(cls?.students, name);
       const student = key ? cls?.students?.[key] : null;
 
@@ -60,7 +61,11 @@ const StudentLoginPage: React.FC = () => {
         adjusted.planet !== student.planet ||
         (adjusted.completedPlanets?.length ?? 0) !== (student.completedPlanets?.length ?? 0)
       ) {
-        await updateStudentState(resolved, adjusted, key);
+        try {
+          await withTimeout(updateStudentState(resolved, adjusted, key), 5000, 'updateStudent');
+        } catch (error) {
+          console.warn('Could not sync class start; continuing with local state.', error);
+        }
       }
 
       if (unlock) hydrateClassMax(unlock);
@@ -75,7 +80,11 @@ const StudentLoginPage: React.FC = () => {
     } catch (err: unknown) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'Check your connection.';
-      setError('Failed to login: ' + message);
+      setError(
+        message.includes('timed out')
+          ? 'The class server is taking too long. Check your connection and try again.'
+          : 'Failed to login: ' + message
+      );
     } finally {
       setLoading(false);
     }

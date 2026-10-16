@@ -5,7 +5,12 @@ import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
 import type { AssessmentSummary } from '@/content/types';
 import { isDemoMode } from '@/lib/demo/mode';
-import { loadActiveLearner, saveActiveLearner } from '@/lib/paths/activeLearner';
+import {
+  clearPendingPath,
+  loadActiveLearner,
+  normalizePathId,
+  saveActiveLearner,
+} from '@/lib/paths/activeLearner';
 import { appendAssessment, switchPath } from '@/lib/paths/progress';
 import { buildAssessmentResultView } from '@/lib/assessmentLabels';
 import {
@@ -17,12 +22,37 @@ import {
 } from '@/lib/placementBands';
 import { createStaircase, nextStaircaseState, type PlacementQuestion, type StaircaseState } from '@/lib/placement';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
+import { generateUsername } from '@/lib/usernames';
+import { nicknameKey, patchStudentFields } from '@/lib/classroom';
+import { arrayUnionValue } from '@/lib/studentWrites';
+import { getActiveStudent, setActiveStudent } from '@/lib/session';
+import {
+  SOLO_CLASS_CODE,
+  clearSoloPending,
+  createSoloProgress,
+  loadSoloPending,
+  saveSoloProgress,
+  soloProgressToStudent,
+} from '@/lib/solo';
+import {
+  clearClassPlacementPending,
+  loadClassPlacementPending,
+} from '@/lib/placementSession';
+import {
+  PLANET_ORDER,
+  getLessonForPlanet,
+  normalizePlanetId,
+  planetsBefore,
+  type PlanetId,
+} from '@/lib/planets';
+import { useGame } from '@/context/GameContext';
 
 const STORE = 'mathlift:band-check';
 
 const BandCheckPage = ({ pathId }: { pathId: string }) => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const { hydrateFromStudent, hydrateClassMax } = useGame();
   const bands = useMemo(() => bandsForScope(pathId), [pathId]);
   const [state, setState] = useState<StaircaseState>(() =>
     createStaircase({ minItems: Math.min(12, bands.length * 2), maxItems: Math.max(12, bands.length * 2) }, bands.length)
@@ -31,6 +61,7 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
   const [usedIds, setUsedIds] = useState<Set<string>>(() => new Set());
   const [question, setQuestion] = useState<PlacementQuestion>(() => questionForBand(bands[0], 0, new Set()));
   const [summary, setSummary] = useState<AssessmentSummary | null>(null);
+  const mode = params.get('mode') === 'class' ? 'class' : 'solo';
 
   useEffect(() => {
     try {
@@ -66,17 +97,85 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
     );
   };
 
+  const ensureSession = async (result: AssessmentSummary) => {
+    if (getActiveStudent()) return;
+
+    const startPlanet: PlanetId =
+      normalizePlanetId(result.recommendedNodeId) ??
+      (result.recommendedPathId === 'foundations' ? 'sun' : 'sun');
+    const unlockPlanet =
+      PLANET_ORDER.indexOf(startPlanet) >= 0 ? startPlanet : 'sun';
+
+    if (mode === 'class') {
+      const classPending = loadClassPlacementPending();
+      if (!classPending) return;
+      const key = nicknameKey(classPending.nickname);
+      try {
+        await patchStudentFields(classPending.classCode, key, {
+          planet: unlockPlanet,
+          lesson: getLessonForPlanet(unlockPlanet),
+          completedPlanets: arrayUnionValue(...planetsBefore(unlockPlanet)),
+        });
+      } catch (error) {
+        console.error('Could not patch class placement', error);
+      }
+      hydrateFromStudent({
+        nickname: classPending.displayName,
+        planet: unlockPlanet,
+        lesson: getLessonForPlanet(unlockPlanet),
+        completedPlanets: planetsBefore(unlockPlanet),
+        planetSteps: {},
+        lastUpdated: Date.now(),
+      });
+      setActiveStudent({
+        classCode: classPending.classCode,
+        nickname: key,
+        displayName: classPending.displayName,
+      });
+      clearClassPlacementPending();
+      return;
+    }
+
+    const soloPending = loadSoloPending();
+    const displayName = soloPending?.displayName || generateUsername();
+    const progress = createSoloProgress(displayName, unlockPlanet, unlockPlanet, {
+      pin: soloPending?.pin,
+      placementDone: true,
+    });
+    saveSoloProgress(progress);
+    hydrateClassMax(progress.unlockPlanet);
+    hydrateFromStudent(soloProgressToStudent(progress));
+    setActiveStudent({
+      classCode: SOLO_CLASS_CODE,
+      nickname: progress.nickname,
+      displayName: progress.displayName,
+      solo: true,
+    });
+    clearSoloPending();
+  };
+
   const finish = async (result: AssessmentSummary) => {
     sessionStorage.removeItem(STORE);
-    const loaded = await loadActiveLearner();
-    if (loaded) {
-      let record = appendAssessment(loaded.record, { ...result, at: Date.now(), id: `assess-${Date.now()}` });
-      if (result.recommendedPathId && result.recommendedPathId !== 'all') {
-        record = switchPath(record, result.recommendedPathId);
+    try {
+      await ensureSession(result);
+      const loaded = await loadActiveLearner();
+      if (loaded) {
+        const nextPath = normalizePathId(result.recommendedPathId);
+        let record = appendAssessment(loaded.record, {
+          ...result,
+          at: Date.now(),
+          id: `assess-${Date.now()}`,
+          recommendedPathId: nextPath,
+        });
+        record = switchPath(record, nextPath);
+        await saveActiveLearner(record);
       }
-      await saveActiveLearner(record);
+    } catch (error) {
+      console.error('Could not save band check result', error);
+    } finally {
+      clearPendingPath();
+      setSummary(result);
     }
-    setSummary(result);
   };
 
   const answer = (value: number | 'skip') => {
@@ -196,8 +295,6 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
   const dotsShown = question.dots != null && question.dots > 0 ? Math.min(question.dots, 40) : 0;
   // Do not speak the equation when dots are shown (that would give away the count).
   const spoken = `${tx(promptKey)}${dotsShown > 0 || !question.equation ? '' : ` ${question.equation}`}`;
-  const mode = params.get('mode') === 'class' ? 'class' : 'solo';
-  void mode;
 
   return (
     <div className="min-h-screen bg-background p-6" data-testid="band-level-check">

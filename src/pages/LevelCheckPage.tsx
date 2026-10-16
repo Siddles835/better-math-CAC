@@ -48,6 +48,7 @@ import { isDemoMode } from '@/lib/demo/mode';
 import { loadActiveLearner, saveActiveLearner } from '@/lib/paths/activeLearner';
 import { appendAssessment } from '@/lib/paths/progress';
 import { FOUNDATION_BANDS, summarizeBands } from '@/lib/placementBands';
+import { clearPendingPath } from '@/lib/paths/activeLearner';
 
 const FoundationsLevelCheck: React.FC = () => {
   const navigate = useNavigate();
@@ -137,6 +138,7 @@ const FoundationsLevelCheck: React.FC = () => {
       } catch (error) {
         console.error('Could not save assessment', error);
       }
+      clearPendingPath();
       setResult({
         ...placement,
         startPlanet,

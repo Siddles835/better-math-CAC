@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { normalizeLabel, verifyTeacherPin } from '@/lib/classroom';
 import { setActiveTeacher } from '@/lib/session';
 import AuthNavButton from '@/components/AuthNavButton';
+import { withTimeout } from '@/lib/asyncTimeout';
 
 const TeacherLoginPage: React.FC = () => {
   const [classCode, setClassCode] = useState('');
@@ -22,7 +23,7 @@ const TeacherLoginPage: React.FC = () => {
     setError('');
 
     try {
-      const result = await verifyTeacherPin(code, pin);
+      const result = await withTimeout(verifyTeacherPin(code, pin), 8000, 'verifyTeacherPin');
       if (result.ok === false) {
         setError(result.reason);
         return;
@@ -33,7 +34,11 @@ const TeacherLoginPage: React.FC = () => {
     } catch (err: unknown) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'Check your connection.';
-      setError('Failed to login: ' + message);
+      setError(
+        message.includes('timed out')
+          ? 'The class server is taking too long. Check your connection and try again.'
+          : 'Failed to login: ' + message
+      );
     } finally {
       setLoading(false);
     }
