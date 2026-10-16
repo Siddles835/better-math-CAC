@@ -66,8 +66,9 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
       <ellipse cx="200" cy="58" rx="150" ry="24" fill="hsl(var(--basket) / 0.88)" />
       <path
         d="M55 58 Q55 150 78 230 Q200 255 322 230 Q345 150 345 58"
-        fill="hsl(var(--foreground) / 0.22)"
+        fill="hsl(var(--basket) / 0.35)"
       />
+      <ellipse cx="200" cy="100" rx="120" ry="40" fill="hsl(var(--foreground) / 0.18)" />
 
       {/* Apples in the bowl */}
       {PILE.slice(0, shown).map((slot, index) => {
