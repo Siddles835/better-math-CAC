@@ -46,6 +46,7 @@ import {
   type PlanetId,
 } from '@/lib/planets';
 import { useGame } from '@/context/GameContext';
+import { formatPathText } from '@/lib/paths/text';
 
 const STORE = 'mathlift:band-check';
 
@@ -292,9 +293,10 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
     question.promptKey.startsWith('paths:') || question.promptKey.startsWith('ui:')
       ? question.promptKey
       : `ui:${question.promptKey}`;
+  const prompt = formatPathText(promptKey, question.promptValues, question.equation ?? '');
   const dotsShown = question.dots != null && question.dots > 0 ? Math.min(question.dots, 40) : 0;
   // Do not speak the equation when dots are shown (that would give away the count).
-  const spoken = `${tx(promptKey)}${dotsShown > 0 || !question.equation ? '' : ` ${question.equation}`}`;
+  const spoken = `${prompt}${dotsShown > 0 || !question.equation ? '' : ` ${question.equation}`}`;
 
   return (
     <div className="min-h-screen bg-background p-6" data-testid="band-level-check">
@@ -304,13 +306,13 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
           <ReadAloudButton text={spoken} />
         </div>
         <p className="mb-4 text-sm text-muted-foreground">{tx('paths:resultPause')}</p>
-        <p className="mb-4 text-lg">{tx(promptKey)}</p>
+        <p className="mb-4 text-lg">{prompt}</p>
         {dotsShown > 0 && (
           <div
             className="mb-6 flex flex-wrap justify-center gap-2.5"
             data-testid="level-check-dots"
             role="img"
-            aria-label={tx(promptKey)}
+            aria-label={prompt}
           >
             {Array.from({ length: dotsShown }, (_, i) => (
               <span

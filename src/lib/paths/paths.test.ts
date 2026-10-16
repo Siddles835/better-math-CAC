@@ -244,6 +244,13 @@ describe('worked examples and geometry equations', () => {
           if (problem.operator === 'solve-sub') {
             expect(problem.equation).toBe(`x − ${n2} = ${n1}`);
           }
+          if (id === 'geometry') {
+            expect(problem.diagram?.object).toBeTruthy();
+            expect(problem.diagram?.compareKey).toMatch(/^paths:geo_compare_/);
+            expect(problem.promptValues?.object).toBe(problem.diagram?.object);
+            expect(problem.promptValues?.a).toBe(n1);
+            expect(problem.promptValues?.b).toBe(n2);
+          }
           const example = problem.workedExample?.promptValues ?? {};
           const ea = Number(example.a);
           const eb = Number(example.b);
@@ -257,6 +264,52 @@ describe('worked examples and geometry equations', () => {
           expect(problem.workedExample?.promptKey).not.toBe('paths:ex_prompt');
         }
       }
+    }
+  });
+});
+
+describe('path prompt formatting', () => {
+  it('fills a/b placeholders and never leaves raw mustache tokens', async () => {
+    await import('@/i18n/setup');
+    const { formatPathText, formatProblemPrompt } = await import('@/lib/paths/text');
+    const add = formatPathText('paths:q_add', { a: 3, b: 4 });
+    expect(add).toContain('3');
+    expect(add).toContain('4');
+    expect(add).not.toMatch(/\{\{/);
+    const geo = formatProblemPrompt({
+      id: 'g1',
+      type: 'numeric',
+      promptKey: 'paths:q_perim',
+      promptValues: { a: 5, b: 2, object: 'frame' },
+      answer: '14',
+      difficulty: 'easy',
+      topics: ['perimeter'],
+    });
+    expect(geo).toContain('5');
+    expect(geo).toContain('2');
+    expect(geo.toLowerCase()).toContain('frame');
+    expect(geo).not.toMatch(/\{\{/);
+    const about = formatPathText('paths:geometry_node_1_about');
+    expect(about.length).toBeGreaterThan(10);
+    expect(about).not.toMatch(/\{\{/);
+  });
+
+  it('keeps level about and real-life keys in every locale', () => {
+    for (const locale of LOCALES) {
+      const strings = loadPaths(locale);
+      for (const pathId of ['addition', 'subtraction', 'multiplication', 'division', 'algebra', 'geometry']) {
+        for (let n = 1; n <= 5; n += 1) {
+          expect(strings[`${pathId}_node_${n}_about`]).toBeTruthy();
+        }
+      }
+      for (let n = 1; n <= 5; n += 1) {
+        expect(strings[`geometry_node_${n}_real`]).toBeTruthy();
+      }
+      expect(strings.geo_compare_perim_frame).toBeTruthy();
+      expect(strings.geo_object_pizza).toBeTruthy();
+      expect(strings.q_perim).toContain('{{object}}');
+      expect(strings.q_area).toContain('{{object}}');
+      expect(strings.q_angle).toContain('{{object}}');
     }
   });
 });

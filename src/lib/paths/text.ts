@@ -1,6 +1,66 @@
 import type { Problem } from '@/content/types';
+import { tx } from '@/i18n/tx';
 
 const NUMBER_RE = /\d+/g;
+
+/** Turn geometry object ids (frame, pizza, …) into localized everyday names. */
+const withResolvedValues = (
+  values?: Record<string, string | number>
+): Record<string, string | number> | undefined => {
+  if (!values) return undefined;
+  const next: Record<string, string | number> = { ...values };
+  if (typeof next.object === 'string' && /^[a-z_]+$/i.test(next.object)) {
+    const objectKey = `paths:geo_object_${next.object}`;
+    const labeled = tx(objectKey);
+    if (labeled && labeled !== objectKey) next.object = labeled;
+  }
+  return next;
+};
+
+const fillPlaceholders = (
+  text: string,
+  values?: Record<string, string | number>
+): string => {
+  let out = text;
+  if (values) {
+    for (const [name, value] of Object.entries(values)) {
+      out = out.split(`{{${name}}}`).join(String(value));
+    }
+  }
+  // Never show unresolved mustache tokens in the UI.
+  return out.replace(/\{\{[^{}]+\}\}/g, '').replace(/\s{2,}/g, ' ').trim();
+};
+
+/**
+ * Resolve a paths/ui string and fill {{placeholders}}.
+ * Always strips leftover {{a}} style tokens so kids never see raw template text.
+ */
+export const formatPathText = (
+  key: string | undefined,
+  values?: Record<string, string | number>,
+  fallback = ''
+): string => {
+  if (!key) return fallback;
+  const normalizedKey =
+    key.startsWith('paths:') || key.startsWith('ui:') || key.startsWith('explore:')
+      ? key
+      : `paths:${key}`;
+  const resolved = withResolvedValues(values);
+  let text = tx(normalizedKey, resolved);
+  // If i18n returned the key itself, try a manual template from English patterns.
+  if (!text || text === normalizedKey || text === key) {
+    text = fallback || key;
+  }
+  return fillPlaceholders(text, resolved);
+};
+
+export const formatProblemPrompt = (problem: Problem): string => {
+  const resolved = withResolvedValues(problem.promptValues);
+  if (problem.prompt?.trim()) {
+    return fillPlaceholders(problem.prompt.trim(), resolved);
+  }
+  return formatPathText(problem.promptKey, problem.promptValues, problem.equation || '');
+};
 
 export const numbersIn = (text: string): number[] =>
   [...text.matchAll(NUMBER_RE)].map((match) => Number.parseInt(match[0], 10));

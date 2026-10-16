@@ -2,7 +2,7 @@ import { tx } from '@/i18n/tx';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPathOrFoundations } from '@/content/catalog';
-import type { Curriculum, LearnerRecord } from '@/content/types';
+import type { Curriculum, LearnerRecord, PathNode } from '@/content/types';
 import { getPort } from '@/lib/data/port';
 import { resolveAssignment } from '@/lib/curriculum/logic';
 import { isNodeUnlocked, progressFor } from '@/lib/paths/progress';
@@ -13,6 +13,10 @@ import { Button } from '@/components/ui/button';
 import { withTimeoutFallback } from '@/lib/asyncTimeout';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 import { getActiveStudent } from '@/lib/session';
+import { formatPathText } from '@/lib/paths/text';
+
+const nodeAboutKey = (pathId: string, node: PathNode): string =>
+  `paths:${pathId}_node_${node.order}_about`;
 
 const PathBoardPage = () => {
   const navigate = useNavigate();
@@ -36,7 +40,6 @@ const PathBoardPage = () => {
         const loaded = await loadActiveLearner();
         if (cancel) return;
         if (!loaded) {
-          // Fall back to the planet hub instead of an empty board.
           navigate(STUDENT_HUB_PATH, { replace: true });
           return;
         }
@@ -94,38 +97,82 @@ const PathBoardPage = () => {
   const showCurriculum = !!curriculum && !solo;
 
   return (
-    <div className="min-h-screen bg-background subtle-stars p-6" style={{ ['--path-accent' as string]: path.theme.accent }}>
+    <div
+      className="min-h-screen bg-background subtle-stars p-6"
+      style={{ ['--path-accent' as string]: path.theme.accent }}
+      data-testid="path-board"
+    >
       <div className="mx-auto max-w-xl">
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-2 flex items-center justify-between gap-3">
           <h1 className="text-3xl font-semibold">{tx(path.titleKey)}</h1>
-          <Button type="button" variant="outline" className="min-h-[48px]" onClick={() => navigate('/pick-path?mode=switch&next=hub')}>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-[48px]"
+            onClick={() => navigate('/pick-path?mode=switch&next=hub')}
+          >
             {tx('paths:openPaths')}
           </Button>
         </div>
+        <p className="mb-6 text-muted-foreground">{tx(path.summaryKey)}</p>
+
         {showPath && (
           <ul className="space-y-3">
-            {path.nodes.map((node) => {
+            {path.nodes.map((node, index) => {
               const unlocked = isNodeUnlocked(path, progress, node.id);
-              const mastered = !!progress.nodeMastery[node.id]?.mastered || progress.completedNodeIds.includes(node.id);
+              const mastered =
+                !!progress.nodeMastery[node.id]?.mastered ||
+                progress.completedNodeIds.includes(node.id);
+              const title = node.title ? node.title : tx(node.titleKey);
+              const about = formatPathText(
+                nodeAboutKey(path.id, node),
+                undefined,
+                node.topics.map((topic) => topic.replace(/-/g, ' ')).join(', ')
+              );
+              const status = mastered
+                ? tx('paths:playMastered')
+                : unlocked
+                  ? tx('paths:levelReady')
+                  : tx('paths:playLocked');
               return (
                 <li key={node.id}>
                   <button
                     type="button"
                     disabled={!unlocked}
-                    className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-start min-h-[48px] disabled:opacity-50"
+                    data-testid={`path-node-${node.id}`}
+                    className="w-full rounded-2xl border border-border bg-card px-4 py-4 text-start min-h-[48px] disabled:opacity-50"
                     onClick={() => {
-                      if (node.source.kind === 'legacy') navigate(getLessonRoute(node.source.planetId as PlanetId));
-                      else navigate(`/play/${path.id}/${node.id}`);
+                      if (node.source.kind === 'legacy') {
+                        navigate(getLessonRoute(node.source.planetId as PlanetId));
+                      } else {
+                        navigate(`/play/${path.id}/${node.id}`);
+                      }
                     }}
                   >
-                    <span className="font-semibold">{node.title ? node.title : tx(node.titleKey)}</span>
-                    <span className="ms-2 text-sm text-muted-foreground">{mastered ? tx('paths:playMastered') : unlocked ? '' : tx('paths:playLocked')}</span>
+                    <span className="flex items-start justify-between gap-3">
+                      <span>
+                        <span className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          {tx('paths:levelLabel', { n: index + 1 })}
+                        </span>
+                        <span className="mt-1 block text-lg font-semibold">{title}</span>
+                      </span>
+                      <span className="shrink-0 text-sm text-muted-foreground">{status}</span>
+                    </span>
+                    <span className="mt-2 block text-sm leading-relaxed text-muted-foreground">
+                      {about}
+                    </span>
+                    {path.id === 'geometry' && (
+                      <span className="mt-2 block text-sm text-foreground/80">
+                        {formatPathText(`paths:geometry_node_${node.order}_real`)}
+                      </span>
+                    )}
                   </button>
                 </li>
               );
             })}
           </ul>
         )}
+
         {showCurriculum && curriculum && (
           <section className="mt-8">
             <h2 className="mb-3 text-xl font-semibold">{curriculum.name}</h2>

@@ -16,18 +16,15 @@ import { loadActiveLearner, saveActiveLearner } from '@/lib/paths/activeLearner'
 import { recordAttempt } from '@/lib/paths/progress';
 import { getActiveStudent } from '@/lib/session';
 import { nicknameKey } from '@/lib/classroom';
+import { formatPathText, formatProblemPrompt } from '@/lib/paths/text';
 
-const promptText = (problem: Problem): string => {
-  if (problem.prompt) return problem.prompt;
-  if (problem.promptKey) return tx(problem.promptKey, problem.promptValues);
-  return tx('paths:q_solve');
-};
+const promptText = (problem: Problem): string => formatProblemPrompt(problem) || tx('paths:q_solve');
 
 const hintText = (problem: Problem, index: number): string => {
   const authored = problem.hints?.[index];
   if (authored) return authored;
   const key = problem.hintKeys?.[index];
-  return key ? tx(key) : '';
+  return key ? formatPathText(key) : '';
 };
 
 const ProblemPlayerPage = () => {
@@ -240,7 +237,10 @@ const ProblemPlayerPage = () => {
         {hints > 0 && problem.workedExample && (
           <p className="mt-3 text-sm" dir="ltr">
             {problem.workedExample.prompt ||
-              (problem.workedExample.promptKey ? tx(problem.workedExample.promptKey, problem.workedExample.promptValues) : '')}
+              formatPathText(
+                problem.workedExample.promptKey,
+                problem.workedExample.promptValues
+              )}
           </p>
         )}
       </div>

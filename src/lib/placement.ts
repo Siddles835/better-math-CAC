@@ -18,6 +18,8 @@ export interface PlacementQuestion {
   id: string;
   level: PlacementLevelId;
   promptKey: string;
+  /** Values for {{a}} / {{b}} style prompt keys. */
+  promptValues?: Record<string, string | number>;
   equation?: string;
   /** Visual count for counting items (rendered as dots; capped in UI). */
   dots?: number;

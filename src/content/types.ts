@@ -23,6 +23,10 @@ export interface PathTheme {
 export interface DiagramSpec {
   shape: 'rect' | 'angle';
   labels: Record<string, number | '?'>;
+  /** i18n key for a real-life comparison (geometry). */
+  compareKey?: string;
+  /** Short object name used in captions, e.g. book, rug, pizza. */
+  object?: string;
 }
 
 export interface WorkedExample {

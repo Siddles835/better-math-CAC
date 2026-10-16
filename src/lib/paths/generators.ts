@@ -182,12 +182,19 @@ const buildSpec = (id: GeneratorId, tier: 1 | 2 | 3, rng: Rng): Built => {
   if (tier === 1) {
     const w = pickInt(rng, lo, hi);
     const h = pickInt(rng, lo, hi);
+    const objects = ['frame', 'rug', 'book', 'tablet'] as const;
+    const object = objects[pickInt(rng, 0, objects.length - 1)];
     return {
       operator: 'perimeter',
       operands: [w, h],
       equation: `2 × (${w} + ${h})`,
-      promptValues: { a: w, b: h, ask: 'perimeter' },
-      diagram: { shape: 'rect', labels: { width: w, height: h, ask: '?' } },
+      promptValues: { a: w, b: h, ask: 'perimeter', object },
+      diagram: {
+        shape: 'rect',
+        labels: { width: w, height: h, ask: '?' },
+        compareKey: `paths:geo_compare_perim_${object}`,
+        object,
+      },
       type: 'numeric',
       topic,
     };
@@ -195,24 +202,38 @@ const buildSpec = (id: GeneratorId, tier: 1 | 2 | 3, rng: Rng): Built => {
   if (tier === 2) {
     const w = pickInt(rng, lo, hi);
     const h = pickInt(rng, lo, hi);
+    const objects = ['mat', 'book', 'window', 'screen'] as const;
+    const object = objects[pickInt(rng, 0, objects.length - 1)];
     return {
       operator: 'area',
       operands: [w, h],
       equation: `${w} × ${h}`,
-      promptValues: { a: w, b: h, ask: 'area' },
-      diagram: { shape: 'rect', labels: { width: w, height: h, ask: '?' } },
+      promptValues: { a: w, b: h, ask: 'area', object },
+      diagram: {
+        shape: 'rect',
+        labels: { width: w, height: h, ask: '?' },
+        compareKey: `paths:geo_compare_area_${object}`,
+        object,
+      },
       type: 'numeric',
       topic,
     };
   }
   const a = pickInt(rng, lo, hi);
   const b = pickInt(rng, lo, Math.min(hi, 180 - a - 1));
+  const objects = ['pizza', 'sandwich', 'paper', 'sign'] as const;
+  const object = objects[pickInt(rng, 0, objects.length - 1)];
   return {
     operator: 'angle',
     operands: [a, b],
     equation: `180 − ${a} − ${b}`,
-    promptValues: { a, b, ask: 'angle' },
-    diagram: { shape: 'angle', labels: { a, b, ask: '?' } },
+    promptValues: { a, b, ask: 'angle', object },
+    diagram: {
+      shape: 'angle',
+      labels: { a, b, ask: '?' },
+      compareKey: `paths:geo_compare_angle_${object}`,
+      object,
+    },
     type: 'numeric',
     topic,
   };
