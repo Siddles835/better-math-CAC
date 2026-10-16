@@ -85,11 +85,14 @@ export const questionForBand = (band: SkillBand, itemIndex: number): PlacementQu
   const answer = Number(problem.answer);
   const choices = (problem.choices ?? [String(Math.max(0, answer - 1)), problem.answer, String(answer + 1), String(answer + 2)])
     .map(Number);
+  const isCount = problem.operator === 'count' || band.generatorId === 'counting';
   return {
     id: `${band.id}-${itemIndex}`,
     level: 'count10',
-    promptKey: problem.promptKey ?? 'paths:q_solve',
-    equation: problem.equation,
+    // Counting must show dots, never the numeral as the "equation" (that spoils the answer).
+    promptKey: isCount ? 'place_q_count' : problem.promptKey ?? 'paths:q_solve',
+    equation: isCount ? undefined : problem.equation,
+    dots: isCount ? answer : undefined,
     answer,
     choices,
   };

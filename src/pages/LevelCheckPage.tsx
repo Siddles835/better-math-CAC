@@ -314,17 +314,22 @@ const FoundationsLevelCheck: React.FC = () => {
         <p className="text-lg font-medium mb-4">{tx(`ui:${question.promptKey}`)}</p>
 
         {dotsShown > 0 && (
-          <div className="flex flex-wrap justify-center gap-2 mb-6" aria-hidden>
+          <div
+            className="mb-6 flex flex-wrap justify-center gap-2.5"
+            data-testid="level-check-dots"
+            role="img"
+            aria-label={tx(`ui:${question.promptKey}`)}
+          >
             {Array.from({ length: dotsShown }, (_, i) => (
               <span
                 key={i}
-                className="inline-block w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-emerald-400/90"
+                className="inline-block h-5 w-5 shrink-0 rounded-full bg-amber-200 shadow-sm sm:h-6 sm:w-6"
               />
             ))}
           </div>
         )}
 
-        {question.equation && (
+        {question.equation && dotsShown === 0 && (
           <p className="text-3xl font-semibold text-center mb-6 tracking-wide" dir="ltr">
             {question.equation}
           </p>

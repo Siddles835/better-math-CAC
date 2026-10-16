@@ -110,20 +110,45 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
     );
   }
 
-  const spoken = `${tx(question.promptKey.startsWith('paths:') || question.promptKey.startsWith('ui:') ? question.promptKey : `ui:${question.promptKey}`)} ${question.equation ?? ''}`;
+  const promptKey =
+    question.promptKey.startsWith('paths:') || question.promptKey.startsWith('ui:')
+      ? question.promptKey
+      : `ui:${question.promptKey}`;
+  const dotsShown = question.dots != null && question.dots > 0 ? Math.min(question.dots, 40) : 0;
+  // Do not speak the equation when dots are shown (that would give away the count).
+  const spoken = `${tx(promptKey)}${dotsShown > 0 || !question.equation ? '' : ` ${question.equation}`}`;
   const mode = params.get('mode') === 'class' ? 'class' : 'solo';
   void mode;
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-6" data-testid="band-level-check">
       <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6">
         <div className="mb-2 flex items-center justify-between">
           <h1 className="text-2xl font-semibold">{tx('paths:resultTitle')}</h1>
           <ReadAloudButton text={spoken} />
         </div>
         <p className="mb-4 text-sm text-muted-foreground">{tx('paths:resultPause')}</p>
-        <p className="mb-4 text-lg">{tx(question.promptKey.startsWith('paths:') ? question.promptKey : `ui:${question.promptKey}`)}</p>
-        {question.equation && <p className="mb-4 text-center text-3xl" dir="ltr">{question.equation}</p>}
+        <p className="mb-4 text-lg">{tx(promptKey)}</p>
+        {dotsShown > 0 && (
+          <div
+            className="mb-6 flex flex-wrap justify-center gap-2.5"
+            data-testid="level-check-dots"
+            role="img"
+            aria-label={tx(promptKey)}
+          >
+            {Array.from({ length: dotsShown }, (_, i) => (
+              <span
+                key={i}
+                className="inline-block h-5 w-5 shrink-0 rounded-full bg-amber-200 shadow-sm sm:h-6 sm:w-6"
+              />
+            ))}
+          </div>
+        )}
+        {question.equation && dotsShown === 0 && (
+          <p className="mb-4 text-center text-3xl" dir="ltr">
+            {question.equation}
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-3">
           {question.choices.map((choice) => (
             <button key={choice} type="button" className="min-h-[56px] rounded-xl border border-border text-xl" dir="ltr" onClick={() => answer(choice)}>
