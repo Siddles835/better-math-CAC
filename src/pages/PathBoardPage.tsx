@@ -105,14 +105,16 @@ const PathBoardPage = () => {
       <div className="mx-auto max-w-xl">
         <div className="mb-2 flex items-center justify-between gap-3">
           <h1 className="text-3xl font-semibold">{tx(path.titleKey)}</h1>
-          <Button
-            type="button"
-            variant="outline"
-            className="min-h-[48px]"
-            onClick={() => navigate('/pick-path?mode=switch&next=hub')}
-          >
-            {tx('paths:openPaths')}
-          </Button>
+          {solo && (
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-[48px]"
+              onClick={() => navigate('/pick-path?mode=switch&next=hub')}
+            >
+              {tx('paths:openPaths')}
+            </Button>
+          )}
         </div>
         <p className="mb-6 text-muted-foreground">{tx(path.summaryKey)}</p>
 

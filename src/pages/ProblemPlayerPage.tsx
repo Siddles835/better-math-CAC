@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { getPath } from '@/content/catalog';
 import type { Curriculum, Problem } from '@/content/types';
 import { useAccessibility } from '@/context/AccessibilityContext';
+import { useGame } from '@/context/GameContext';
 import { useAnswerCheck } from '@/hooks/useAnswerCheck';
 import { parseStudentAnswer } from '@/lib/answers/parse';
 import { getPort } from '@/lib/data/port';
@@ -17,6 +18,9 @@ import { recordAttempt } from '@/lib/paths/progress';
 import { getActiveStudent } from '@/lib/session';
 import { nicknameKey } from '@/lib/classroom';
 import { formatPathText, formatProblemPrompt } from '@/lib/paths/text';
+import { getNextPlanet, isSolarPathId, normalizePlanetId, type PlanetId } from '@/lib/planets';
+import { STUDENT_HUB_PATH } from '@/lib/studentHub';
+import { isSoloClassCode } from '@/lib/solo';
 
 const promptText = (problem: Problem): string => formatProblemPrompt(problem) || tx('paths:q_solve');
 
@@ -33,6 +37,7 @@ const ProblemPlayerPage = () => {
   const preview = params.get('preview') === '1';
   const navigate = useNavigate();
   const { prefs } = useAccessibility();
+  const { completePlanet } = useGame();
   const check = useAnswerCheck();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [index, setIndex] = useState(0);
@@ -43,6 +48,9 @@ const ProblemPlayerPage = () => {
   const [threshold, setThreshold] = useState(80);
   const [topics, setTopics] = useState<string[]>([]);
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null);
+  const active = getActiveStudent();
+  const solo = !!(active?.solo || isSoloClassCode(active?.classCode));
+  const solarPlay = isSolarPathId(pathId);
 
   useEffect(() => {
     let cancel = false;
@@ -144,6 +152,16 @@ const ProblemPlayerPage = () => {
     if (!problem) return;
     if (index + 1 >= problems.length) {
       setDone(tx('paths:playMastered'));
+      if (solarPlay && nodeId) {
+        const planet = normalizePlanetId(nodeId);
+        if (planet) {
+          void completePlanet(planet);
+          const nextPlanet = getNextPlanet(planet as PlanetId);
+          window.setTimeout(() => {
+            navigate(nextPlanet ? `/play/operations/${nextPlanet}` : STUDENT_HUB_PATH);
+          }, 900);
+        }
+      }
       return;
     }
     setIndex(index + 1);
@@ -227,9 +245,19 @@ const ProblemPlayerPage = () => {
           <Button type="button" variant="outline" className="min-h-[48px]" onClick={goNext}>
             {tx('paths:playNext')}
           </Button>
-          <Button type="button" variant="ghost" className="min-h-[48px]" onClick={() => navigate('/paths')}>
-            {tx('paths:openPaths')}
+          <Button
+            type="button"
+            variant="ghost"
+            className="min-h-[48px]"
+            onClick={() => navigate(STUDENT_HUB_PATH)}
+          >
+            {tx('ui:s_7bb59b2f67')}
           </Button>
+          {solo && !solarPlay && (
+            <Button type="button" variant="ghost" className="min-h-[48px]" onClick={() => navigate('/paths')}>
+              {tx('paths:openPaths')}
+            </Button>
+          )}
         </div>
         {Array.from({ length: hints }, (_, hintIndex) => (
           <p key={hintIndex} className="mt-3 text-sm text-muted-foreground">{hintText(problem, hintIndex)}</p>

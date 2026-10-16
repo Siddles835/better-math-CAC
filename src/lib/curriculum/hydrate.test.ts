@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PATHS } from '@/content/catalog';
+import { CURRICULUM_BASE_PATHS, getPath } from '@/content/catalog';
 import { duplicatePath } from '@/lib/curriculum/logic';
 import { hasUndefined, stripUndefined } from '@/lib/data/stripUndefined';
 import { hydrateCurriculum, looksLikeKey, nodeHasProblems } from './hydrate';
 
 describe('hydrateCurriculum', () => {
   it('turns path keys into editable planet titles and prompts', () => {
-    const addition = PATHS.find((path) => path.id === 'addition');
+    const addition = getPath('addition') ?? CURRICULUM_BASE_PATHS.find((path) => path.id === 'addition');
     expect(addition).toBeTruthy();
     const raw = duplicatePath(addition!, 'demo', 'dup', 'Addition copy');
     expect(looksLikeKey(raw.nodes[0]?.title) || raw.nodes[0]?.title?.startsWith('ui:')).toBe(true);
@@ -61,7 +61,7 @@ describe('hydrateCurriculum', () => {
       false
     );
 
-    const addition = PATHS.find((path) => path.id === 'addition')!;
+    const addition = getPath('addition')!;
     const hydrated = hydrateCurriculum(duplicatePath(addition, 'demo', 'dup2', 'Copy'));
     expect(hasUndefined(hydrated)).toBe(false);
     expect(hasUndefined(stripUndefined(hydrated))).toBe(false);
@@ -78,7 +78,7 @@ describe('saveCurriculum payload', () => {
       return { ...actual, setDoc: setDocMock };
     });
     // Direct unit check: stripUndefined on hydrated curriculum is what the port writes.
-    const addition = PATHS.find((path) => path.id === 'addition')!;
+    const addition = getPath('addition')!;
     const payload = stripUndefined(hydrateCurriculum(duplicatePath(addition, 'demo', 'dup3', 'Copy')));
     expect(hasUndefined(payload)).toBe(false);
     await setDocMock({}, payload);

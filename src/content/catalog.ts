@@ -1,5 +1,11 @@
 import type { GeneratorId, Path, PathNode, PathTheme } from '@/content/types';
-import { PLANET_ORDER, getLessonForPlanet, type PlanetId } from '@/lib/planets';
+import {
+  PLANET_ORDER,
+  getLessonForPlanet,
+  isSolarPathId,
+  type PlanetId,
+  type SolarPathId,
+} from '@/lib/planets';
 
 const theme = (id: string, accent: string, surface: string, ink: string): PathTheme => ({
   id,
@@ -29,14 +35,36 @@ const foundationsNodes = (): PathNode[] =>
     order: index + 1,
     titleKey: `ui:planet_${planetId}`,
     prerequisites: index === 0 ? [] : [PLANET_ORDER[index - 1]],
-    topics: [getLessonForPlanet(planetId)],
+    topics: [getLessonForPlanet(planetId, 'foundations')],
     masteryThreshold: 80,
     source: { kind: 'legacy' as const, planetId: planetId as PlanetId },
   }));
 
+/** Operations pathway: same nine planets, multiplication → division → algebra. */
+const operationsNodes = (): PathNode[] =>
+  PLANET_ORDER.map((planetId, index) => {
+    const lesson = getLessonForPlanet(planetId, 'operations');
+    const tier = ((index % 3) + 1) as 1 | 2 | 3;
+    return {
+      id: planetId,
+      order: index + 1,
+      titleKey: `ui:planet_${planetId}`,
+      prerequisites: index === 0 ? [] : [PLANET_ORDER[index - 1]],
+      topics: [lesson],
+      masteryThreshold: 80,
+      source: {
+        kind: 'generated' as const,
+        generatorId: lesson as GeneratorId,
+        tiers: [tier],
+        perTier: 4,
+      },
+    };
+  });
+
 /**
- * Built-in paths. Adding a path means a new object in this list.
- * No new route or lesson component is required for a generated path.
+ * The only two student/classroom pathways. Each is a full solar system.
+ * - foundations: Counting, Addition, Subtraction
+ * - operations: Multiplication, Division, Algebra
  */
 export const PATHS: Path[] = [
   {
@@ -46,6 +74,20 @@ export const PATHS: Path[] = [
     theme: theme('foundations', '45 80% 56%', '230 25% 16%', '40 30% 96%'),
     nodes: foundationsNodes(),
   },
+  {
+    id: 'operations',
+    titleKey: 'paths:path_operations',
+    summaryKey: 'paths:path_operations_lead',
+    theme: theme('operations', '28 70% 52%', '24 24% 14%', '30 40% 96%'),
+    nodes: operationsNodes(),
+  },
+];
+
+/**
+ * Topic templates for the curriculum editor (duplicate / remix).
+ * Not shown to students joining a classroom.
+ */
+export const TOPIC_PATHS: Path[] = [
   {
     id: 'addition',
     titleKey: 'paths:path_addition',
@@ -126,8 +168,41 @@ export const PATHS: Path[] = [
   },
 ];
 
-export const getPath = (id: string | null | undefined): Path | null =>
-  PATHS.find((path) => path.id === id) ?? null;
+/** Paths a teacher can assign as the class solar-system pathway. */
+export const CLASSROOM_PATHS: Path[] = PATHS;
+
+/** Curriculum "based on" list: classroom pathways + topic templates. */
+export const CURRICULUM_BASE_PATHS: Path[] = [...PATHS, ...TOPIC_PATHS];
+
+const PATH_ALIASES: Record<string, SolarPathId> = {
+  foundations: 'foundations',
+  operations: 'operations',
+  counting: 'foundations',
+  addition: 'foundations',
+  subtraction: 'foundations',
+  multiplication: 'operations',
+  division: 'operations',
+  algebra: 'operations',
+  geometry: 'operations',
+};
+
+export const resolveClassroomPathId = (id: string | null | undefined): SolarPathId => {
+  if (!id || id === 'all') return 'foundations';
+  if (isSolarPathId(id)) return id;
+  return PATH_ALIASES[id] ?? 'foundations';
+};
+
+export const getPath = (id: string | null | undefined): Path | null => {
+  if (!id) return null;
+  const exact =
+    PATHS.find((path) => path.id === id) ?? TOPIC_PATHS.find((path) => path.id === id);
+  if (exact) return exact;
+  const aliased = PATH_ALIASES[id];
+  return aliased ? PATHS.find((path) => path.id === aliased) ?? null : null;
+};
 
 export const getPathOrFoundations = (id: string | null | undefined): Path =>
   getPath(id) ?? PATHS[0];
+
+export const getClassroomPath = (id: string | null | undefined): Path =>
+  PATHS.find((path) => path.id === resolveClassroomPathId(id)) ?? PATHS[0];

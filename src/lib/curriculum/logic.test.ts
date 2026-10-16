@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PATHS } from '@/content/catalog';
+import { CURRICULUM_BASE_PATHS } from '@/content/catalog';
 import type { Curriculum, CurriculumNode, Problem } from '@/content/types';
 import { hydrateCurriculum } from '@/lib/curriculum/hydrate';
 import {
@@ -35,7 +35,7 @@ const nodeWithProblems = (id: string, problems: Problem[]): CurriculumNode => ({
 
 describe('duplicatePath validation', () => {
   it('gives every built-in path zero validation issues after hydrate', () => {
-    for (const path of PATHS) {
+    for (const path of CURRICULUM_BASE_PATHS) {
       const raw = duplicatePath(path, 'demo', `dup-${path.id}`, `${path.id} copy`);
       const hydrated = hydrateCurriculum(raw);
       const issues = validateCurriculum(hydrated);

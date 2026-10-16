@@ -9,12 +9,14 @@ import {
   resolveClassCode,
   updateStudentState,
 } from '@/lib/classroom';
-import { getClassroomUnlockPlanet } from '@/lib/planets';
+import { getClassroomPathwayId, getClassroomUnlockPlanet, setSolarPathHint } from '@/lib/planets';
 import { getLastClassCode, setActiveStudent } from '@/lib/session';
 import { useGame } from '@/context/GameContext';
 import AuthNavButton from '@/components/AuthNavButton';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 import { withTimeout } from '@/lib/asyncTimeout';
+import { learnerFromLegacy } from '@/lib/paths/progress';
+import { loadActiveLearner, saveActiveLearner } from '@/lib/paths/activeLearner';
 
 type LoginLocationState = { classCode?: string; nickname?: string };
 
@@ -68,6 +70,8 @@ const StudentLoginPage: React.FC = () => {
         }
       }
 
+      const pathway = getClassroomPathwayId(cls);
+      setSolarPathHint(pathway);
       if (unlock) hydrateClassMax(unlock);
       hydrateFromStudent(adjusted);
       setActiveStudent({
@@ -75,6 +79,22 @@ const StudentLoginPage: React.FC = () => {
         nickname: key,
         displayName: adjusted.nickname || name,
       });
+
+      // Persist teacher pathway onto the learner doc (students never pick topics).
+      try {
+        const loaded = await withTimeout(loadActiveLearner(), 5000, 'loadActiveLearner');
+        if (loaded) {
+          await withTimeout(saveActiveLearner(loaded.record), 5000, 'saveActiveLearner');
+        } else {
+          await withTimeout(
+            saveActiveLearner(learnerFromLegacy(adjusted, pathway)),
+            5000,
+            'saveActiveLearner'
+          );
+        }
+      } catch (error) {
+        console.warn('Could not sync pathway; continuing to hub.', error);
+      }
 
       navigate(STUDENT_HUB_PATH, { replace: true });
     } catch (err: unknown) {

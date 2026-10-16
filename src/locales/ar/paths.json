@@ -1,10 +1,10 @@
 {
   "pickTitle": "اختر مسارا",
-  "pickLead": "اختر ما تريد العمل عليه. يمكنك التبديل لاحقا، ويبقى التقدم الآخر محفوظا.",
+  "pickLead": "اختر مسار نظام شمسي. في الصف يختاره المعلم.",
   "notSure": "لست متأكدا، افحص مستواي",
   "openPaths": "المسارات",
-  "path_foundations": "الأسس",
-  "path_foundations_lead": "عدّ وجمع وطرح عبر الكواكب التسعة.",
+  "path_foundations": "العد · الجمع · الطرح",
+  "path_foundations_lead": "مسار النظام الشمسي للعد والجمع والطرح. يختار المعلم نقطة البداية.",
   "path_addition": "الجمع",
   "path_addition_lead": "اجمع المقادير، من مجاميع صغيرة إلى أكبر.",
   "path_subtraction": "الطرح",
@@ -258,7 +258,7 @@
   "welcomeMinimal": "اختر مسارا.",
   "diagramLabel": "رسم الشكل",
   "previewBanner": "معاينة. لا يُحفظ شيء.",
-  "defaultPath": "المسار الافتراضي",
+  "defaultPath": "مسار الصف",
   "perPath": "إلى أين وصلت",
   "noneYet": "لا شيء بعد",
   "currBack": "رجوع",
@@ -337,5 +337,8 @@
   "currPlanetDetails": "تفاصيل الكوكب",
   "currProblems": "المسائل",
   "currMoreActions": "المزيد",
-  "currUnsavedDot": "غير محفوظ"
+  "currUnsavedDot": "غير محفوظ",
+  "path_operations": "الضرب · القسمة · الجبر",
+  "path_operations_lead": "مسار النظام الشمسي للضرب والقسمة والجبر. يختار المعلم نقطة البداية.",
+  "pickLeadSolo": "اختر أي نظام شمسي تتدرب عليه. طلاب الصف يستخدمون مسار المعلم."
 }

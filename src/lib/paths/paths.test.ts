@@ -282,7 +282,7 @@ describe('path prompt formatting', () => {
       promptKey: 'paths:q_perim',
       promptValues: { a: 5, b: 2, object: 'frame' },
       answer: '14',
-      difficulty: 'easy',
+      difficulty: 1,
       topics: ['perimeter'],
     });
     expect(geo).toContain('5');
@@ -378,6 +378,7 @@ describe('path locales', () => {
         expect(leaksAnswer([value], '8')).toBe(false);
       }
     }
-    expect(PATHS.length).toBe(7);
+    expect(PATHS.length).toBe(2);
+    expect(PATHS.map((path) => path.id)).toEqual(['foundations', 'operations']);
   });
 });

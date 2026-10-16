@@ -1,7 +1,13 @@
 import type { Assignment, Curriculum, LearnerRecord, PilotGoals } from '@/content/types';
 import type { Classroom, StudentState } from '@/lib/classroom';
 import { DEMO_CLASS_CODE, DEMO_PIN, buildDemoWorld, type DemoWorld } from '@/lib/demo/seed';
-import { getLessonForPlanet } from '@/lib/planets';
+import {
+  getClassroomPathwayId,
+  getClassroomUnlockPlanet,
+  getLessonForPlanet,
+  planetsBefore,
+  setSolarPathHint,
+} from '@/lib/planets';
 
 type Listener = (data: Classroom | null) => void;
 
@@ -129,12 +135,18 @@ export const demoDeleteClass = (): boolean => {
 };
 
 export const demoSetDefaultStart = (planet: string, pathId?: string): void => {
+  const pathway =
+    pathId === 'operations' ||
+    (!pathId && world.classroom.defaultStart?.pathId === 'operations')
+      ? 'operations'
+      : 'foundations';
+  const resolved = pathId === 'foundations' || pathId === 'operations' ? pathId : pathway;
   world.classroom = {
     ...world.classroom,
     defaultStart: {
       planet,
-      lesson: getLessonForPlanet(planet),
-      pathId: pathId ?? world.classroom.defaultStart?.pathId,
+      lesson: getLessonForPlanet(planet, resolved),
+      pathId: resolved,
     },
     defaultPlanet: planet,
   };

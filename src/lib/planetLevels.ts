@@ -3,6 +3,7 @@ import {
   getLessonForPlanet,
   PLANET_ORDER,
   type PlanetId,
+  type SolarPathId,
 } from '@/lib/planets';
 
 /**
@@ -100,23 +101,108 @@ export const PLANET_LEVELS: Record<PlanetId, PlanetLevelInfo> = {
   },
 };
 
+/** Operations pathway: multiplication → division → algebra across the same planets. */
+export const OPERATIONS_PLANET_LEVELS: Record<PlanetId, PlanetLevelInfo> = {
+  sun: {
+    id: 'sun',
+    topic: 'multiplication',
+    rangeMax: 10,
+    rangeKey: 'pl_range_to10',
+    skillKey: 'pl_skill_ops_sun',
+    labelKey: 'pl_label_ops_sun',
+  },
+  mercury: {
+    id: 'mercury',
+    topic: 'multiplication',
+    rangeMax: 12,
+    rangeKey: 'pl_range_to12',
+    skillKey: 'pl_skill_ops_mercury',
+    labelKey: 'pl_label_ops_mercury',
+  },
+  venus: {
+    id: 'venus',
+    topic: 'multiplication',
+    rangeMax: 20,
+    rangeKey: 'pl_range_add20',
+    skillKey: 'pl_skill_ops_venus',
+    labelKey: 'pl_label_ops_venus',
+  },
+  earth: {
+    id: 'earth',
+    topic: 'division',
+    rangeMax: 12,
+    rangeKey: 'pl_range_add12',
+    skillKey: 'pl_skill_ops_earth',
+    labelKey: 'pl_label_ops_earth',
+  },
+  mars: {
+    id: 'mars',
+    topic: 'division',
+    rangeMax: 20,
+    rangeKey: 'pl_range_add20',
+    skillKey: 'pl_skill_ops_mars',
+    labelKey: 'pl_label_ops_mars',
+  },
+  jupiter: {
+    id: 'jupiter',
+    topic: 'division',
+    rangeMax: 100,
+    rangeKey: 'pl_range_to100',
+    skillKey: 'pl_skill_ops_jupiter',
+    labelKey: 'pl_label_ops_jupiter',
+  },
+  saturn: {
+    id: 'saturn',
+    topic: 'algebra',
+    rangeMax: 12,
+    rangeKey: 'pl_range_sub12',
+    skillKey: 'pl_skill_ops_saturn',
+    labelKey: 'pl_label_ops_saturn',
+  },
+  uranus: {
+    id: 'uranus',
+    topic: 'algebra',
+    rangeMax: 20,
+    rangeKey: 'pl_range_sub20',
+    skillKey: 'pl_skill_ops_uranus',
+    labelKey: 'pl_label_ops_uranus',
+  },
+  neptune: {
+    id: 'neptune',
+    topic: 'algebra',
+    rangeMax: 20,
+    rangeKey: 'pl_range_sub20',
+    skillKey: 'pl_skill_ops_neptune',
+    labelKey: 'pl_label_ops_neptune',
+  },
+};
+
 export const PLANET_LEVEL_LIST: PlanetLevelInfo[] = PLANET_ORDER.map(
   (id) => PLANET_LEVELS[id]
 );
 
-export const getPlanetLevel = (planetId: string | null | undefined): PlanetLevelInfo => {
+export const planetLevelsForPath = (pathId: string | null | undefined): PlanetLevelInfo[] => {
+  const table = pathId === 'operations' ? OPERATIONS_PLANET_LEVELS : PLANET_LEVELS;
+  return PLANET_ORDER.map((id) => table[id]);
+};
+
+export const getPlanetLevel = (
+  planetId: string | null | undefined,
+  pathId: string | null | undefined = 'foundations'
+): PlanetLevelInfo => {
   const key = (planetId ?? 'sun').toLowerCase() as PlanetId;
-  return PLANET_LEVELS[key] ?? PLANET_LEVELS.sun;
+  const table = pathId === 'operations' ? OPERATIONS_PLANET_LEVELS : PLANET_LEVELS;
+  return table[key] ?? table.sun;
 };
 
 /** Dropdown / list option text keys: planet name is separate; use labelKey. */
-export const planetOptionKeys = (planetId: PlanetId) => {
-  const info = PLANET_LEVELS[planetId];
+export const planetOptionKeys = (planetId: PlanetId, pathId: SolarPathId = 'foundations') => {
+  const info = getPlanetLevel(planetId, pathId);
   return {
     labelKey: info.labelKey,
     topic: info.topic,
     rangeKey: info.rangeKey,
     skillKey: info.skillKey,
-    lesson: getLessonForPlanet(planetId),
+    lesson: getLessonForPlanet(planetId, pathId),
   };
 };

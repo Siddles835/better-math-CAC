@@ -1,10 +1,10 @@
 {
   "pickTitle": "Elige un camino",
-  "pickLead": "Elige en qué quieres trabajar. Puedes cambiar después, y el otro progreso se queda.",
+  "pickLead": "Elige un sistema solar. En clase, el docente lo elige por ti.",
   "notSure": "No estoy seguro, revisa mi nivel",
   "openPaths": "Caminos",
-  "path_foundations": "Bases",
-  "path_foundations_lead": "Conteo, suma y resta en los nueve planetas.",
+  "path_foundations": "Conteo · Suma · Resta",
+  "path_foundations_lead": "Sistema solar de conteo, suma y resta. El docente elige el punto de partida.",
   "path_addition": "Suma",
   "path_addition_lead": "Junta cantidades, de sumas pequeñas a más grandes.",
   "path_subtraction": "Resta",
@@ -258,7 +258,7 @@
   "welcomeMinimal": "Elige un camino.",
   "diagramLabel": "Diagrama de la figura",
   "previewBanner": "Vista previa. No se guarda nada.",
-  "defaultPath": "Camino predeterminado",
+  "defaultPath": "Camino de la clase",
   "perPath": "Dónde llegaste",
   "noneYet": "Aún ninguno",
   "currBack": "Volver",
@@ -337,5 +337,8 @@
   "currPlanetDetails": "Detalles del planeta",
   "currProblems": "Problemas",
   "currMoreActions": "Opciones",
-  "currUnsavedDot": "Sin guardar"
+  "currUnsavedDot": "Sin guardar",
+  "path_operations": "Multiplicación · División · Álgebra",
+  "path_operations_lead": "Sistema solar de multiplicación, división y álgebra. El docente elige el punto de partida.",
+  "pickLeadSolo": "Elige qué sistema solar practicar. En clase usa el camino que eligió el docente."
 }

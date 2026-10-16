@@ -26,6 +26,9 @@ const generatorForLegacy = (planetId: string): GeneratorId => {
   const lesson = getLessonForPlanet(planetId);
   if (lesson === 'subtraction') return 'subtraction';
   if (lesson === 'addition') return 'addition';
+  if (lesson === 'multiplication') return 'multiplication';
+  if (lesson === 'division') return 'division';
+  if (lesson === 'algebra') return 'algebra';
   return 'counting';
 };
 

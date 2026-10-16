@@ -17,7 +17,7 @@ import {
   Trash2,
   WifiOff,
 } from 'lucide-react';
-import { PATHS } from '@/content/catalog';
+import { CURRICULUM_BASE_PATHS, getPath } from '@/content/catalog';
 import type { Assignment, Curriculum, CurriculumNode, Problem } from '@/content/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
@@ -399,7 +399,7 @@ const CurriculumPage = () => {
             onRetry={() => void load()}
             onCreate={() => openEditor(blankCurriculum(classCode), true)}
             onDuplicate={(pathId) => {
-              const path = PATHS.find((item) => item.id === pathId);
+              const path = getPath(pathId);
               if (!path) return;
               openEditor(
                 hydrateCurriculum(
@@ -505,7 +505,7 @@ const ListView = ({
               }}
             >
               <option value="">{tx('paths:defaultPath')}</option>
-              {PATHS.map((path) => (
+              {CURRICULUM_BASE_PATHS.map((path) => (
                 <option key={path.id} value={path.id}>
                   {tx(path.titleKey)}
                 </option>

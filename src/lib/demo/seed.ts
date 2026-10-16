@@ -1,4 +1,4 @@
-import { PATHS } from '@/content/catalog';
+import { CURRICULUM_BASE_PATHS, PATHS, getPath } from '@/content/catalog';
 import type { Assignment, Curriculum, LearnerRecord, PilotGoals } from '@/content/types';
 import type { Classroom, StudentState } from '@/lib/classroom';
 import { duplicatePath, splitNode } from '@/lib/curriculum/logic';
@@ -30,7 +30,16 @@ export interface DemoWorld {
 
 export const buildDemoWorld = (): DemoWorld => {
   const rng = mulberry32(20261010);
-  const pathIds = ['foundations', 'addition', 'subtraction', 'multiplication', 'division', 'algebra', 'geometry', 'foundations'];
+  const pathIds = [
+    'foundations',
+    'foundations',
+    'foundations',
+    'foundations',
+    'operations',
+    'operations',
+    'operations',
+    'operations',
+  ];
   const names = Array.from({ length: 8 }, () => seededUsername(rng));
   const students: Record<string, StudentState> = {};
   const learners: Record<string, LearnerRecord> = {};
@@ -38,7 +47,7 @@ export const buildDemoWorld = (): DemoWorld => {
   names.forEach((name, index) => {
     const key = keyOf(name);
     const pathId = pathIds[index] ?? 'foundations';
-    const path = PATHS.find((item) => item.id === pathId) ?? PATHS[0];
+    const path = getPath(pathId) ?? PATHS[0];
     let progress = emptyPathProgress(path);
     const steps = 2 + (index % 3);
     for (let nodeIndex = 0; nodeIndex < Math.min(steps, path.nodes.length); nodeIndex += 1) {
@@ -66,18 +75,31 @@ export const buildDemoWorld = (): DemoWorld => {
       timeByDay,
     };
     learners[key] = learner;
-    const planet = pathId === 'foundations' ? (progress.currentNodeId || 'sun') : 'sun';
+    const planet = progress.currentNodeId || 'sun';
+    const lesson =
+      pathId === 'operations'
+        ? planet === 'earth' || planet === 'mars' || planet === 'jupiter'
+          ? 'division'
+          : planet === 'saturn' || planet === 'uranus' || planet === 'neptune'
+            ? 'algebra'
+            : 'multiplication'
+        : planet === 'earth' || planet === 'mars' || planet === 'jupiter'
+          ? 'addition'
+          : planet === 'saturn' || planet === 'uranus' || planet === 'neptune'
+            ? 'subtraction'
+            : 'counting';
     students[key] = {
       nickname: name,
       planet,
-      lesson: planet === 'earth' || planet === 'mars' || planet === 'jupiter' ? 'addition' : planet === 'saturn' || planet === 'uranus' || planet === 'neptune' ? 'subtraction' : 'counting',
-      completedPlanets: pathId === 'foundations' ? progress.completedNodeIds : [],
+      lesson,
+      completedPlanets: progress.completedNodeIds,
       planetSteps: {},
       lastUpdated: Date.UTC(2026, 9, 4),
     };
   });
 
-  const addition = PATHS.find((path) => path.id === 'addition') ?? PATHS[0];
+  const addition =
+    CURRICULUM_BASE_PATHS.find((path) => path.id === 'addition') ?? PATHS[0];
   let curriculum = duplicatePath(addition, DEMO_CLASS_CODE, 'demo-slower', 'Smaller steps');
   curriculum = splitNode(curriculum, curriculum.nodes[0]?.id ?? '');
   curriculum = {

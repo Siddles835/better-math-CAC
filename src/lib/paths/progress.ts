@@ -30,14 +30,19 @@ export const learnerFromLegacy = (
 ): LearnerRecord => {
   const record = emptyLearner(pathId || 'foundations');
   const path = getPathOrFoundations(record.activePathId);
-  if (record.activePathId === 'foundations') {
+  const solar =
+    record.activePathId === 'foundations' || record.activePathId === 'operations';
+  if (solar) {
     const completed = Array.isArray(student?.completedPlanets) ? student!.completedPlanets! : [];
-    const current = typeof student?.planet === 'string' && student.planet ? student.planet : path.nodes[0]?.id ?? 'sun';
+    const current =
+      typeof student?.planet === 'string' && student.planet
+        ? student.planet
+        : path.nodes[0]?.id ?? 'sun';
     const mastered: PathProgress['nodeMastery'] = {};
     for (const id of completed) {
       mastered[id] = { correct: 1, attempts: 1, mastered: true };
     }
-    record.paths.foundations = {
+    record.paths[record.activePathId] = {
       currentNodeId: current,
       completedNodeIds: [...completed],
       nodeMastery: mastered,

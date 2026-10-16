@@ -10,7 +10,7 @@ import {
   nicknameKey,
   resolveClassCode,
 } from '@/lib/classroom';
-import { getClassroomUnlockPlanet } from '@/lib/planets';
+import { getClassroomPathwayId, getClassroomUnlockPlanet, setSolarPathHint } from '@/lib/planets';
 import { getLastClassCode, setActiveStudent } from '@/lib/session';
 import { generateUsername } from '@/lib/usernames';
 import { hapticTap } from '@/lib/haptics';
@@ -18,6 +18,8 @@ import { useGame } from '@/context/GameContext';
 import AuthNavButton from '@/components/AuthNavButton';
 import { saveClassPlacementPending } from '@/lib/placementSession';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
+import { learnerFromLegacy } from '@/lib/paths/progress';
+import { saveActiveLearner } from '@/lib/paths/activeLearner';
 
 const StudentRegisterPage: React.FC = () => {
   const [classCode, setClassCode] = useState(getLastClassCode());
@@ -68,6 +70,8 @@ const StudentRegisterPage: React.FC = () => {
 
       const cls = await getClass(result.classCode);
       const unlock = getClassroomUnlockPlanet(cls);
+      const pathway = getClassroomPathwayId(cls);
+      setSolarPathHint(pathway);
       if (unlock) hydrateClassMax(unlock);
       hydrateFromStudent(result.student);
       setActiveStudent({
@@ -75,12 +79,22 @@ const StudentRegisterPage: React.FC = () => {
         nickname: nicknameKey(name),
         displayName: result.student.nickname,
       });
-      saveClassPlacementPending({
-        classCode: result.classCode,
-        nickname: nicknameKey(name),
-        displayName: result.student.nickname,
-      });
-      navigate(`/pick-path?mode=class&next=${cls?.usePlacementCheck ? 'check' : 'hub'}`, { replace: true });
+
+      // Teacher chooses the pathway — seed the learner and skip the topic picker.
+      const record = learnerFromLegacy(result.student, pathway);
+      await saveActiveLearner(record);
+
+      if (cls?.usePlacementCheck) {
+        saveClassPlacementPending({
+          classCode: result.classCode,
+          nickname: nicknameKey(name),
+          displayName: result.student.nickname,
+        });
+        navigate(`/level-check?mode=class&path=${pathway}`, { replace: true });
+        return;
+      }
+
+      navigate(STUDENT_HUB_PATH, { replace: true });
     } catch (err: unknown) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'Check your connection.';

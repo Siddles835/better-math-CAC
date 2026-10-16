@@ -1,10 +1,10 @@
 {
-  "pickTitle": "Pick a path",
-  "pickLead": "Choose what you want to work on. You can switch later, and your other progress stays.",
+  "pickTitle": "Pick a pathway",
+  "pickLead": "Choose a solar system pathway. Your teacher sets this for classroom students.",
   "notSure": "Not sure, check my level",
   "openPaths": "Paths",
-  "path_foundations": "Foundations",
-  "path_foundations_lead": "Counting, addition, and subtraction across the nine planets.",
+  "path_foundations": "Counting · Addition · Subtraction",
+  "path_foundations_lead": "Solar system pathway for counting, addition, and subtraction. Your teacher picks where you start.",
   "path_addition": "Addition",
   "path_addition_lead": "Put amounts together, from small sums to larger ones.",
   "path_subtraction": "Subtraction",
@@ -258,7 +258,7 @@
   "welcomeMinimal": "Choose a path.",
   "diagramLabel": "Shape diagram",
   "previewBanner": "Preview. Nothing is saved.",
-  "defaultPath": "Default path",
+  "defaultPath": "Class pathway",
   "perPath": "Where you landed",
   "noneYet": "None yet",
   "currBack": "Back",
@@ -337,5 +337,8 @@
   "currPlanetDetails": "Planet details",
   "currProblems": "Problems",
   "currMoreActions": "More",
-  "currUnsavedDot": "Unsaved"
+  "currUnsavedDot": "Unsaved",
+  "path_operations": "Multiplication · Division · Algebra",
+  "path_operations_lead": "Solar system pathway for multiplication, division, and algebra. Your teacher picks where you start.",
+  "pickLeadSolo": "Choose which solar system to practice. Classroom students get the pathway their teacher chose."
 }

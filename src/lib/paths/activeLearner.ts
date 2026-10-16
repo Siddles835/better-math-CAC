@@ -1,14 +1,14 @@
-import { getPath } from '@/content/catalog';
+import { getPath, resolveClassroomPathId } from '@/content/catalog';
 import type { LearnerRecord } from '@/content/types';
 import { getPort } from '@/lib/data/port';
-import { getClass } from '@/lib/classroom';
-import { nicknameKey } from '@/lib/classroom';
+import { getClass, nicknameKey } from '@/lib/classroom';
 import { learnerFromLegacy } from '@/lib/paths/progress';
 import { getActiveStudent } from '@/lib/session';
 import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
 import { isDemoMode } from '@/lib/demo/mode';
 import { demoGetClass } from '@/lib/demo/store';
 import { withTimeout, withTimeoutFallback } from '@/lib/asyncTimeout';
+import { getClassroomPathwayId, setSolarPathHint } from '@/lib/planets';
 
 const PENDING_PATH = 'mathlift:pending-path';
 const READ_MS = 5000;
@@ -29,10 +29,16 @@ export const clearPendingPath = (): void => {
   sessionStorage.removeItem(PENDING_PATH);
 };
 
-/** "all" is only a level-check scope, never a real path id. */
+/**
+ * Classroom students only use the two solar pathways.
+ * Legacy topic ids (addition, multiplication, …) map onto those pathways.
+ */
 export const normalizePathId = (pathId: string | null | undefined): string => {
   if (!pathId || pathId === 'all') return 'foundations';
-  return getPath(pathId) ? pathId : 'foundations';
+  if (getPath(pathId)?.id === pathId && (pathId === 'foundations' || pathId === 'operations')) {
+    return pathId;
+  }
+  return resolveClassroomPathId(pathId);
 };
 
 export const loadActiveLearner = async (): Promise<{
@@ -54,10 +60,22 @@ export const loadActiveLearner = async (): Promise<{
       null,
       'getLearner'
     );
+    let classPathway: string | null = null;
+    if (!solo) {
+      const cls = isDemoMode()
+        ? demoGetClass()
+        : await withTimeoutFallback(getClass(active.classCode), READ_MS, null, 'getClass');
+      if (cls) classPathway = getClassroomPathwayId(cls);
+    }
+
     if (stored) {
+      const pathId = normalizePathId(
+        solo ? stored.activePathId : classPathway || stored.activePathId
+      );
+      setSolarPathHint(pathId);
       const record = {
         ...stored,
-        activePathId: normalizePathId(stored.activePathId),
+        activePathId: pathId,
       };
       return { classCode: active.classCode, studentKey, solo, record };
     }
@@ -76,11 +94,13 @@ export const loadActiveLearner = async (): Promise<{
         'getClass'
       );
       legacy = cls?.students?.[studentKey] ?? null;
+      if (cls) classPathway = getClassroomPathwayId(cls);
     }
 
     const pending = loadPendingPath();
-    const pathId = normalizePathId(pending || 'foundations');
+    const pathId = normalizePathId(pending || classPathway || 'foundations');
     if (pending) clearPendingPath();
+    setSolarPathHint(pathId);
     const record = learnerFromLegacy(legacy, pathId);
     record.activePathId = pathId;
     return { classCode: active.classCode, studentKey, solo, record };

@@ -1,10 +1,10 @@
 {
   "pickTitle": "एक पथ चुनें",
-  "pickLead": "चुनें कि आप किस पर काम करना चाहते हैं। बाद में बदल सकते हैं, और बाकी प्रगति बनी रहती है।",
+  "pickLead": "एक सौर मंडल पथ चुनें। कक्षा में शिक्षक चुनते हैं।",
   "notSure": "पक्का नहीं, मेरा स्तर देखें",
   "openPaths": "पथ",
-  "path_foundations": "नींव",
-  "path_foundations_lead": "नौ ग्रहों पर गिनती, जोड़ और घटाव।",
+  "path_foundations": "गिनती · जोड़ · घटाव",
+  "path_foundations_lead": "गिनती, जोड़ और घटाव का सौर मंडल पथ। शिक्षक शुरूआत चुनते हैं।",
   "path_addition": "जोड़",
   "path_addition_lead": "मात्राओं को साथ रखें, छोटे योग से बड़े योग तक।",
   "path_subtraction": "घटाव",
@@ -258,7 +258,7 @@
   "welcomeMinimal": "एक पथ चुनें।",
   "diagramLabel": "आकृति का चित्र",
   "previewBanner": "झलक। कुछ सहेजा नहीं जाता।",
-  "defaultPath": "डिफ़ॉल्ट पथ",
+  "defaultPath": "कक्षा पथ",
   "perPath": "आप कहाँ पहुँचे",
   "noneYet": "अभी नहीं",
   "currBack": "वापस",
@@ -337,5 +337,8 @@
   "currPlanetDetails": "ग्रह विवरण",
   "currProblems": "समस्याएँ",
   "currMoreActions": "और",
-  "currUnsavedDot": "बिना सेव"
+  "currUnsavedDot": "बिना सेव",
+  "path_operations": "गुणन · भाग · बीजगणित",
+  "path_operations_lead": "गुणन, भाग और बीजगणित का सौर मंडल पथ। शिक्षक शुरूआत चुनते हैं।",
+  "pickLeadSolo": "किस सौर मंडल का अभ्यास करना है चुनें। कक्षा में शिक्षक का पथ लगता है।"
 }

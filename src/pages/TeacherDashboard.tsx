@@ -11,12 +11,13 @@ import {
   subscribeToClass,
 } from '@/lib/classroom';
 import { clearActiveTeacher, getActiveTeacher, setActiveTeacher } from '@/lib/session';
-import { getPlanetLevel, PLANET_LEVEL_LIST } from '@/lib/planetLevels';
+import { getPlanetLevel, planetLevelsForPath } from '@/lib/planetLevels';
 import {
   getClassroomUnlockPlanet,
   getLessonForPlanet,
   getTeacherVisiblePlanet,
   PLANET_META,
+  setSolarPathHint,
   type PlanetId,
 } from '@/lib/planets';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ import ClassTrends from '@/components/ClassTrends';
 import FamilyNote from '@/components/FamilyNote';
 import { misconceptionLabel, teacherLineFor } from '@/lib/cognition';
 import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
-import { PATHS } from '@/content/catalog';
+import { CLASSROOM_PATHS } from '@/content/catalog';
 import PilotOverview from '@/components/PilotOverview';
 import { isDemoMode } from '@/lib/demo/mode';
 import { cn } from '@/lib/utils';
@@ -80,7 +81,10 @@ const TeacherDashboard: React.FC = () => {
           setDefaultPlanet(unlock);
         }
         setUsePlacement(!!data.usePlacementCheck);
-        setDefaultPath(data.defaultStart?.pathId || 'foundations');
+        const pathway =
+          data.defaultStart?.pathId === 'operations' ? 'operations' : 'foundations';
+        setDefaultPath(pathway);
+        setSolarPathHint(pathway);
       },
       () => {
         setLoading(false);
@@ -99,9 +103,22 @@ const TeacherDashboard: React.FC = () => {
     );
   }
 
-  const derivedLesson = getLessonForPlanet(defaultPlanet);
+  const derivedLesson = getLessonForPlanet(defaultPlanet, defaultPath);
+  const planetOptions = planetLevelsForPath(defaultPath);
   const teacherPin = cls?.teacherCode || getActiveTeacher()?.teacherCode;
   const classUnlock = getClassroomUnlockPlanet(cls) ?? defaultPlanet;
+  const pathwayBands =
+    defaultPath === 'operations'
+      ? ([
+          ['planetLevel_band_mul', 'planetLevel_band_mul_help'],
+          ['planetLevel_band_div', 'planetLevel_band_div_help'],
+          ['planetLevel_band_alg', 'planetLevel_band_alg_help'],
+        ] as const)
+      : ([
+          ['planetLevel_band_count', 'planetLevel_band_count_help'],
+          ['planetLevel_band_add', 'planetLevel_band_add_help'],
+          ['planetLevel_band_sub', 'planetLevel_band_sub_help'],
+        ] as const);
 
   const handleBack = () => {
     navigate('/');
@@ -267,7 +284,7 @@ const TeacherDashboard: React.FC = () => {
                 className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={tx('ui:s_8d52e3c61c')}
               >
-                {PLANET_LEVEL_LIST.map((info) => (
+                {planetOptions.map((info) => (
                   <option key={info.id} value={info.id}>
                     {tx(`ui:${info.labelKey}`)}
                   </option>
@@ -280,8 +297,9 @@ const TeacherDashboard: React.FC = () => {
                 value={defaultPath}
                 disabled={savingDefault || !!loadError || sample}
                 onChange={(e) => {
-                  const pathId = e.target.value;
+                  const pathId = e.target.value === 'operations' ? 'operations' : 'foundations';
                   setDefaultPath(pathId);
+                  setSolarPathHint(pathId);
                   setDefaultSaved(false);
                   setSaveError('');
                   setSavingDefault(true);
@@ -296,7 +314,7 @@ const TeacherDashboard: React.FC = () => {
                 className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={tx('paths:defaultPath')}
               >
-                {PATHS.map((path) => (
+                {CLASSROOM_PATHS.map((path) => (
                   <option key={path.id} value={path.id}>
                     {tx(path.titleKey)}
                   </option>
@@ -331,13 +349,7 @@ const TeacherDashboard: React.FC = () => {
           </label>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            {(
-              [
-                ['planetLevel_band_count', 'planetLevel_band_count_help'],
-                ['planetLevel_band_add', 'planetLevel_band_add_help'],
-                ['planetLevel_band_sub', 'planetLevel_band_sub_help'],
-              ] as const
-            ).map(([title, help]) => (
+            {pathwayBands.map(([title, help]) => (
               <div key={title} className="rounded-xl border border-border bg-background/40 p-4">
                 <p className="font-semibold text-foreground">{tx(`ui:${title}`)}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{tx(`ui:${help}`)}</p>
@@ -351,7 +363,7 @@ const TeacherDashboard: React.FC = () => {
               <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden />
             </summary>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              {PLANET_LEVEL_LIST.map((info) => (
+              {planetOptions.map((info) => (
                 <li key={info.id}>
                   <span className="font-medium text-foreground">{tx(`ui:planet_${info.id}`)}</span>
                   {' · '}
@@ -411,7 +423,8 @@ const TeacherDashboard: React.FC = () => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {students.map(([key, s]) => {
                 const currentPlanet = getTeacherVisiblePlanet(s, classUnlock);
-                const lesson = getLessonForPlanet(currentPlanet);
+                const lesson = getLessonForPlanet(currentPlanet, defaultPath);
+                const level = getPlanetLevel(currentPlanet, defaultPath);
                 return (
                   <article
                     key={key}
@@ -419,7 +432,7 @@ const TeacherDashboard: React.FC = () => {
                   >
                     <div className="text-lg font-semibold text-foreground">{s.nickname}</div>
                     <div className="mt-2 inline-flex w-fit rounded-full border border-border px-3 py-1 text-sm font-medium text-foreground">
-                      {tx(`ui:${getPlanetLevel(currentPlanet).labelKey}`)}
+                      {tx(`ui:${level.labelKey}`)}
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
                       {tx('ui:planetLevel_rosterLine', {
@@ -427,7 +440,7 @@ const TeacherDashboard: React.FC = () => {
                         topic: tx(`ui:topic_${lesson}`),
                       })}
                       {' · '}
-                      {tx(`ui:${getPlanetLevel(currentPlanet).rangeKey}`)}
+                      {tx(`ui:${level.rangeKey}`)}
                     </p>
                     {s.lastDiagnosis && (
                       <div className="mt-3 text-sm text-muted-foreground">

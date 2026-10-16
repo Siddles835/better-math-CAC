@@ -11,6 +11,24 @@ export type PlanetId =
   | 'uranus'
   | 'neptune';
 
+/** The two classroom solar-system pathways. */
+export type SolarPathId = 'foundations' | 'operations';
+
+export const SOLAR_PATH_IDS: SolarPathId[] = ['foundations', 'operations'];
+
+export const isSolarPathId = (id: string | null | undefined): id is SolarPathId =>
+  id === 'foundations' || id === 'operations';
+
+/** Hint used when writers / unlock helpers do not receive an explicit path. */
+let solarPathHint: SolarPathId = 'foundations';
+
+export const setSolarPathHint = (pathId: string | null | undefined): SolarPathId => {
+  solarPathHint = pathId === 'operations' ? 'operations' : 'foundations';
+  return solarPathHint;
+};
+
+export const getSolarPathHint = (): SolarPathId => solarPathHint;
+
 export const PLANET_ORDER: PlanetId[] = [
   'sun',
   'mercury',
@@ -70,20 +88,51 @@ export const getClassroomUnlockPlanet = (
   );
 };
 
+/** Teacher-chosen solar pathway for the class (foundations or operations). */
+export const getClassroomPathwayId = (
+  cls?: {
+    defaultStart?: { pathId?: string } | string | null;
+  } | null
+): SolarPathId => {
+  if (!cls || typeof cls.defaultStart === 'string' || !cls.defaultStart?.pathId) {
+    return 'foundations';
+  }
+  return cls.defaultStart.pathId === 'operations' ? 'operations' : 'foundations';
+};
+
 /** Planets before the teacher start level (treated as already cleared for new students). */
 export const planetsBefore = (planetId: PlanetId): PlanetId[] => {
   const idx = getPlanetIndex(planetId);
   return PLANET_ORDER.slice(0, idx);
 };
 
-export const getLessonForPlanet = (planetId: string): LessonType => {
-  if (['earth', 'mars', 'jupiter'].includes(planetId)) return 'addition';
-  if (['saturn', 'uranus', 'neptune'].includes(planetId)) return 'subtraction';
-  return 'counting';
+/**
+ * Topic for a planet on a solar pathway.
+ * - foundations: counting → addition → subtraction
+ * - operations: multiplication → division → algebra
+ */
+export const getLessonForPlanet = (
+  planetId: string,
+  pathId: string = solarPathHint
+): LessonType => {
+  const operations = pathId === 'operations';
+  if (['earth', 'mars', 'jupiter'].includes(planetId)) {
+    return operations ? 'division' : 'addition';
+  }
+  if (['saturn', 'uranus', 'neptune'].includes(planetId)) {
+    return operations ? 'algebra' : 'subtraction';
+  }
+  return operations ? 'multiplication' : 'counting';
 };
 
-export const getLessonRoute = (planetId: string): string => {
-  const lesson = getLessonForPlanet(planetId);
+export const getLessonRoute = (
+  planetId: string,
+  pathId: string = solarPathHint
+): string => {
+  if (pathId === 'operations') {
+    return `/play/operations/${planetId}`;
+  }
+  const lesson = getLessonForPlanet(planetId, pathId);
   return `/lesson/${lesson}/${planetId}`;
 };
 

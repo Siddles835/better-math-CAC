@@ -4,8 +4,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '@/content/catalog';
 import { Button } from '@/components/ui/button';
 import ReadAloudButton from '@/components/ReadAloudButton';
-import { getClass } from '@/lib/classroom';
-import { isDemoMode } from '@/lib/demo/mode';
 import {
   clearPendingPath,
   loadActiveLearner,
@@ -15,64 +13,64 @@ import {
 } from '@/lib/paths/activeLearner';
 import { switchPath } from '@/lib/paths/progress';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
-import { withTimeoutFallback } from '@/lib/asyncTimeout';
+import { setSolarPathHint } from '@/lib/planets';
+import { isSoloClassCode } from '@/lib/solo';
+import { getActiveStudent } from '@/lib/session';
 
+/**
+ * Solo / practice only. Classroom students never pick a topic —
+ * the teacher sets foundations vs operations and the starting planet.
+ */
 const PickPathPage = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const mode = params.get('mode') === 'class' ? 'class' : params.get('mode') === 'switch' ? 'switch' : 'solo';
   const next = params.get('next');
-  const [placementOn, setPlacementOn] = useState(mode !== 'class');
   const [pathNow, setPathNow] = useState('');
   const [choosing, setChoosing] = useState(false);
 
   useEffect(() => {
     let cancel = false;
     void (async () => {
-      if (mode === 'class' || mode === 'switch') {
-        const loaded = await loadActiveLearner();
-        if (cancel) return;
-        if (loaded) setPathNow(normalizePathId(loaded.record.activePathId));
-        if (mode === 'class' && loaded) {
-          const cls = await withTimeoutFallback(
-            getClass(loaded.classCode),
-            4000,
-            null,
-            'getClass'
-          );
-          if (!cancel) setPlacementOn(!!cls?.usePlacementCheck || isDemoMode());
-        }
+      // Class join no longer uses this screen — send kids to the hub.
+      if (mode === 'class') {
+        navigate(STUDENT_HUB_PATH, { replace: true });
+        return;
       }
+      // Classroom switch is disabled; only solo may choose a pathway.
+      const active = getActiveStudent();
+      if (mode === 'switch' && active && !active.solo && !isSoloClassCode(active.classCode)) {
+        navigate(STUDENT_HUB_PATH, { replace: true });
+        return;
+      }
+      const loaded = await loadActiveLearner();
+      if (cancel) return;
+      if (loaded) setPathNow(normalizePathId(loaded.record.activePathId));
     })();
     return () => {
       cancel = true;
     };
-  }, [mode]);
+  }, [mode, navigate]);
 
   const choose = async (pathId: string) => {
     if (choosing) return;
     setChoosing(true);
     try {
-      savePendingPath(pathId);
-      const wantsCheck =
-        pathId === 'all' ||
-        next === 'check' ||
-        (mode === 'class' && placementOn) ||
-        (mode === 'solo' && next !== 'hub');
+      const normalized = normalizePathId(pathId === 'all' ? 'foundations' : pathId);
+      savePendingPath(normalized);
+      setSolarPathHint(normalized);
 
-      if (pathId === 'all' || wantsCheck) {
-        const checkPath = pathId === 'all' ? 'all' : pathId;
-        navigate(`/level-check?mode=${mode === 'class' ? 'class' : 'solo'}&path=${checkPath}`);
+      const wantsCheck = pathId === 'all' || next === 'check' || (mode === 'solo' && next !== 'hub');
+
+      if (wantsCheck) {
+        navigate(`/level-check?mode=solo&path=${normalized}`);
         return;
       }
 
-      // Save path choice without blocking navigation forever on Firestore.
-      if (pathId !== 'all') {
-        const loaded = await loadActiveLearner();
-        if (loaded) {
-          await saveActiveLearner(switchPath(loaded.record, normalizePathId(pathId)));
-          clearPendingPath();
-        }
+      const loaded = await loadActiveLearner();
+      if (loaded) {
+        await saveActiveLearner(switchPath(loaded.record, normalized));
+        clearPendingPath();
       }
       navigate(STUDENT_HUB_PATH, { replace: true });
     } catch (error) {
@@ -83,7 +81,7 @@ const PickPathPage = () => {
     }
   };
 
-  const welcomeKey = 'paths:pickLead';
+  const welcomeKey = 'paths:pickLeadSolo';
 
   return (
     <div className="min-h-screen bg-background subtle-stars p-6">

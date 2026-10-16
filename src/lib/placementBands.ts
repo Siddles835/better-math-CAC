@@ -1,4 +1,4 @@
-import { PATHS, getPath } from '@/content/catalog';
+import { CURRICULUM_BASE_PATHS, PATHS, getPath } from '@/content/catalog';
 import type { AssessmentSummary, GeneratorId, SkillBand } from '@/content/types';
 import { generatePathItem } from '@/lib/paths/generators';
 import {
@@ -37,8 +37,10 @@ export const FOUNDATION_BANDS: SkillBand[] = PLACEMENT_LEVELS.map((id, order) =>
 
 const extraBands = (): SkillBand[] => {
   const out: SkillBand[] = [];
-  for (const path of PATHS) {
-    if (path.id === 'foundations') continue;
+  const seen = new Set<string>();
+  for (const path of [...PATHS, ...CURRICULUM_BASE_PATHS]) {
+    if (path.id === 'foundations' || seen.has(path.id)) continue;
+    seen.add(path.id);
     path.nodes.slice(0, 3).forEach((node, index) => {
       const generatorId = (node.source.kind === 'generated' ? node.source.generatorId : 'addition') as GeneratorId;
       out.push({

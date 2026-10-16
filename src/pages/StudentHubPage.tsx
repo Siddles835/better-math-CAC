@@ -5,7 +5,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import PlanetSelectPage from '@/pages/PlanetSelectPage';
 import SolarSystemPage from '@/pages/SolarSystemPage';
 import PathBoardPage from '@/pages/PathBoardPage';
-import { getPath } from '@/content/catalog';
+import { isSolarPathId, setSolarPathHint } from '@/lib/planets';
 import { loadActiveLearner, normalizePathId } from '@/lib/paths/activeLearner';
 import { getPort } from '@/lib/data/port';
 import { resolveAssignment } from '@/lib/curriculum/logic';
@@ -14,8 +14,9 @@ import { withTimeoutFallback } from '@/lib/asyncTimeout';
 
 /**
  * Phone: planet ring. iPad / desktop: orbital solar system.
- * A chosen non-foundations path, or a curriculum that replaces the default,
- * uses the path board. Never stay stuck on the loading screen.
+ * Classroom pathways (foundations / operations) always use the solar system.
+ * A teacher curriculum that replaces the default still uses the path board.
+ * Never stay stuck on the loading screen.
  */
 const StudentHubPage: React.FC = () => {
   const isMobile = useIsMobile();
@@ -42,10 +43,8 @@ const StudentHubPage: React.FC = () => {
           return;
         }
         const pathId = normalizePathId(loaded.record.activePathId);
-        if (pathId !== 'foundations' && getPath(pathId)) {
-          setMode('board');
-          return;
-        }
+        setSolarPathHint(pathId);
+
         if (!loaded.solo) {
           try {
             const port = getPort(loaded.classCode, false);
@@ -64,7 +63,10 @@ const StudentHubPage: React.FC = () => {
             /* Keep the planet hub if the assignment list cannot be read. */
           }
         }
-        if (!cancel) setMode('planets');
+
+        // Both classroom pathways are solar systems. Path board is only for
+        // curriculum replace or rare non-solar leftovers.
+        if (!cancel) setMode(isSolarPathId(pathId) ? 'planets' : 'board');
       } catch (error) {
         console.error('Student hub failed to load', error);
         if (!cancel) setMode(getActiveStudent() ? 'planets' : 'signed-out');

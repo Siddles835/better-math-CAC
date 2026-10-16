@@ -1,10 +1,10 @@
 {
-  "pickTitle": "选择一条路径",
-  "pickLead": "选择你想练习的内容。之后可以换，其他进度会保留。",
+  "pickTitle": "选择路径",
+  "pickLead": "选择一条太阳系路径。课堂上由老师决定。",
   "notSure": "不确定，先看看我的水平",
   "openPaths": "路径",
-  "path_foundations": "基础",
-  "path_foundations_lead": "在九个星球上练习计数、加法和减法。",
+  "path_foundations": "计数 · 加法 · 减法",
+  "path_foundations_lead": "计数、加法和减法的太阳系路径。由老师选择起点。",
   "path_addition": "加法",
   "path_addition_lead": "把数量合在一起，从小和到更大的和。",
   "path_subtraction": "减法",
@@ -258,7 +258,7 @@
   "welcomeMinimal": "选择一条路径。",
   "diagramLabel": "图形示意",
   "previewBanner": "预览。不会保存。",
-  "defaultPath": "默认路径",
+  "defaultPath": "班级路径",
   "perPath": "你到达的位置",
   "noneYet": "还没有",
   "currBack": "返回",
@@ -337,5 +337,8 @@
   "currPlanetDetails": "行星详情",
   "currProblems": "题目",
   "currMoreActions": "更多",
-  "currUnsavedDot": "未保存"
+  "currUnsavedDot": "未保存",
+  "path_operations": "乘法 · 除法 · 代数",
+  "path_operations_lead": "乘法、除法和代数的太阳系路径。由老师选择起点。",
+  "pickLeadSolo": "选择要练习的太阳系。课堂学生使用老师选定的路径。"
 }

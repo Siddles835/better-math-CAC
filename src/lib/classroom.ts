@@ -28,15 +28,23 @@ import {
 import type { Diagnosis, DiagnosisSnapshot } from './cognition';
 import {
   getClassroomUnlockPlanet,
+  getClassroomPathwayId,
   getFurthestProgressPlanet,
   getLessonForPlanet,
   getPlanetIndex,
   normalizePlanetId,
   planetsBefore,
+  setSolarPathHint,
   type PlanetId,
 } from './planets';
 
-export type LessonType = 'counting' | 'addition' | 'subtraction';
+export type LessonType =
+  | 'counting'
+  | 'addition'
+  | 'subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'algebra';
 
 export interface LastQuizSummary {
   planet: string;
@@ -159,6 +167,9 @@ export const createClass = async (
     classCode: key,
     teacherCode: pin,
     students: {},
+    defaultStart: { planet: 'sun', lesson: 'counting', pathId: 'foundations' },
+    defaultPlanet: 'sun',
+    usePlacementCheck: false,
   });
   return { classCode: key, teacherCode: pin };
 };
@@ -195,10 +206,12 @@ export const buildStudentAtClassStart = (
   cls: Classroom | null | undefined
 ): StudentState => {
   const startPlanet: PlanetId = getClassroomUnlockPlanet(cls) ?? 'sun';
+  const pathway = getClassroomPathwayId(cls);
+  setSolarPathHint(pathway);
   return {
     nickname,
     planet: startPlanet,
-    lesson: getLessonForPlanet(startPlanet),
+    lesson: getLessonForPlanet(startPlanet, pathway),
     completedPlanets: planetsBefore(startPlanet),
     planetSteps: {},
     lastUpdated: Date.now(),
@@ -217,10 +230,12 @@ export const applyClassStartIfNeeded = (
   const startPlanet = getClassroomUnlockPlanet(cls);
   if (!startPlanet) return student;
 
+  const pathway = getClassroomPathwayId(cls);
+  setSolarPathHint(pathway);
   const progress = getFurthestProgressPlanet(student);
   if (getPlanetIndex(progress) >= getPlanetIndex(startPlanet)) {
     // Still ensure planet/lesson fields match furthest progress for the roster.
-    const lesson = getLessonForPlanet(progress);
+    const lesson = getLessonForPlanet(progress, pathway);
     if (student.planet === progress && student.lesson === lesson) return student;
     return {
       ...student,
@@ -238,7 +253,7 @@ export const applyClassStartIfNeeded = (
   return {
     ...student,
     planet: startPlanet,
-    lesson: getLessonForPlanet(startPlanet),
+    lesson: getLessonForPlanet(startPlanet, pathway),
     completedPlanets: Array.from(completed),
     lastUpdated: Date.now(),
   };
@@ -255,9 +270,14 @@ export const syncStudentsToClassStart = async (
   if (!cls?.students) return 0;
 
   const normalized = normalizePlanetId(startPlanet) ?? 'sun';
+  const pathway = getClassroomPathwayId(cls);
   const pretendClass: Classroom = {
     ...cls,
-    defaultStart: { planet: normalized, lesson: getLessonForPlanet(normalized) },
+    defaultStart: {
+      planet: normalized,
+      lesson: getLessonForPlanet(normalized, pathway),
+      pathId: pathway,
+    },
     defaultPlanet: normalized,
   };
 
@@ -352,11 +372,13 @@ export const setClassDefaultStart = async (classCode: string, planet: string, pa
   }
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   const normalized = normalizePlanetId(planet) ?? 'sun';
-  const lesson = getLessonForPlanet(normalized);
   const existing = await getClassById(resolved);
-  const nextPath = pathId ?? existing?.defaultStart?.pathId;
+  const rawPath = pathId ?? existing?.defaultStart?.pathId ?? 'foundations';
+  const pathway = rawPath === 'operations' ? 'operations' : 'foundations';
+  setSolarPathHint(pathway);
+  const lesson = getLessonForPlanet(normalized, pathway);
   await updateDoc(doc(db, 'classrooms', resolved), {
-    defaultStart: { planet: normalized, lesson, ...(nextPath ? { pathId: nextPath } : {}) },
+    defaultStart: { planet: normalized, lesson, pathId: pathway },
     // Keep legacy field in sync for older readers
     defaultPlanet: normalized,
   });

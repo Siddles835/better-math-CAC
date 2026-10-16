@@ -8,10 +8,12 @@ const TOPIC_LABEL_KEY: Record<string, string> = {
   counting: 'ui:topic_counting',
   addition: 'ui:topic_addition',
   subtraction: 'ui:topic_subtraction',
-  multiplication: 'paths:path_multiplication',
-  division: 'paths:path_division',
-  algebra: 'paths:path_algebra',
+  multiplication: 'ui:topic_multiplication',
+  division: 'ui:topic_division',
+  algebra: 'ui:topic_algebra',
   geometry: 'paths:path_geometry',
+  foundations: 'paths:path_foundations',
+  operations: 'paths:path_operations',
 };
 
 /** Turn a slug into Title Case words. */

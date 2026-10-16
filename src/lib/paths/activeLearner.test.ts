@@ -8,9 +8,13 @@ describe('normalizePathId', () => {
     expect(normalizePathId('not-a-path')).toBe('foundations');
   });
 
-  it('keeps real path ids', () => {
+  it('maps legacy topic ids onto the two classroom pathways', () => {
     expect(normalizePathId('foundations')).toBe('foundations');
-    expect(normalizePathId('algebra')).toBe('algebra');
-    expect(normalizePathId('addition')).toBe('addition');
+    expect(normalizePathId('operations')).toBe('operations');
+    expect(normalizePathId('addition')).toBe('foundations');
+    expect(normalizePathId('subtraction')).toBe('foundations');
+    expect(normalizePathId('multiplication')).toBe('operations');
+    expect(normalizePathId('division')).toBe('operations');
+    expect(normalizePathId('algebra')).toBe('operations');
   });
 });
