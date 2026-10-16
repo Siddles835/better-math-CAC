@@ -77,7 +77,9 @@ describe('paths and curricula', () => {
     const wrong = runBandStaircase(bands.length, ['incorrect']);
     expect(wrong.done).toBe(true);
     expect(wrong.clearedLevelIndex).toBe(-1);
-    expect(wrong.itemsAnswered).toBeGreaterThanOrEqual(12);
+    // Freeze stops the run after a few tries so questions do not loop.
+    expect(wrong.itemsAnswered).toBeGreaterThanOrEqual(4);
+    expect(wrong.itemsAnswered).toBeLessThan(12);
 
     const skipped = skippedAssessment(1);
     expect(skipped.clearedIndex).toBe(-1);

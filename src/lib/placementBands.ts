@@ -75,26 +75,85 @@ export const bandsForPath = (pathId: string): SkillBand[] => {
 export const bandsForScope = (scope: string): SkillBand[] =>
   scope === 'all' ? ALL_BANDS : bandsForPath(scope);
 
-export const questionForBand = (band: SkillBand, itemIndex: number): PlacementQuestion => {
+/**
+ * Next item for a skill band. Prefers unused bank ids so the check does not
+ * loop the same dots / equation when the staircase stays on one band.
+ */
+export const questionForBand = (
+  band: SkillBand,
+  itemIndex: number,
+  usedIds: ReadonlySet<string> = new Set()
+): PlacementQuestion => {
   if (band.placementLevel) {
     const pool = PLACEMENT_BANK.filter((item) => item.level === band.placementLevel);
+    const fresh = pool.find((item) => !usedIds.has(item.id));
+    if (fresh) return fresh;
+    // All bank items used: synthesize a new counting prompt with a free answer.
+    if (band.placementLevel === 'count10' || band.placementLevel === 'count20') {
+      const lo = band.placementLevel === 'count10' ? 2 : 11;
+      const hi = band.placementLevel === 'count10' ? 10 : 20;
+      const taken = new Set(
+        [...usedIds]
+          .map((id) => pool.find((item) => item.id === id)?.answer)
+          .filter((n): n is number => typeof n === 'number')
+      );
+      for (let n = lo; n <= hi; n += 1) {
+        if (taken.has(n)) continue;
+        const id = `${band.id}-extra-${n}`;
+        if (usedIds.has(id)) continue;
+        return {
+          id,
+          level: band.placementLevel,
+          promptKey: 'place_q_count',
+          dots: n,
+          answer: n,
+          choices: [n - 1, n, n + 1, n + 2].map((v) => Math.max(0, v)),
+        };
+      }
+    }
     return pool[itemIndex % Math.max(pool.length, 1)] ?? PLACEMENT_BANK[0];
+  }
+
+  // Generated bands: bump the seed until the answer (or id) is new.
+  for (let attempt = 0; attempt < 24; attempt += 1) {
+    const seed = (itemIndex + 1 + attempt) * 17 + band.order * 1009 + attempt * 97;
+    const { problem } = generatePathItem(band.generatorId, band.tier, seed);
+    const answer = Number(problem.answer);
+    const id = `${band.id}-${itemIndex}-${attempt}`;
+    if (usedIds.has(id)) continue;
+    const isCount = problem.operator === 'count' || band.generatorId === 'counting';
+    const choices = (
+      problem.choices ?? [String(Math.max(0, answer - 1)), problem.answer, String(answer + 1), String(answer + 2)]
+    ).map(Number);
+    const question: PlacementQuestion = {
+      id,
+      level: 'count10',
+      promptKey: isCount ? 'place_q_count' : problem.promptKey ?? 'paths:q_solve',
+      equation: isCount ? undefined : problem.equation,
+      dots: isCount ? answer : undefined,
+      answer,
+      choices,
+    };
+    // Skip duplicate counting amounts already shown this run.
+    if (isCount && [...usedIds].some((used) => used.endsWith(`-${answer}`) || used.includes(`-extra-${answer}`))) {
+      continue;
+    }
+    return question;
   }
   const seed = (itemIndex + 1) * 17 + band.order * 1009;
   const { problem } = generatePathItem(band.generatorId, band.tier, seed);
   const answer = Number(problem.answer);
-  const choices = (problem.choices ?? [String(Math.max(0, answer - 1)), problem.answer, String(answer + 1), String(answer + 2)])
-    .map(Number);
   const isCount = problem.operator === 'count' || band.generatorId === 'counting';
   return {
     id: `${band.id}-${itemIndex}`,
     level: 'count10',
-    // Counting must show dots, never the numeral as the "equation" (that spoils the answer).
     promptKey: isCount ? 'place_q_count' : problem.promptKey ?? 'paths:q_solve',
     equation: isCount ? undefined : problem.equation,
     dots: isCount ? answer : undefined,
     answer,
-    choices,
+    choices: (
+      problem.choices ?? [String(Math.max(0, answer - 1)), problem.answer, String(answer + 1), String(answer + 2)]
+    ).map(Number),
   };
 };
 

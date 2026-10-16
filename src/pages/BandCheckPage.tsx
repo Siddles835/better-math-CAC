@@ -28,25 +28,42 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
     createStaircase({ minItems: Math.min(12, bands.length * 2), maxItems: Math.max(12, bands.length * 2) }, bands.length)
   );
   const [itemIndex, setItemIndex] = useState(0);
-  const [question, setQuestion] = useState<PlacementQuestion>(() => questionForBand(bands[0], 0));
+  const [usedIds, setUsedIds] = useState<Set<string>>(() => new Set());
+  const [question, setQuestion] = useState<PlacementQuestion>(() => questionForBand(bands[0], 0, new Set()));
   const [summary, setSummary] = useState<AssessmentSummary | null>(null);
 
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORE);
       if (!raw) return;
-      const saved = JSON.parse(raw) as { pathId: string; state: StaircaseState; itemIndex: number };
+      const saved = JSON.parse(raw) as {
+        pathId: string;
+        state: StaircaseState;
+        itemIndex: number;
+        usedIds?: string[];
+      };
       if (saved.pathId !== pathId || saved.state.done) return;
+      const restoredUsed = new Set(saved.usedIds ?? []);
       setState(saved.state);
       setItemIndex(saved.itemIndex);
-      setQuestion(questionForBand(bands[Math.min(saved.state.levelIndex, bands.length - 1)], saved.itemIndex));
+      setUsedIds(restoredUsed);
+      setQuestion(
+        questionForBand(
+          bands[Math.min(saved.state.levelIndex, bands.length - 1)],
+          saved.itemIndex,
+          restoredUsed
+        )
+      );
     } catch {
       /* ignore a broken pause */
     }
   }, [pathId, bands]);
 
-  const persist = (next: StaircaseState, nextItem: number) => {
-    sessionStorage.setItem(STORE, JSON.stringify({ pathId, state: next, itemIndex: nextItem }));
+  const persist = (next: StaircaseState, nextItem: number, nextUsed: Set<string>) => {
+    sessionStorage.setItem(
+      STORE,
+      JSON.stringify({ pathId, state: next, itemIndex: nextItem, usedIds: [...nextUsed] })
+    );
   };
 
   const finish = async (result: AssessmentSummary) => {
@@ -69,15 +86,24 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
     }
     const outcome = value === question.answer ? 'correct' : 'incorrect';
     const next = nextStaircaseState(state, outcome);
+    const nextUsed = new Set(usedIds);
+    nextUsed.add(question.id);
     const nextItem = itemIndex + 1;
     if (next.done) {
       void finish(summarizeBands(bands, next.clearedLevelIndex, Date.now()));
       return;
     }
+    const nextQuestion = questionForBand(bands[next.levelIndex] ?? bands[0], nextItem, nextUsed);
+    // If the ladder froze and we would only re-show a used item, end the check.
+    if (next.stopHarder && nextUsed.has(nextQuestion.id)) {
+      void finish(summarizeBands(bands, next.clearedLevelIndex, Date.now()));
+      return;
+    }
     setState(next);
     setItemIndex(nextItem);
-    setQuestion(questionForBand(bands[next.levelIndex] ?? bands[0], nextItem));
-    persist(next, nextItem);
+    setUsedIds(nextUsed);
+    setQuestion(nextQuestion);
+    persist(next, nextItem, nextUsed);
   };
 
   const fast = () => {

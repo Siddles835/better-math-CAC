@@ -20,4 +20,19 @@ describe('questionForBand', () => {
     expect(question.dots).toBe(question.answer);
     expect(question.equation).toBeUndefined();
   });
+
+  it('does not reuse the same counting item while unused ones remain', () => {
+    const countBand = FOUNDATION_BANDS.find((band) => band.placementLevel === 'count10');
+    expect(countBand).toBeTruthy();
+    const used = new Set<string>();
+    const seen = new Set<number>();
+    for (let i = 0; i < 8; i += 1) {
+      const question = questionForBand(countBand!, i, used);
+      expect(used.has(question.id)).toBe(false);
+      expect(seen.has(question.answer)).toBe(false);
+      used.add(question.id);
+      seen.add(question.answer);
+    }
+    expect(seen.size).toBe(8);
+  });
 });

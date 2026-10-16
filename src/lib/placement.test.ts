@@ -89,11 +89,13 @@ describe('runStaircase policies', () => {
     expect(result.labelKey).toBe('pl_label_uranus');
   });
 
-  it('always-wrong stays at the Sun with thin progress', () => {
+  it('always-wrong stays at the Sun and stops soon after freeze', () => {
     const { state, result } = runStaircase(['incorrect']);
     expect(state.clearedLevelIndex).toBe(-1);
     expect(state.stopHarder).toBe(true);
-    expect(state.itemsAnswered).toBe(DEFAULT_STAIRCASE.minItems);
+    // missThreshold + successThreshold = 4 (no long repeat pad to minItems)
+    expect(state.itemsAnswered).toBe(DEFAULT_STAIRCASE.missThreshold + DEFAULT_STAIRCASE.successThreshold);
+    expect(state.itemsAnswered).toBeLessThan(DEFAULT_STAIRCASE.minItems);
     expect(result.startPlanet).toBe('sun');
   });
 
@@ -140,11 +142,19 @@ describe('runStaircase policies', () => {
     expect(result.startPlanet).toBe('earth');
   });
 
-  it('thin data still finishes at minItems when frozen early', () => {
+  it('thin data finishes soon after freeze instead of repeating items', () => {
     const { state } = runStaircase(['incorrect', 'incorrect']);
     expect(state.done).toBe(true);
-    expect(state.itemsAnswered).toBe(DEFAULT_STAIRCASE.minItems);
-    expect(state.itemsAnswered).toBeLessThan(DEFAULT_STAIRCASE.maxItems);
+    expect(state.itemsAnswered).toBe(DEFAULT_STAIRCASE.missThreshold + DEFAULT_STAIRCASE.successThreshold);
+    expect(state.itemsAnswered).toBeLessThan(DEFAULT_STAIRCASE.minItems);
+  });
+
+  it('count10 bank has many unique dot amounts', () => {
+    const dots = PLACEMENT_BANK.filter((item) => item.level === 'count10' && item.dots != null).map(
+      (item) => item.dots as number
+    );
+    expect(new Set(dots).size).toBeGreaterThanOrEqual(8);
+    expect(dots.length).toBe(new Set(dots).size);
   });
 });
 

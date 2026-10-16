@@ -80,50 +80,51 @@ export const DEFAULT_STAIRCASE: StaircaseConfig = {
   missThreshold: 2,
 };
 
+/** Build four nearby tap choices that include the answer. */
+export const choicesAround = (answer: number, span = 1): number[] => {
+  const set = new Set<number>([answer]);
+  let delta = span;
+  while (set.size < 4 && delta < 20) {
+    if (answer - delta >= 0) set.add(answer - delta);
+    if (set.size < 4) set.add(answer + delta);
+    delta += 1;
+  }
+  return [...set].sort((a, b) => a - b).slice(0, 4);
+};
+
+const countQuestion = (
+  id: string,
+  level: PlacementLevelId,
+  dots: number
+): PlacementQuestion => ({
+  id,
+  level,
+  promptKey: 'place_q_count',
+  dots,
+  answer: dots,
+  choices: choicesAround(dots),
+});
+
 /** Item bank spanning planet skills. Adaptive selection pulls from the active level. */
 export const PLACEMENT_BANK: PlacementQuestion[] = [
-  // Counting to 10
-  {
-    id: 'c10-a',
-    level: 'count10',
-    promptKey: 'place_q_count',
-    dots: 4,
-    answer: 4,
-    choices: [2, 3, 4, 5],
-  },
-  {
-    id: 'c10-b',
-    level: 'count10',
-    promptKey: 'place_q_count',
-    dots: 7,
-    answer: 7,
-    choices: [5, 6, 7, 8],
-  },
-  {
-    id: 'c10-c',
-    level: 'count10',
-    promptKey: 'place_q_count',
-    dots: 9,
-    answer: 9,
-    choices: [7, 8, 9, 10],
-  },
+  // Counting to 10 — many unique dot counts so the check does not loop the same three.
+  countQuestion('c10-3', 'count10', 3),
+  countQuestion('c10-a', 'count10', 4),
+  countQuestion('c10-5', 'count10', 5),
+  countQuestion('c10-6', 'count10', 6),
+  countQuestion('c10-b', 'count10', 7),
+  countQuestion('c10-8', 'count10', 8),
+  countQuestion('c10-c', 'count10', 9),
+  countQuestion('c10-10', 'count10', 10),
   // Counting to 20
-  {
-    id: 'c20-a',
-    level: 'count20',
-    promptKey: 'place_q_count',
-    dots: 14,
-    answer: 14,
-    choices: [12, 14, 16, 18],
-  },
-  {
-    id: 'c20-b',
-    level: 'count20',
-    promptKey: 'place_q_count',
-    dots: 17,
-    answer: 17,
-    choices: [15, 16, 17, 19],
-  },
+  countQuestion('c20-11', 'count20', 11),
+  countQuestion('c20-12', 'count20', 12),
+  countQuestion('c20-13', 'count20', 13),
+  countQuestion('c20-a', 'count20', 14),
+  countQuestion('c20-15', 'count20', 15),
+  countQuestion('c20-16', 'count20', 16),
+  countQuestion('c20-b', 'count20', 17),
+  countQuestion('c20-18', 'count20', 18),
   {
     id: 'c20-c',
     level: 'count20',
@@ -157,6 +158,22 @@ export const PLACEMENT_BANK: PlacementQuestion[] = [
     answer: 85,
     choices: [58, 80, 85, 95],
   },
+  {
+    id: 'c100-d',
+    level: 'count100',
+    promptKey: 'place_q_howMany',
+    equation: '70',
+    answer: 70,
+    choices: [17, 60, 70, 77],
+  },
+  {
+    id: 'c100-e',
+    level: 'count100',
+    promptKey: 'place_q_next',
+    equation: '29 → ?',
+    answer: 30,
+    choices: [19, 28, 30, 39],
+  },
   // Add within 10
   {
     id: 'a10-a',
@@ -181,6 +198,30 @@ export const PLACEMENT_BANK: PlacementQuestion[] = [
     equation: '6 + 3',
     answer: 9,
     choices: [8, 9, 10, 12],
+  },
+  {
+    id: 'a10-d',
+    level: 'add10',
+    promptKey: 'place_q_add',
+    equation: '2 + 7',
+    answer: 9,
+    choices: [7, 8, 9, 10],
+  },
+  {
+    id: 'a10-e',
+    level: 'add10',
+    promptKey: 'place_q_add',
+    equation: '5 + 4',
+    answer: 9,
+    choices: [8, 9, 10, 11],
+  },
+  {
+    id: 'a10-f',
+    level: 'add10',
+    promptKey: 'place_q_add',
+    equation: '1 + 6',
+    answer: 7,
+    choices: [5, 6, 7, 8],
   },
   // Add within 20
   {
@@ -207,6 +248,22 @@ export const PLACEMENT_BANK: PlacementQuestion[] = [
     answer: 17,
     choices: [15, 16, 17, 19],
   },
+  {
+    id: 'a20-d',
+    level: 'add20',
+    promptKey: 'place_q_add',
+    equation: '11 + 4',
+    answer: 15,
+    choices: [13, 14, 15, 16],
+  },
+  {
+    id: 'a20-e',
+    level: 'add20',
+    promptKey: 'place_q_add',
+    equation: '10 + 8',
+    answer: 18,
+    choices: [16, 17, 18, 19],
+  },
   // Sub within 10
   {
     id: 's10-a',
@@ -231,6 +288,22 @@ export const PLACEMENT_BANK: PlacementQuestion[] = [
     equation: '8 − 3',
     answer: 5,
     choices: [3, 5, 6, 11],
+  },
+  {
+    id: 's10-d',
+    level: 'sub10',
+    promptKey: 'place_q_sub',
+    equation: '6 − 1',
+    answer: 5,
+    choices: [4, 5, 6, 7],
+  },
+  {
+    id: 's10-e',
+    level: 'sub10',
+    promptKey: 'place_q_sub',
+    equation: '10 − 3',
+    answer: 7,
+    choices: [5, 6, 7, 13],
   },
   // Sub within 20
   {
@@ -257,6 +330,22 @@ export const PLACEMENT_BANK: PlacementQuestion[] = [
     answer: 9,
     choices: [8, 9, 10, 19],
   },
+  {
+    id: 's20-d',
+    level: 'sub20',
+    promptKey: 'place_q_sub',
+    equation: '16 − 7',
+    answer: 9,
+    choices: [7, 8, 9, 10],
+  },
+  {
+    id: 's20-e',
+    level: 'sub20',
+    promptKey: 'place_q_sub',
+    equation: '13 − 4',
+    answer: 9,
+    choices: [8, 9, 10, 17],
+  },
   // Place value
   {
     id: 'pv-a',
@@ -281,6 +370,22 @@ export const PLACEMENT_BANK: PlacementQuestion[] = [
     equation: '2 tens + 7 ones',
     answer: 27,
     choices: [9, 27, 72, 207],
+  },
+  {
+    id: 'pv-d',
+    level: 'placeValue',
+    promptKey: 'place_q_tensOnes',
+    equation: '4 tens + 2 ones',
+    answer: 42,
+    choices: [6, 24, 42, 420],
+  },
+  {
+    id: 'pv-e',
+    level: 'placeValue',
+    promptKey: 'place_q_tensOnes',
+    equation: '5 tens + 5 ones',
+    answer: 55,
+    choices: [10, 50, 55, 505],
   },
 ];
 
@@ -326,8 +431,9 @@ export const createStaircase = (
  * - Unreadable outcomes do not count as wrong and do not advance item count.
  * - After `successThreshold` successes at a level, move up (unless stopHarder).
  * - After `missThreshold` misses at a level, freeze upward movement.
- * - Stops at maxItems, or at minItems once upward movement is frozen
- *   (or the top level was cleared).
+ * - Once frozen, stop soon (clear the band or a couple more tries) so the
+ *   child is not stuck on the same few items until minItems.
+ * - At the top band, still use minItems before finishing.
  */
 export const nextStaircaseState = (
   state: StaircaseState,
@@ -363,9 +469,15 @@ export const nextStaircaseState = (
   }
 
   const atTop = clearedLevelIndex >= levelCount - 1;
-  const canStopEarly = stopHarder || atTop;
+  // After freeze: either they clear this band, or they miss a couple more times.
+  const clearedFrozenBand =
+    stopHarder && clearedLevelIndex >= levelIndex && successesAtLevel >= successThreshold;
+  const gaveUpFrozenBand = stopHarder && missesAtLevel >= missThreshold + successThreshold;
   const done =
-    itemsAnswered >= maxItems || (itemsAnswered >= minItems && canStopEarly);
+    itemsAnswered >= maxItems ||
+    (atTop && itemsAnswered >= minItems) ||
+    clearedFrozenBand ||
+    gaveUpFrozenBand;
 
   return {
     levelIndex,
