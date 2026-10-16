@@ -98,10 +98,10 @@ describe('pickVoice ranking', () => {
 });
 
 describe('K–2 speech defaults', () => {
-  it('uses a gentle rate and warm pitch', () => {
-    expect(K2_SPEECH_RATE).toBeCloseTo(0.86);
-    expect(K2_SPEECH_RATE_SLOW).toBeCloseTo(0.76);
-    expect(K2_SPEECH_PITCH).toBeCloseTo(1.04);
+  it('uses a near-natural rate and pitch', () => {
+    expect(K2_SPEECH_RATE).toBeCloseTo(0.95);
+    expect(K2_SPEECH_RATE_SLOW).toBeCloseTo(0.85);
+    expect(K2_SPEECH_PITCH).toBeCloseTo(1);
     expect(K2_SPEECH_PITCH).toBeLessThanOrEqual(1.1);
   });
 });
@@ -127,7 +127,7 @@ describe('sentence splitting', () => {
   it('packs short multi-sentence lines into one utterance', () => {
     const packed = packSpeechChunks('Hello. Count with me! Ready?');
     expect(packed).toHaveLength(1);
-    expect(smoothProsodyText(packed[0])).toMatch(/Hello,/);
+    expect(smoothProsodyText(packed[0])).toContain('Hello.');
   });
 
   it('does not treat decimal periods as sentence ends after normalization', () => {

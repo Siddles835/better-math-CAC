@@ -19,14 +19,14 @@ let naturalVoicePref = true;
 export type SpeechRatePref = 'slow' | 'normal';
 
 /**
- * Gentle K–2 defaults. Slightly under 0.9 keeps device voices from sounding
- * clipped; pitch stays warm but under 1.1.
+ * Near-natural pace. Too-slow rates sound slurred; pitch above 1.0 can sound
+ * cartoonish on many device voices.
  */
-export const K2_SPEECH_RATE = 0.86;
-export const K2_SPEECH_RATE_SLOW = 0.76;
-export const K2_SPEECH_PITCH = 1.04;
-/** Tiny gap only when a long passage must be split (keeps intonation continuous). */
-export const SENTENCE_GAP_MS = 70;
+export const K2_SPEECH_RATE = 0.95;
+export const K2_SPEECH_RATE_SLOW = 0.85;
+export const K2_SPEECH_PITCH = 1;
+/** Tiny gap only when a long passage must be split. */
+export const SENTENCE_GAP_MS = 90;
 /** Prefer one utterance; Chrome can cut off much longer strings. */
 export const LONG_CHUNK_CHARS = 240;
 
@@ -409,17 +409,11 @@ export const packSpeechChunks = (text: string, maxChars = LONG_CHUNK_CHARS): str
   return packed;
 };
 
-/** Soften harsh mid-line punctuation so one utterance flows more naturally. */
-export const smoothProsodyText = (text: string): string =>
-  text
-    // Keep the final sentence end; soften earlier full stops into gentle pauses.
-    .replace(/([.!?。！？])\s+(?=\S)/g, (_all, mark: string, offset: number, full: string) => {
-      const rest = full.slice(offset + String(mark).length);
-      if (!/[.!?。！？]/.test(rest)) return `${mark} `;
-      return ', ';
-    })
-    .replace(/\s+/g, ' ')
-    .trim();
+/**
+ * Keep normal punctuation. Replacing periods with commas made voices sound flat.
+ * Packing into one utterance is enough for continuity.
+ */
+export const smoothProsodyText = (text: string): string => text.replace(/\s+/g, ' ').trim();
 
 /** @deprecated Prefer splitLongChunk; kept for callers that still import it. */
 export const splitClauses = (sentence: string): string[] => splitLongChunk(sentence);
@@ -439,7 +433,11 @@ const FRIENDLY_VOICE =
 
 /** High-quality neural / enhanced labels only (not every Google/Microsoft voice). */
 const QUALITY_VOICE =
-  /premium|enhanced|natural|neural|siri|microsoft online|\(natural\)|wavenet|studio|superstar|eloquent/i;
+  /premium|enhanced|natural|neural|siri|microsoft online|\(natural\)|online \(natural\)|wavenet|studio|superstar|eloquent|google.*neural|neural2/i;
+
+/** Strongly human-sounding cloud or enhanced voices when the OS exposes them. */
+const HUMAN_VOICE =
+  /online \(natural\)|microsoft .* online|premium|enhanced|neural|siri|wavenet|studio/i;
 
 /** Novelty / compact / robotic voices to avoid for lessons. */
 const AVOID_VOICE =
@@ -461,16 +459,37 @@ export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number =
   score += (prefixes.length - prefixIndex) * 14;
 
   const quality = voiceQuality(voice);
-  if (quality === 'natural') score += 50;
-  // Prefer on-device only when quality tier is equal (do not boost mediocre local voices over Natural).
-  if (voice.localService) score += quality === 'natural' ? 6 : 4;
-  if (voice.default) score += 3;
-  if (FRIENDLY_VOICE.test(name)) score += 22;
-  if (AVOID_VOICE.test(name)) score -= 80;
+  if (HUMAN_VOICE.test(name)) score += 80;
+  else if (quality === 'natural') score += 55;
+  // Prefer remote Natural voices over flat local ones when both exist.
+  if (!voice.localService && HUMAN_VOICE.test(name)) score += 20;
+  else if (voice.localService && quality === 'natural') score += 8;
+  else if (voice.localService) score += 2;
+  if (voice.default) score += 2;
+  if (FRIENDLY_VOICE.test(name)) score += 18;
+  if (AVOID_VOICE.test(name)) score -= 100;
   if (/\bfemale\b|\bwoman\b/i.test(name)) score += 6;
   if (/\bmale\b|\bman\b/i.test(name) && !FRIENDLY_VOICE.test(name)) score -= 4;
 
   return score;
+};
+
+/** When a human-quality voice exists for the language, ignore flat robotic ones. */
+export const pickHumanVoice = (
+  lang: AppLang,
+  voices: SpeechSynthesisVoice[],
+  preferredURI: string | null = preferredVoiceURI
+): SpeechSynthesisVoice | null => {
+  const ranked = listVoicesForLang(lang, voices);
+  if (ranked.length === 0) return null;
+  if (preferredURI) {
+    const preferred = ranked.find((voice) => voice.voiceURI === preferredURI);
+    if (preferred && (HUMAN_VOICE.test(preferred.name) || voiceQuality(preferred) === 'natural')) {
+      return preferred;
+    }
+  }
+  const human = ranked.find((voice) => HUMAN_VOICE.test(voice.name) || voiceQuality(voice) === 'natural');
+  return human ?? ranked[0];
 };
 
 export const listVoicesForLang = (
@@ -739,7 +758,10 @@ const speakDevice = (
   const startWithVoices = (voices: SpeechSynthesisVoice[]) => {
     if (token !== speechToken) return;
     speakTimer = null;
-    const voice = pickVoice(lang, voices, uri);
+    // When warm voice is on, prefer OS Natural/Neural voices over flat locals.
+    const voice = naturalVoicePref
+      ? pickHumanVoice(lang, voices, uri)
+      : pickVoice(lang, voices, uri);
     if (!voice) {
       failUnavailable();
       return;
@@ -817,11 +839,13 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
   const afterClip = async () => {
     if (token !== speechToken) return;
-    // Tier 2: warm on-device neural voice for English (Kokoro). Falls through on failure.
+    // Tier 2: Kokoro neural English. Wait briefly for the model so kids hear a
+    // human voice instead of a flat device voice when natural mode is on.
     if (naturalVoicePref && lang === 'en') {
       try {
-        const { speakWithNeural } = await import('./speechNeural');
-        const played = await speakWithNeural(cleaned, {
+        const { speakWithNeural, getNeuralStatus, ensureNeuralReady } = await import('./speechNeural');
+        if (getNeuralStatus() !== 'ready') void ensureNeuralReady();
+        const played = await speakWithNeural(text, {
           token,
           isCurrent: (value) => value === speechToken,
           ratePref,
@@ -829,6 +853,8 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
           bindAudio: (audio) => {
             activeAudio = audio;
           },
+          // Wait on first load so we do not fall straight into a robotic voice.
+          waitForModel: true,
         });
         if (played || token !== speechToken) return;
       } catch {
