@@ -699,5 +699,16 @@
   "story_neptune_0_prompt": "{{total}} तारे बचने तक हटाओ।",
   "story_neptune_1_n1": "मैक्स {{a}} सेब से शुरू करता है।",
   "story_neptune_1_n2": "कुछ हटाने के बाद {{total}} बचते हैं।",
-  "story_neptune_1_prompt": "{{total}} सेब बचने तक हटाओ।"
+  "story_neptune_1_prompt": "{{total}} सेब बचने तक हटाओ।",
+  "dashWorkshop": "शिक्षक डैशबोर्ड",
+  "dashSampleClass": "नमूना कक्षा",
+  "dashClassTitle": "कक्षा {{code}}",
+  "dashPinPrivate": "निजी रखें",
+  "dashClassMissing": "यह कक्षा नहीं मिली। कोड जाँचें या नई बनाएँ।",
+  "dashConnectFail": "कक्षा से कनेक्ट नहीं हो सका। इंटरनेट जाँचें।",
+  "dashSaveFail": "सेव नहीं हो सका। फिर कोशिश करें।",
+  "dashRosterCount": "{{count}} विद्यार्थी",
+  "dashConfirmRemove": "{{name}} को हटाएँ? प्रगति मिट जाएगी।",
+  "dashRemoving": "हटा रहे हैं…",
+  "dashYesRemove": "हाँ, हटाएँ"
 }

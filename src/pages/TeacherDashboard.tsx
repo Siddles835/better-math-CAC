@@ -1,7 +1,7 @@
 import { tx } from '@/i18n/tx';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { BookOpen, LogOut, Printer, ChevronDown } from 'lucide-react';
 import AuthNavButton from '@/components/AuthNavButton';
 import {
   Classroom,
@@ -28,6 +28,7 @@ import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
 import { PATHS } from '@/content/catalog';
 import PilotOverview from '@/components/PilotOverview';
 import { isDemoMode } from '@/lib/demo/mode';
+import { cn } from '@/lib/utils';
 
 const TeacherDashboard: React.FC = () => {
   const params = useParams();
@@ -69,7 +70,7 @@ const TeacherDashboard: React.FC = () => {
         setCls(data);
         setLoading(false);
         if (!data) {
-          setLoadError('This class was not found. Check the class code or create a new class.');
+          setLoadError(tx('ui:dashClassMissing'));
           return;
         }
         setLoadError('');
@@ -82,7 +83,7 @@ const TeacherDashboard: React.FC = () => {
       },
       () => {
         setLoading(false);
-        setLoadError('Could not connect to the class. Check your internet connection.');
+        setLoadError(tx('ui:dashConnectFail'));
       }
     );
 
@@ -120,7 +121,7 @@ const TeacherDashboard: React.FC = () => {
       setDefaultSaved(true);
     } catch (err) {
       console.error(err);
-      setSaveError('Could not save unlock setting. Try again.');
+      setSaveError(tx('ui:dashSaveFail'));
     } finally {
       setSavingDefault(false);
     }
@@ -156,7 +157,7 @@ const TeacherDashboard: React.FC = () => {
       setPendingRemove(null);
     } catch (err) {
       console.error(err);
-      setRemoveError(`Could not remove ${nickname}. Try again.`);
+      setRemoveError(tx('ui:removeFailed', { name: nickname }));
     } finally {
       setRemovingKey(null);
     }
@@ -173,99 +174,107 @@ const TeacherDashboard: React.FC = () => {
     .filter((row) => row.warning);
 
   return (
-    <div className="min-h-screen bg-background subtle-stars p-4 sm:p-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
-      <div className="max-w-5xl mx-auto animate-fade-in">
-        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+    <div
+      data-testid="teacher-dashboard"
+      className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-background pb-[max(2rem,env(safe-area-inset-bottom))]"
+    >
+      <header className="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div>
-            <h1 className="text-3xl font-semibold text-foreground">
-              {sample ? 'Sample class' : `Class ${classCode}`}
-            </h1>
-            {sample && (
-              <p className="mt-2 text-sm font-medium text-amber-200">{tx('ui:s_90999c1939')}</p>
-            )}
-            <p className="text-muted-foreground mt-1">{tx('ui:s_d179dda4c4')}</p>
-            <p className="text-sm text-muted-foreground mt-1 print:hidden">
-              <button
-                type="button"
-                onClick={() => navigate('/how-it-works')}
-                className="underline underline-offset-2 hover:text-foreground"
-              >{tx('ui:s_1dd6a17cb4')}</button>
-              {' · '}
-              <button
-                type="button"
-                onClick={() => navigate('/methods')}
-                className="underline underline-offset-2 hover:text-foreground"
-              >{tx('ui:s_7e4ac6803c')}</button>
-              {' · '}
-              <a
-                href="#planet-levels"
-                className="underline underline-offset-2 hover:text-foreground"
-              >
-                {tx('ui:planetLevel_whatLink')}
-              </a>
+            <p className="text-xs font-medium uppercase tracking-wide text-primary">
+              {tx('ui:dashWorkshop')}
             </p>
+            <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">
+              {sample ? tx('ui:dashSampleClass') : tx('ui:dashClassTitle', { code: classCode })}
+            </h1>
             {teacherPin && !sample && (
-              <p className="text-sm text-sky-300 mt-1">{tx('ui:s_d3f6dc1626')}<span className="font-semibold tracking-widest">{teacherPin}</span>
-                {' '}(keep private)
+              <p className="mt-1 text-sm text-muted-foreground">
+                {tx('ui:s_d3f6dc1626')}{' '}
+                <span className="font-semibold tracking-widest text-foreground">{teacherPin}</span>
+                <span className="ms-1 text-xs">({tx('ui:dashPinPrivate')})</span>
               </p>
             )}
           </div>
           <div className="flex flex-wrap gap-2 print:hidden">
             <Button
               type="button"
-              variant="outline"
+              className="min-h-[48px] gap-2"
               onClick={() => navigate(`/teacher/${classCode}/curriculum`)}
-              className="min-h-[48px]"
               data-testid="open-curriculum"
-            >{tx('paths:currTitle')}</Button>
+            >
+              <BookOpen className="h-4 w-4" aria-hidden />
+              {tx('paths:currTitle')}
+            </Button>
             <Button
               type="button"
               variant="outline"
+              className="min-h-[48px] gap-2"
               onClick={() => navigate(`/teacher/${classCode}/print`)}
-              className="min-h-[48px]"
-            >{tx('ui:s_e39c15d303')}</Button>
+            >
+              <Printer className="h-4 w-4" aria-hidden />
+              {tx('ui:s_e39c15d303')}
+            </Button>
             <AuthNavButton onClick={handleBack} />
             <Button
               type="button"
               variant="outline"
               onClick={handleSignOut}
-              className="inline-flex items-center gap-2 border-border bg-card text-foreground hover:bg-muted shadow-sm min-h-[48px]"
+              className="min-h-[48px] gap-2"
             >
-              <LogOut className="h-5 w-5 shrink-0 text-foreground" strokeWidth={2.25} aria-hidden />
-              <span>{tx('ui:s_61fd08ff5c')}</span>
+              <LogOut className="h-4 w-4" aria-hidden />
+              {tx('ui:s_61fd08ff5c')}
             </Button>
           </div>
         </div>
+      </header>
+
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 animate-fade-in">
+        {sample && (
+          <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground">
+            {tx('ui:s_90999c1939')}
+          </p>
+        )}
 
         {loadError && (
-          <div className="mb-6 p-4 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive">
+          <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-destructive">
             {loadError}
           </div>
         )}
 
+        {/* Class setup — starting planet */}
         <section
           id="planet-levels"
-          className="mb-8 bg-card/95 p-6 rounded-2xl border border-border print:hidden scroll-mt-6"
+          className="scroll-mt-24 rounded-2xl border border-border bg-card p-5 sm:p-6 print:hidden"
         >
-          <h2 className="text-xl font-semibold mb-2">{tx('ui:s_8d52e3c61c')}</h2>
-          <p className="text-sm text-muted-foreground mb-3">{tx('ui:planetLevel_lead')}</p>
-          <p className="text-sm text-muted-foreground mb-4">{tx('ui:planetLevel_how')}</p>
-          <div className="flex flex-wrap gap-4 items-center mb-5">
-            <select
-              value={defaultPlanet}
-              onChange={(e) => handleDefaultChange(e.target.value)}
-              disabled={savingDefault || !!loadError || sample}
-              className="border border-border rounded-xl px-3 py-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px] max-w-full"
-              aria-label={tx('ui:s_8d52e3c61c')}
-            >
-              {PLANET_LEVEL_LIST.map((info) => (
-                <option key={info.id} value={info.id}>
-                  {tx(`ui:${info.labelKey}`)}
-                </option>
-              ))}
-            </select>
-            <label className="text-sm">
-              <span className="mb-1 block">{tx('paths:defaultPath')}</span>
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-semibold">{tx('ui:s_8d52e3c61c')}</h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{tx('ui:planetLevel_lead')}</p>
+            </div>
+            <span className="rounded-full border border-border px-3 py-1 text-sm text-muted-foreground">
+              {tx('ui:planetLevel_lesson', { topic: tx(`ui:topic_${derivedLesson}`) })}
+            </span>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm">
+              <span className="mb-1 block font-medium">{tx('ui:s_8d52e3c61c')}</span>
+              <select
+                value={defaultPlanet}
+                onChange={(e) => handleDefaultChange(e.target.value)}
+                disabled={savingDefault || !!loadError || sample}
+                className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={tx('ui:s_8d52e3c61c')}
+              >
+                {PLANET_LEVEL_LIST.map((info) => (
+                  <option key={info.id} value={info.id}>
+                    {tx(`ui:${info.labelKey}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block font-medium">{tx('paths:defaultPath')}</span>
               <select
                 value={defaultPath}
                 disabled={savingDefault || !!loadError || sample}
@@ -279,68 +288,67 @@ const TeacherDashboard: React.FC = () => {
                     .then(() => setDefaultSaved(true))
                     .catch((err) => {
                       console.error(err);
-                      setSaveError('Could not save unlock setting. Try again.');
+                      setSaveError(tx('ui:dashSaveFail'));
                     })
                     .finally(() => setSavingDefault(false));
                 }}
-                className="border border-border rounded-xl px-3 py-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px]"
+                className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={tx('paths:defaultPath')}
               >
                 {PATHS.map((path) => (
-                  <option key={path.id} value={path.id}>{tx(path.titleKey)}</option>
+                  <option key={path.id} value={path.id}>
+                    {tx(path.titleKey)}
+                  </option>
                 ))}
               </select>
             </label>
-            <span className="text-sm font-medium text-sky-300 px-2">
-              {tx('ui:planetLevel_lesson', { topic: tx(`ui:topic_${derivedLesson}`) })}
-            </span>
-            {savingDefault && <span className="text-sm text-muted-foreground">{tx('ui:s_56a2285c5b')}</span>}
-            {defaultSaved && !savingDefault && (
-              <span className="text-sm text-emerald-400 font-medium">{tx('ui:s_c0ae8f6ea8')}</span>
-            )}
-            {saveError && <span className="text-sm text-destructive">{saveError}</span>}
           </div>
 
-          <label className="flex items-start gap-3 mb-5 min-h-[48px] cursor-pointer">
+          <p className="mt-2 text-sm text-muted-foreground">{tx('ui:planetLevel_how')}</p>
+          {(savingDefault || defaultSaved || saveError) && (
+            <p
+              className={cn(
+                'mt-2 text-sm',
+                saveError ? 'text-destructive' : defaultSaved ? 'text-success' : 'text-muted-foreground'
+              )}
+            >
+              {saveError || (savingDefault ? tx('ui:s_56a2285c5b') : tx('ui:s_c0ae8f6ea8'))}
+            </p>
+          )}
+
+          <label className="mt-5 flex min-h-[48px] cursor-pointer items-start gap-3 rounded-xl border border-border bg-background/50 p-3">
             <input
               type="checkbox"
-              className="mt-1.5 h-4 w-4"
+              className="mt-1 h-5 w-5"
               checked={usePlacement}
               disabled={savingPlacement || !!loadError || sample}
               onChange={(e) => void handlePlacementToggle(e.target.checked)}
             />
             <span>
-              <span className="font-medium text-foreground block">
-                {tx('ui:planetLevel_usePlacement')}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {tx('ui:planetLevel_usePlacementHelp')}
-              </span>
+              <span className="block font-medium text-foreground">{tx('ui:planetLevel_usePlacement')}</span>
+              <span className="text-sm text-muted-foreground">{tx('ui:planetLevel_usePlacementHelp')}</span>
             </span>
           </label>
 
-          <div className="rounded-xl border border-border bg-background/40 p-4 mb-4">
-            <h3 className="font-semibold text-foreground mb-2">{tx('ui:planetLevel_whatTitle')}</h3>
-            <p className="text-sm text-muted-foreground mb-3">{tx('ui:planetLevel_whatBody')}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-              <div className="rounded-xl border border-border bg-background/50 p-3">
-                <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_count')}</p>
-                <p className="text-muted-foreground">{tx('ui:planetLevel_band_count_help')}</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            {(
+              [
+                ['planetLevel_band_count', 'planetLevel_band_count_help'],
+                ['planetLevel_band_add', 'planetLevel_band_add_help'],
+                ['planetLevel_band_sub', 'planetLevel_band_sub_help'],
+              ] as const
+            ).map(([title, help]) => (
+              <div key={title} className="rounded-xl border border-border bg-background/40 p-4">
+                <p className="font-semibold text-foreground">{tx(`ui:${title}`)}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{tx(`ui:${help}`)}</p>
               </div>
-              <div className="rounded-xl border border-border bg-background/50 p-3">
-                <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_add')}</p>
-                <p className="text-muted-foreground">{tx('ui:planetLevel_band_add_help')}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-background/50 p-3">
-                <p className="font-semibold text-foreground mb-1">{tx('ui:planetLevel_band_sub')}</p>
-                <p className="text-muted-foreground">{tx('ui:planetLevel_band_sub_help')}</p>
-              </div>
-            </div>
+            ))}
           </div>
 
-          <details className="rounded-xl border border-border bg-background/40 p-3" open>
-            <summary className="cursor-pointer font-medium text-foreground">
+          <details className="mt-4 rounded-xl border border-border bg-background/40 p-3">
+            <summary className="flex min-h-[48px] cursor-pointer list-none items-center justify-between gap-2 font-medium text-foreground">
               {tx('ui:planetLevel_legendTitle')}
+              <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden />
             </summary>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               {PLANET_LEVEL_LIST.map((info) => (
@@ -360,16 +368,17 @@ const TeacherDashboard: React.FC = () => {
 
         {!sample && <PilotOverview classCode={classCode} classroom={cls} />}
         {isDemoMode() && !sample && (
-          <p className="mb-6 text-sm text-muted-foreground">{tx('paths:demoPin')}</p>
+          <p className="text-sm text-muted-foreground">{tx('paths:demoPin')}</p>
         )}
 
         <ClassTrends students={roster} sample={sample} />
+
         {students.length > 0 && (
           <>
             <ClassBriefing students={roster} />
             {earlyWarnings.length > 0 && (
-              <section className="mb-8 rounded-2xl border border-border bg-card/95 p-6 print:break-inside-avoid">
-                <h2 className="text-xl font-semibold mb-3">{tx('ui:s_970e3adc92')}</h2>
+              <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 print:break-inside-avoid">
+                <h2 className="mb-3 text-xl font-semibold">{tx('ui:s_970e3adc92')}</h2>
                 <div className="space-y-2">
                   {earlyWarnings.map((row) => (
                     <p key={row.name} className="text-sm text-muted-foreground">
@@ -382,30 +391,37 @@ const TeacherDashboard: React.FC = () => {
           </>
         )}
 
-        <section className="bg-card/95 p-6 rounded-2xl border border-border">
-          <h2 className="text-xl font-semibold mb-4">{tx('ui:s_e55198aca4')}</h2>
+        <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-xl font-semibold">{tx('ui:s_e55198aca4')}</h2>
+            <p className="text-sm text-muted-foreground">
+              {tx('ui:dashRosterCount', { count: students.length })}
+            </p>
+          </div>
           {removeError && <p className="mb-3 text-sm text-destructive">{removeError}</p>}
           {loading ? (
-            <div className="p-4 text-muted-foreground rounded-xl text-center border border-dashed border-border">{tx('ui:s_522ba51bcc')}</div>
+            <div className="rounded-xl border border-dashed border-border p-6 text-center text-muted-foreground">
+              {tx('ui:s_522ba51bcc')}
+            </div>
           ) : students.length === 0 ? (
-            <div className="p-4 text-muted-foreground rounded-xl text-center border border-dashed border-border">
+            <div className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground">
               {tx('ui:s_emptyroster', { code: classCode })}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {students.map(([key, s]) => {
                 const currentPlanet = getTeacherVisiblePlanet(s, classUnlock);
                 const lesson = getLessonForPlanet(currentPlanet);
                 return (
-                  <div
+                  <article
                     key={key}
-                    className="p-4 rounded-xl border border-border bg-background/60"
+                    className="flex flex-col rounded-2xl border border-border bg-background/60 p-4"
                   >
                     <div className="text-lg font-semibold text-foreground">{s.nickname}</div>
-                    <div className="text-sm font-medium text-sky-300 mt-1">
+                    <div className="mt-2 inline-flex w-fit rounded-full border border-border px-3 py-1 text-sm font-medium text-foreground">
                       {tx(`ui:${getPlanetLevel(currentPlanet).labelKey}`)}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="mt-2 text-xs text-muted-foreground">
                       {tx('ui:planetLevel_rosterLine', {
                         planet: tx(`ui:planet_${currentPlanet}`),
                         topic: tx(`ui:topic_${lesson}`),
@@ -413,11 +429,8 @@ const TeacherDashboard: React.FC = () => {
                       {' · '}
                       {tx(`ui:${getPlanetLevel(currentPlanet).rangeKey}`)}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {tx('ui:planetLevel_rosterHint')}
-                    </p>
                     {s.lastDiagnosis && (
-                      <div className="mt-2 text-sm text-muted-foreground">
+                      <div className="mt-3 text-sm text-muted-foreground">
                         <p className="font-medium text-foreground">
                           {misconceptionLabel(s.lastDiagnosis.primary)}
                         </p>
@@ -426,62 +439,61 @@ const TeacherDashboard: React.FC = () => {
                     )}
                     {s.lastQuiz && (
                       <div className="mt-2 text-xs text-muted-foreground">
-                        Last quiz ({PLANET_META[s.lastQuiz.planet as PlanetId]?.name ?? s.lastQuiz.planet}):{' '}
-                        {s.lastQuiz.score}/{s.lastQuiz.total}
-                        {s.lastQuiz.tries.some((t) => t > 1) && (
-                          <p className="mt-1">
-                            Extra tries:{' '}
-                            {s.lastQuiz.tries
-                              .map((t, i) => (t > 1 ? `Q${i + 1} (${t})` : null))
-                              .filter(Boolean)
-                              .join(', ')}
+                        {PLANET_META[s.lastQuiz.planet as PlanetId]?.name ?? s.lastQuiz.planet}:{' '}
+                        <span dir="ltr">
+                          {s.lastQuiz.score}/{s.lastQuiz.total}
+                        </span>
+                      </div>
+                    )}
+                    <div className="mt-auto pt-3">
+                      {pendingRemove?.key === key ? (
+                        <div className="space-y-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3">
+                          <p className="text-sm font-medium text-foreground">
+                            {tx('ui:dashConfirmRemove', { name: s.nickname })}
                           </p>
-                        )}
-                      </div>
-                    )}
-                    {pendingRemove?.key === key ? (
-                      <div className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 space-y-2">
-                        <p className="text-sm font-medium text-foreground">
-                          Remove {s.nickname}? Progress and quiz history will be deleted.
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            disabled={removingKey === key}
-                            onClick={handleRemoveStudent}
-                            className="flex-1 min-h-[44px]"
-                          >
-                            {removingKey === key ? 'Removing…' : 'Yes, remove'}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={!!removingKey}
-                            onClick={() => {
-                              setPendingRemove(null);
-                              setRemoveError('');
-                            }}
-                            className="flex-1 min-h-[44px]"
-                          >{tx('ui:s_77dfd2135f')}</Button>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              disabled={removingKey === key}
+                              onClick={handleRemoveStudent}
+                              className="min-h-[48px] flex-1"
+                            >
+                              {removingKey === key ? tx('ui:dashRemoving') : tx('ui:dashYesRemove')}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={!!removingKey}
+                              onClick={() => {
+                                setPendingRemove(null);
+                                setRemoveError('');
+                              }}
+                              className="min-h-[48px] flex-1"
+                            >
+                              {tx('ui:s_77dfd2135f')}
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={!!removingKey}
-                        onClick={() => {
-                          setRemoveError('');
-                          setPendingRemove({ key, nickname: s.nickname });
-                        }}
-                        className="mt-3 w-full border-destructive/40 text-destructive hover:bg-destructive/10 min-h-[44px]"
-                      >{tx('ui:s_4fb18541ef')}</Button>
-                    )}
-                  </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={!!removingKey}
+                          onClick={() => {
+                            setRemoveError('');
+                            setPendingRemove({ key, nickname: s.nickname });
+                          }}
+                          className="min-h-[48px] w-full border-destructive/40 text-destructive hover:bg-destructive/10"
+                        >
+                          {tx('ui:s_4fb18541ef')}
+                        </Button>
+                      )}
+                    </div>
+                  </article>
                 );
               })}
             </div>
@@ -489,6 +501,24 @@ const TeacherDashboard: React.FC = () => {
         </section>
 
         {students.length > 0 && <FamilyNote classCode={classCode} />}
+
+        <p className="print:hidden text-center text-sm text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => navigate('/how-it-works')}
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            {tx('ui:s_1dd6a17cb4')}
+          </button>
+          {' · '}
+          <button
+            type="button"
+            onClick={() => navigate('/methods')}
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            {tx('ui:s_7e4ac6803c')}
+          </button>
+        </p>
       </div>
     </div>
   );

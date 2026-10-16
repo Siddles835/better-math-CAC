@@ -11,6 +11,15 @@ import { formatCsvNumber } from '@/lib/reporting/csv';
 import { isDemoMode } from '@/lib/demo/mode';
 import { Button } from '@/components/ui/button';
 
+const Metric = ({ label, value }: { label: string; value: string | number }) => (
+  <div className="rounded-xl border border-border bg-background/50 p-4">
+    <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
+    <dd className="mt-1 text-2xl font-semibold tabular-nums text-foreground" dir="ltr">
+      {value}
+    </dd>
+  </div>
+);
+
 const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom: Classroom | null }) => {
   const [goals, setGoals] = useState<PilotGoals>({ whereWeAre: '', whereWeWant: '', updatedAt: 0 });
   const [rows, setRows] = useState<ReturnType<typeof studentReport>[]>([]);
@@ -36,10 +45,20 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
           const record = learners[key] ?? learnerFromLegacy(student);
           const assignment = resolveAssignment(assignments, key, false);
           const curriculum = curricula.find((item) => item.id === assignment?.curriculumId);
-          return studentReport(student.nickname || key, record, curriculum?.name ?? null, student.lastDiagnosis?.primary ?? null);
+          return studentReport(
+            student.nickname || key,
+            record,
+            curriculum?.name ?? null,
+            student.lastDiagnosis?.primary ?? null
+          );
         });
         setRows(reports);
-        setProgress(Object.entries(classroom.students ?? {}).map(([key, student]) => progressRatio(learners[key] ?? learnerFromLegacy(student))));
+        setProgress(
+          Object.entries(classroom.students ?? {}).map(([key, student]) =>
+            progressRatio(learners[key] ?? learnerFromLegacy(student))
+          )
+        );
+        setError('');
       } catch (err) {
         if (!cancel) setError(err instanceof Error ? err.message : tx('paths:currError'));
       }
@@ -70,59 +89,105 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
   };
 
   return (
-    <section data-testid="pilot-overview" className="mb-8 rounded-2xl border border-border bg-card/95 p-6">
-      <h2 className="mb-2 text-xl font-semibold">{tx('paths:pilotTitle')}</h2>
-      <p className="mb-4 text-sm text-muted-foreground">{tx('paths:pilotTeacherNote')}</p>
-      {error && <p className="mb-3 text-sm">{tx('paths:currError')}</p>}
-      <dl className="mb-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-        <div><dt>{tx('paths:pilotStudents')}</dt><dd className="text-lg font-semibold">{averages.students}</dd></div>
-        <div><dt>{tx('paths:pilotTeachers')}</dt><dd className="text-lg font-semibold">{classroom ? 1 : averages.teachers}</dd></div>
-        <div><dt>{tx('paths:pilotProgress')}</dt><dd className="text-lg font-semibold" dir="ltr">{formatCsvNumber(averages.averageProgress)}</dd></div>
-        <div><dt>{tx('paths:pilotImprovement')}</dt><dd className="text-lg font-semibold" dir="ltr">{formatCsvNumber(averages.averageImprovement)}</dd></div>
-        <div><dt>{tx('paths:pilotEngagement')}</dt><dd className="text-lg font-semibold" dir="ltr">{formatCsvNumber(weeks.reduce((sum, value) => sum + value, 0))}</dd></div>
-      </dl>
-      <div className="overflow-x-auto">
-        <table className="w-full text-start text-sm">
-          <thead>
-            <tr>
-              <th className="py-2 pe-2">{tx('paths:dashPlanet')}</th>
-              <th className="py-2 pe-2">{tx('paths:dashCurriculum')}</th>
-              <th className="py-2 pe-2">{tx('paths:dashAssessment')}</th>
-              <th className="py-2 pe-2">{tx('paths:dashAccuracy')}</th>
-              <th className="py-2 pe-2">{tx('paths:dashTime')}</th>
-              <th className="py-2">{tx('paths:dashStruggling')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.spaceName} className="border-t border-border">
-                <th className="py-2 pe-2 font-medium" scope="row">{row.spaceName}</th>
-                <td className="py-2 pe-2">{row.curriculumId || tx('paths:noneYet')}</td>
-                <td className="py-2 pe-2">{row.latestAssessment ? row.latestAssessment.recommendedNodeId : tx('paths:noneYet')}</td>
-                <td className="py-2 pe-2" dir="ltr">{formatCsvNumber(row.accuracy)}</td>
-                <td className="py-2 pe-2" dir="ltr">{formatCsvNumber(row.timeSeconds)}</td>
-                <td className="py-2">{row.struggling.join(', ') || tx('paths:noneYet')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <section data-testid="pilot-overview" className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold">{tx('paths:pilotTitle')}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{tx('paths:pilotTeacherNote')}</p>
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">{tx('paths:dashPlanet')}: {rows.map((row) => `${row.spaceName} ${row.activePathId} ${row.currentNodeId}`).join(' · ')}</p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+
+      {error && (
+        <p className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+
+      <dl className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <Metric label={tx('paths:pilotStudents')} value={averages.students} />
+        <Metric label={tx('paths:pilotTeachers')} value={classroom ? 1 : averages.teachers} />
+        <Metric label={tx('paths:pilotProgress')} value={formatCsvNumber(averages.averageProgress)} />
+        <Metric label={tx('paths:pilotImprovement')} value={formatCsvNumber(averages.averageImprovement)} />
+        <Metric
+          label={tx('paths:pilotEngagement')}
+          value={formatCsvNumber(weeks.reduce((sum, value) => sum + value, 0))}
+        />
+      </dl>
+
+      {rows.length > 0 ? (
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full text-start text-sm">
+            <thead className="bg-muted/40">
+              <tr>
+                <th className="px-3 py-3 font-medium">{tx('paths:dashPlanet')}</th>
+                <th className="px-3 py-3 font-medium">{tx('paths:dashCurriculum')}</th>
+                <th className="px-3 py-3 font-medium">{tx('paths:dashAssessment')}</th>
+                <th className="px-3 py-3 font-medium">{tx('paths:dashAccuracy')}</th>
+                <th className="px-3 py-3 font-medium">{tx('paths:dashTime')}</th>
+                <th className="px-3 py-3 font-medium">{tx('paths:dashStruggling')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.spaceName} className="border-t border-border">
+                  <th className="px-3 py-3 font-medium" scope="row">
+                    {row.spaceName}
+                  </th>
+                  <td className="px-3 py-3">{row.curriculumId || tx('paths:noneYet')}</td>
+                  <td className="px-3 py-3">
+                    {row.latestAssessment ? row.latestAssessment.recommendedNodeId : tx('paths:noneYet')}
+                  </td>
+                  <td className="px-3 py-3" dir="ltr">
+                    {formatCsvNumber(row.accuracy)}
+                  </td>
+                  <td className="px-3 py-3" dir="ltr">
+                    {formatCsvNumber(row.timeSeconds)}
+                  </td>
+                  <td className="px-3 py-3">{row.struggling.join(', ') || tx('paths:noneYet')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        !error && (
+          <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+            {tx('paths:noneYet')}
+          </p>
+        )
+      )}
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <label className="block text-sm">
-          {tx('paths:pilotNow')}
-          <textarea className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2" value={goals.whereWeAre} onChange={(event) => setGoals({ ...goals, whereWeAre: event.target.value })} />
+          <span className="mb-1 block font-medium">{tx('paths:pilotNow')}</span>
+          <textarea
+            className="min-h-[96px] w-full rounded-xl border border-border bg-background px-3 py-2"
+            value={goals.whereWeAre}
+            onChange={(event) => setGoals({ ...goals, whereWeAre: event.target.value })}
+          />
         </label>
         <label className="block text-sm">
-          {tx('paths:pilotWant')}
-          <textarea className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2" value={goals.whereWeWant} onChange={(event) => setGoals({ ...goals, whereWeWant: event.target.value })} />
+          <span className="mb-1 block font-medium">{tx('paths:pilotWant')}</span>
+          <textarea
+            className="min-h-[96px] w-full rounded-xl border border-border bg-background px-3 py-2"
+            value={goals.whereWeWant}
+            onChange={(event) => setGoals({ ...goals, whereWeWant: event.target.value })}
+          />
         </label>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" className="min-h-[48px]" onClick={() => void saveGoals()}>{tx('paths:pilotSave')}</Button>
-        <Button type="button" variant="outline" className="min-h-[48px]" data-testid="export-csv" onClick={exportCsv}>{tx('paths:exportCsv')}</Button>
+        <Button type="button" className="min-h-[48px]" onClick={() => void saveGoals()}>
+          {tx('paths:pilotSave')}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-[48px]"
+          data-testid="export-csv"
+          onClick={exportCsv}
+        >
+          {tx('paths:exportCsv')}
+        </Button>
       </div>
-      {message && <p className="mt-2 text-sm">{message}</p>}
+      {message && <p className="mt-2 text-sm text-success">{message}</p>}
     </section>
   );
 };

@@ -699,5 +699,16 @@
   "story_neptune_0_prompt": "Take away until {{total}} stars are left.",
   "story_neptune_1_n1": "Max starts with {{a}} apples.",
   "story_neptune_1_n2": "After taking some away, {{total}} remain.",
-  "story_neptune_1_prompt": "Take away until {{total}} apples remain."
+  "story_neptune_1_prompt": "Take away until {{total}} apples remain.",
+  "dashWorkshop": "Teacher dashboard",
+  "dashSampleClass": "Sample class",
+  "dashClassTitle": "Class {{code}}",
+  "dashPinPrivate": "keep private",
+  "dashClassMissing": "This class was not found. Check the class code or create a new class.",
+  "dashConnectFail": "Could not connect to the class. Check your internet connection.",
+  "dashSaveFail": "Could not save unlock setting. Try again.",
+  "dashRosterCount": "{{count}} students",
+  "dashConfirmRemove": "Remove {{name}}? Progress and quiz history will be deleted.",
+  "dashRemoving": "Removing…",
+  "dashYesRemove": "Yes, remove"
 }

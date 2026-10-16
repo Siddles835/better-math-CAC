@@ -699,5 +699,16 @@
   "story_neptune_0_prompt": "Quita hasta que queden {{total}} estrellas.",
   "story_neptune_1_n1": "Max empieza con {{a}} manzanas.",
   "story_neptune_1_n2": "Después de quitar algunas, quedan {{total}}.",
-  "story_neptune_1_prompt": "Quita hasta que queden {{total}} manzanas."
+  "story_neptune_1_prompt": "Quita hasta que queden {{total}} manzanas.",
+  "dashWorkshop": "Panel del maestro",
+  "dashSampleClass": "Clase de ejemplo",
+  "dashClassTitle": "Clase {{code}}",
+  "dashPinPrivate": "mantener privado",
+  "dashClassMissing": "No se encontró esta clase. Revisa el código o crea una nueva.",
+  "dashConnectFail": "No se pudo conectar a la clase. Revisa tu conexión.",
+  "dashSaveFail": "No se pudo guardar. Inténtalo de nuevo.",
+  "dashRosterCount": "{{count}} estudiantes",
+  "dashConfirmRemove": "¿Quitar a {{name}}? Se borrará el progreso.",
+  "dashRemoving": "Quitando…",
+  "dashYesRemove": "Sí, quitar"
 }

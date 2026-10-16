@@ -711,5 +711,16 @@
   "story_neptune_0_prompt": "أزل حتى يبقى {{total}} نجوم.",
   "story_neptune_1_n1": "يبدأ ماكس بـ {{a}} تفاحات.",
   "story_neptune_1_n2": "بعد إزالة بعضها يبقى {{total}}.",
-  "story_neptune_1_prompt": "أزل حتى يبقى {{total}} تفاحات."
+  "story_neptune_1_prompt": "أزل حتى يبقى {{total}} تفاحات.",
+  "dashWorkshop": "لوحة المعلم",
+  "dashSampleClass": "صف تجريبي",
+  "dashClassTitle": "الصف {{code}}",
+  "dashPinPrivate": "أبقه خاصًا",
+  "dashClassMissing": "لم يُعثر على هذا الصف. تحقق من الرمز أو أنشئ صفًا جديدًا.",
+  "dashConnectFail": "تعذر الاتصال بالصف. تحقق من الإنترنت.",
+  "dashSaveFail": "تعذر الحفظ. حاول مرة أخرى.",
+  "dashRosterCount": "{{count}} طلاب",
+  "dashConfirmRemove": "إزالة {{name}}؟ سيُحذف التقدم وسجل الاختبارات.",
+  "dashRemoving": "جارٍ الإزالة…",
+  "dashYesRemove": "نعم، أزل"
 }

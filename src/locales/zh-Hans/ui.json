@@ -696,5 +696,16 @@
   "story_neptune_0_prompt": "拿走，直到剩下 {{total}} 颗星星。",
   "story_neptune_1_n1": "麦克斯从 {{a}} 个苹果开始。",
   "story_neptune_1_n2": "拿走一些以后，还剩 {{total}} 个。",
-  "story_neptune_1_prompt": "拿走，直到剩下 {{total}} 个苹果。"
+  "story_neptune_1_prompt": "拿走，直到剩下 {{total}} 个苹果。",
+  "dashWorkshop": "教师控制台",
+  "dashSampleClass": "示例班级",
+  "dashClassTitle": "班级 {{code}}",
+  "dashPinPrivate": "请保密",
+  "dashClassMissing": "找不到这个班级。请检查班级码，或新建一个班级。",
+  "dashConnectFail": "无法连接班级。请检查网络。",
+  "dashSaveFail": "无法保存设置。请再试一次。",
+  "dashRosterCount": "{{count}} 名学生",
+  "dashConfirmRemove": "移除 {{name}}？进度和测验记录会被删除。",
+  "dashRemoving": "正在移除…",
+  "dashYesRemove": "是，移除"
 }

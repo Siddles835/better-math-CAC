@@ -1,6 +1,8 @@
 import { tx } from '@/i18n/tx';
 import React, { useEffect, useRef, useState } from 'react';
+import { Minus } from 'lucide-react';
 import { AppleShape } from '@/components/AppleShape';
+import { Button } from '@/components/ui/button';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import { hapticTap } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
@@ -13,22 +15,22 @@ interface BasketProps {
 }
 
 /**
- * Apple centres. Placed in the open bowl so most of each apple is visible;
- * only the bottom edge tucks under the front rim.
+ * Distinct pile slots — spaced so each apple is countable, not a red blob.
+ * Coordinates are apple centres in the viewBox.
  */
 const PILE: Array<{ x: number; y: number; rot: number }> = [
-  { x: 200, y: 128, rot: -6 },
-  { x: 155, y: 126, rot: 8 },
-  { x: 245, y: 126, rot: -10 },
-  { x: 178, y: 102, rot: 4 },
-  { x: 222, y: 102, rot: -5 },
-  { x: 200, y: 82, rot: 2 },
-  { x: 148, y: 94, rot: -8 },
-  { x: 252, y: 94, rot: 7 },
-  { x: 172, y: 68, rot: 5 },
-  { x: 228, y: 68, rot: -3 },
-  { x: 200, y: 54, rot: -2 },
-  { x: 162, y: 58, rot: 3 },
+  { x: 200, y: 132, rot: -4 },
+  { x: 148, y: 130, rot: 6 },
+  { x: 252, y: 130, rot: -7 },
+  { x: 174, y: 98, rot: 3 },
+  { x: 226, y: 98, rot: -5 },
+  { x: 200, y: 70, rot: 2 },
+  { x: 140, y: 92, rot: -6 },
+  { x: 260, y: 92, rot: 5 },
+  { x: 168, y: 58, rot: 4 },
+  { x: 232, y: 58, rot: -3 },
+  { x: 200, y: 42, rot: -2 },
+  { x: 154, y: 48, rot: 3 },
 ];
 
 const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemove }) => {
@@ -53,6 +55,7 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
 
   const reduceMotion = prefs.reduceMotion;
   const label = tx('ui:basketCount', { count: total });
+  const canRemove = Boolean(onRemove) && total > 0;
 
   const svg = (
     <svg
@@ -62,52 +65,51 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
       role="img"
       aria-label={label}
     >
-      {/* Deep back opening */}
-      <ellipse cx="200" cy="58" rx="150" ry="24" fill="hsl(var(--basket) / 0.88)" />
-      <path
-        d="M55 58 Q55 150 78 230 Q200 255 322 230 Q345 150 345 58"
-        fill="hsl(var(--basket) / 0.35)"
-      />
-      <ellipse cx="200" cy="100" rx="120" ry="40" fill="hsl(var(--foreground) / 0.18)" />
+      {/* Back rim */}
+      <ellipse cx="200" cy="48" rx="152" ry="22" fill="hsl(var(--basket))" />
+      {/* Inside shadow */}
+      <ellipse cx="200" cy="62" rx="130" ry="28" fill="hsl(var(--foreground) / 0.25)" />
 
-      {/* Apples in the bowl */}
+      {/* Distinct apples */}
       {PILE.slice(0, shown).map((slot, index) => {
         const drop = !reduceMotion && animateIndex === index;
         return (
           <g
             key={index}
-            opacity={drop ? 0.4 : 1}
-            transform={`translate(${slot.x - 12} ${slot.y - 14}) rotate(${slot.rot} 12 14) scale(3.15)`}
+            opacity={drop ? 0.45 : 1}
+            transform={`translate(${slot.x - 12} ${slot.y - 14}) rotate(${slot.rot} 12 14) scale(2.7)`}
           >
             <AppleShape />
           </g>
         );
       })}
 
-      {/* Front wall starts low so apple tops stay visible */}
+      {/* Front wall — low enough that most of each apple stays visible */}
       <path
-        d="M60 150 L80 235 Q200 258 320 235 L340 150"
+        d="M55 155 L76 245 Q200 268 324 245 L345 155"
         fill="hsl(var(--basket))"
       />
-      <path d="M78 178 Q200 190 322 178" stroke="hsl(var(--basket) / 0.4)" strokeWidth="5" fill="none" />
-      <path d="M74 208 Q200 220 326 208" stroke="hsl(var(--basket) / 0.32)" strokeWidth="5" fill="none" />
+      <path d="M74 185 Q200 198 326 185" stroke="hsl(var(--basket) / 0.45)" strokeWidth="6" fill="none" />
+      <path d="M70 215 Q200 228 330 215" stroke="hsl(var(--basket) / 0.35)" strokeWidth="6" fill="none" />
+      <path d="M130 158 L120 242" stroke="hsl(var(--basket) / 0.28)" strokeWidth="3" />
+      <path d="M270 158 L280 242" stroke="hsl(var(--basket) / 0.28)" strokeWidth="3" />
 
-      {/* Front rim — thin lip over apple bottoms */}
-      <ellipse cx="200" cy="148" rx="142" ry="14" fill="hsl(var(--basket))" />
+      {/* Thin front lip */}
+      <ellipse cx="200" cy="152" rx="146" ry="12" fill="hsl(var(--basket))" />
       <path
-        d="M70 142 Q200 126 330 142"
-        stroke="hsl(var(--basket) / 0.75)"
-        strokeWidth="7"
+        d="M68 146 Q200 132 332 146"
+        stroke="hsl(var(--basket) / 0.8)"
+        strokeWidth="6"
         strokeLinecap="round"
         fill="none"
       />
 
       {extra > 0 && (
         <g>
-          <rect x="304" y="24" width="52" height="28" rx="10" fill="hsl(var(--primary))" />
+          <rect x="300" y="20" width="56" height="30" rx="10" fill="hsl(var(--primary))" />
           <text
-            x="330"
-            y="43"
+            x="328"
+            y="40"
             textAnchor="middle"
             fill="hsl(var(--primary-foreground))"
             fontSize="15"
@@ -122,20 +124,23 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
 
   return (
     <div className={cn('relative w-full max-w-[240px] sm:max-w-[300px] md:max-w-[360px] mx-auto', className)}>
-      {onRemove ? (
-        <button
+      {svg}
+      {onRemove && (
+        <Button
           type="button"
-          className="block w-full min-h-[48px] rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          variant="outline"
+          className="mt-3 w-full min-h-[48px] gap-2"
+          disabled={!canRemove}
           aria-label={tx('ui:basketRemoveOne')}
           onClick={() => {
+            if (!canRemove) return;
             hapticTap();
             onRemove();
           }}
         >
-          {svg}
-        </button>
-      ) : (
-        svg
+          <Minus className="h-5 w-5" aria-hidden />
+          {tx('ui:basketRemoveOne')}
+        </Button>
       )}
     </div>
   );
