@@ -84,22 +84,22 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
         );
       })}
 
-      {/* Front wall — low enough that most of each apple stays visible */}
+      {/* Front wall — sits under apple centres so each apple stays countable */}
       <path
-        d="M55 155 L76 245 Q200 268 324 245 L345 155"
+        d="M52 168 L74 248 Q200 270 326 248 L348 168"
         fill="hsl(var(--basket))"
       />
-      <path d="M74 185 Q200 198 326 185" stroke="hsl(var(--basket) / 0.45)" strokeWidth="6" fill="none" />
-      <path d="M70 215 Q200 228 330 215" stroke="hsl(var(--basket) / 0.35)" strokeWidth="6" fill="none" />
-      <path d="M130 158 L120 242" stroke="hsl(var(--basket) / 0.28)" strokeWidth="3" />
-      <path d="M270 158 L280 242" stroke="hsl(var(--basket) / 0.28)" strokeWidth="3" />
+      <path d="M72 198 Q200 210 328 198" stroke="hsl(var(--basket) / 0.45)" strokeWidth="6" fill="none" />
+      <path d="M68 224 Q200 236 332 224" stroke="hsl(var(--basket) / 0.35)" strokeWidth="6" fill="none" />
+      <path d="M128 170 L118 245" stroke="hsl(var(--basket) / 0.28)" strokeWidth="3" />
+      <path d="M272 170 L282 245" stroke="hsl(var(--basket) / 0.28)" strokeWidth="3" />
 
-      {/* Thin front lip */}
-      <ellipse cx="200" cy="152" rx="146" ry="12" fill="hsl(var(--basket))" />
+      {/* Thin front lip under the apples */}
+      <ellipse cx="200" cy="165" rx="148" ry="11" fill="hsl(var(--basket))" />
       <path
-        d="M68 146 Q200 132 332 146"
-        stroke="hsl(var(--basket) / 0.8)"
-        strokeWidth="6"
+        d="M64 160 Q200 148 336 160"
+        stroke="hsl(var(--basket) / 0.85)"
+        strokeWidth="7"
         strokeLinecap="round"
         fill="none"
       />
