@@ -367,25 +367,26 @@ const TeachStory: React.FC<TeachStoryProps> = ({ planet, index, onReady }) => {
         </span>
       </div>
 
-      <div
-        className="w-full rounded-2xl border border-border bg-card p-4 text-start space-y-3"
-        aria-live="polite"
-      >
-        {story.narrations.map((line) => (
-          <p key={line.key} className="text-base sm:text-lg text-foreground leading-relaxed">
-            {tx(line.key, line.values)}
-          </p>
-        ))}
-      </div>
-
       {phase === 'listen' && (
-        <Button
-          type="button"
-          className="min-h-[48px] w-full sm:w-auto"
-          onClick={() => setPhase('do')}
-        >
-          {tx('ui:storyYourTurn')}
-        </Button>
+        <>
+          <div
+            className="w-full rounded-2xl border border-border bg-card p-4 text-start space-y-3"
+            aria-live="polite"
+          >
+            {story.narrations.map((line) => (
+              <p key={line.key} className="text-base sm:text-lg text-foreground leading-relaxed">
+                {tx(line.key, line.values)}
+              </p>
+            ))}
+          </div>
+          <Button
+            type="button"
+            className="min-h-[48px] w-full sm:w-auto"
+            onClick={() => setPhase('do')}
+          >
+            {tx('ui:storyYourTurn')}
+          </Button>
+        </>
       )}
 
       {phase === 'do' && (

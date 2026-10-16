@@ -356,11 +356,11 @@ const ListView = ({
           <Plus className="h-8 w-8 text-primary" aria-hidden />
           <span className="text-xl font-semibold text-foreground">{tx('paths:currCreate')}</span>
         </button>
-        <label className="flex min-h-[140px] flex-col justify-between rounded-2xl border-2 border-border bg-card p-5 text-start">
+        <label className="flex min-h-[140px] flex-col justify-center gap-3 rounded-2xl border-2 border-border bg-card p-5 text-start">
           <span className="text-sm font-medium text-muted-foreground">{tx('paths:currDuplicate')}</span>
           <select
             data-testid="duplicate-path"
-            className="mt-3 min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-start text-base"
+            className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-start text-base"
             defaultValue=""
             onChange={(event) => {
               const value = event.target.value;
@@ -375,7 +375,6 @@ const ListView = ({
               </option>
             ))}
           </select>
-          <span className="mt-2 text-xs text-muted-foreground">{tx('paths:currOr')}</span>
         </label>
       </div>
     </section>
