@@ -230,5 +230,6 @@
   "currMore": "تلميحات ومثال محلول",
   "currAssignTitle": "تعيين",
   "currAssignLead": "اختر إن كان هذا المنهج يستبدل المسار الافتراضي أو يظهر بجانبه.",
-  "currAssignNeedsPublish": "انشر بدون تغييرات غير محفوظة قبل التعيين."
+  "currAssignNeedsPublish": "انشر بدون تغييرات غير محفوظة قبل التعيين.",
+  "currWorkshop": "ورشة المناهج"
 }

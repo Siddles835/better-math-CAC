@@ -233,10 +233,13 @@ const CurriculumPage = () => {
   const selectedIndex = current && selectedNode ? current.nodes.findIndex((node) => node.id === selectedNode.id) : -1;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
+    <div
+      data-testid="curriculum-workshop"
+      className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-background"
+    >
+      <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               type="button"
               variant="outline"
@@ -246,7 +249,10 @@ const CurriculumPage = () => {
               <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden />
               {current ? tx('paths:currBackToList') : tx('paths:currBack')}
             </Button>
-            <h1 className="text-2xl font-semibold sm:text-3xl">{tx('paths:currTitle')}</h1>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-primary">{tx('paths:currWorkshop')}</p>
+              <h1 className="text-2xl font-semibold sm:text-3xl">{tx('paths:currTitle')}</h1>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {offline && (
@@ -335,20 +341,26 @@ const ListView = ({
   onEdit: (item: Curriculum) => void;
   onDelete: (id: string) => void;
 }) => (
-  <div className="space-y-6">
-    <section className="rounded-2xl border border-border bg-card p-5">
-      <h2 className="text-xl font-semibold">{tx('paths:currStart')}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{tx('paths:currStartLead')}</p>
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-        <Button type="button" className="min-h-[48px]" onClick={onCreate}>
-          {tx('paths:currCreate')}
-        </Button>
-        <span className="text-sm text-muted-foreground self-center">{tx('paths:currOr')}</span>
-        <label className="block flex-1 text-sm">
-          <span className="mb-1 block">{tx('paths:currDuplicate')}</span>
+  <div className="space-y-8">
+    <section className="space-y-3">
+      <div>
+        <h2 className="text-2xl font-semibold">{tx('paths:currStart')}</h2>
+        <p className="mt-1 text-muted-foreground">{tx('paths:currStartLead')}</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={onCreate}
+          className="flex min-h-[140px] flex-col items-start justify-between rounded-2xl border-2 border-primary bg-primary/10 p-5 text-start transition hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Plus className="h-8 w-8 text-primary" aria-hidden />
+          <span className="text-xl font-semibold text-foreground">{tx('paths:currCreate')}</span>
+        </button>
+        <label className="flex min-h-[140px] flex-col justify-between rounded-2xl border-2 border-border bg-card p-5 text-start">
+          <span className="text-sm font-medium text-muted-foreground">{tx('paths:currDuplicate')}</span>
           <select
             data-testid="duplicate-path"
-            className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-start"
+            className="mt-3 min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-start text-base"
             defaultValue=""
             onChange={(event) => {
               const value = event.target.value;
@@ -363,25 +375,29 @@ const ListView = ({
               </option>
             ))}
           </select>
+          <span className="mt-2 text-xs text-muted-foreground">{tx('paths:currOr')}</span>
         </label>
       </div>
     </section>
 
     <section>
-      <h2 className="mb-3 text-xl font-semibold">{tx('paths:currYours')}</h2>
+      <h2 className="mb-4 text-2xl font-semibold">{tx('paths:currYours')}</h2>
       {list.length === 0 && !error && (
-        <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
+        <div className="rounded-2xl border-2 border-dashed border-border bg-card/50 p-10 text-center text-muted-foreground">
           {tx('paths:currEmpty')}
         </div>
       )}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {list.map((item) => {
           const assigned = assignments.filter((entry) => entry.curriculumId === item.id).length;
           const problems = countProblems(item);
           return (
-            <article key={item.id} className="rounded-2xl border border-border bg-card p-4">
-              <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-                <h3 className="text-lg font-medium">{item.name.trim() || tx('paths:currUntitled')}</h3>
+            <article
+              key={item.id}
+              className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+            >
+              <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                <h3 className="text-xl font-semibold">{item.name.trim() || tx('paths:currUntitled')}</h3>
                 <StatusPill tone={item.status === 'published' ? 'ok' : 'muted'}>
                   {item.status === 'published' ? tx('paths:currStatusPublished') : tx('paths:currStatusDraft')}
                 </StatusPill>
@@ -392,7 +408,7 @@ const ListView = ({
               <p className="mt-1 text-sm text-muted-foreground">
                 {tx('paths:currAssigned')}: {assigned}
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 <Button type="button" className="min-h-[48px]" onClick={() => onEdit(item)}>
                   {tx('paths:currEdit')}
                 </Button>

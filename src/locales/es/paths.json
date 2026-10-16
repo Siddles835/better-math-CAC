@@ -230,5 +230,6 @@
   "currMore": "Pistas y ejemplo resuelto",
   "currAssignTitle": "Asignar",
   "currAssignLead": "Elige si este currículo reemplaza el camino predeterminado o va junto a él.",
-  "currAssignNeedsPublish": "Publica sin cambios pendientes antes de asignar."
+  "currAssignNeedsPublish": "Publica sin cambios pendientes antes de asignar.",
+  "currWorkshop": "Taller de currículo"
 }

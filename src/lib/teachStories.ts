@@ -3,29 +3,39 @@ import { computeExpectedAnswer } from '@/lib/answers/compute';
 import { MAX_NUMBER } from '@/lib/lessonDuration';
 import type { PlanetId } from '@/lib/planets';
 
-export type StoryVisualKind = 'apples' | 'pencils' | 'stars' | 'blocks' | 'ten-frame' | 'tens-ones';
+export type StoryItem = 'apples' | 'pencils' | 'stars' | 'blocks';
 
-export interface StoryVisual {
-  kind: StoryVisualKind;
-  /** Objects to show. For tens-ones, use tens and ones instead. */
-  count?: number;
-  add?: number;
-  crossed?: number;
-  tens?: number;
-  ones?: number;
-}
+export type StoryActionKind = 'fill' | 'add' | 'remove' | 'select' | 'tens-ones';
 
-export interface StoryLine {
+export interface StoryNarration {
   key: string;
   values: Record<string, number>;
-  visual: StoryVisual;
+}
+
+/** What the child must do after listening. */
+export interface StoryAction {
+  kind: StoryActionKind;
+  promptKey: string;
+  promptValues: Record<string, number>;
+  /** Correct ending count / selected count / tens-ones total. */
+  target: number;
+  item: StoryItem;
+  /** Starting objects already on the board (add / remove). */
+  start?: number;
+  /** Extra objects the child can add (fill / add). */
+  supply?: number;
+  /** Distractor objects mixed in for select. */
+  distractors?: number;
+  tens?: number;
+  ones?: number;
 }
 
 export interface TeachStoryDef {
   planet: PlanetId;
   index: 0 | 1;
   titleKey: string;
-  lines: StoryLine[];
+  narrations: StoryNarration[];
+  action: StoryAction;
   rememberKey: string;
   operator: Operator;
   operands: [number, number];
@@ -35,22 +45,25 @@ const story = (
   planet: PlanetId,
   index: 0 | 1,
   titleKey: string,
-  lines: StoryLine[],
+  narrations: StoryNarration[],
+  action: StoryAction,
   operator: Operator,
   operands: [number, number]
 ): TeachStoryDef => ({
   planet,
   index,
   titleKey,
-  lines,
+  narrations,
+  action,
   rememberKey: `ui:teach_${planet}`,
   operator,
   operands,
 });
 
 /**
- * Two teach stories per planet. Numbers live here once and feed both
- * translation placeholders and the picture counts.
+ * Two interactive teach stories per planet.
+ * Numbers live here once and feed narration placeholders, the action target,
+ * and the picture counts.
  */
 export const TEACH_STORIES: TeachStoryDef[] = [
   // Sun — one-to-one counting
@@ -59,10 +72,17 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     0,
     'ui:story_sun_0_title',
     [
-      { key: 'ui:story_sun_0_l1', values: { a: 1 }, visual: { kind: 'apples', count: 1 } },
-      { key: 'ui:story_sun_0_l2', values: { a: 2 }, visual: { kind: 'apples', count: 2 } },
-      { key: 'ui:story_sun_0_l3', values: { a: 3, total: 3 }, visual: { kind: 'apples', count: 3 } },
+      { key: 'ui:story_sun_0_n1', values: { a: 3 } },
+      { key: 'ui:story_sun_0_n2', values: { total: 3 } },
     ],
+    {
+      kind: 'fill',
+      promptKey: 'ui:story_sun_0_prompt',
+      promptValues: { total: 3 },
+      target: 3,
+      item: 'apples',
+      supply: 6,
+    },
     'count',
     [3, 0]
   ),
@@ -71,10 +91,18 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_sun_1_title',
     [
-      { key: 'ui:story_sun_1_l1', values: { a: 4 }, visual: { kind: 'stars', count: 4 } },
-      { key: 'ui:story_sun_1_l2', values: { a: 4 }, visual: { kind: 'stars', count: 4 } },
-      { key: 'ui:story_sun_1_l3', values: { total: 4 }, visual: { kind: 'stars', count: 4 } },
+      { key: 'ui:story_sun_1_n1', values: { a: 4 } },
+      { key: 'ui:story_sun_1_n2', values: { total: 4 } },
     ],
+    {
+      kind: 'select',
+      promptKey: 'ui:story_sun_1_prompt',
+      promptValues: { total: 4 },
+      target: 4,
+      item: 'stars',
+      supply: 4,
+      distractors: 0,
+    },
     'count',
     [4, 0]
   ),
@@ -85,10 +113,17 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     0,
     'ui:story_mercury_0_title',
     [
-      { key: 'ui:story_mercury_0_l1', values: { a: 5 }, visual: { kind: 'apples', count: 5 } },
-      { key: 'ui:story_mercury_0_l2', values: { a: 5 }, visual: { kind: 'apples', count: 5 } },
-      { key: 'ui:story_mercury_0_l3', values: { total: 5 }, visual: { kind: 'apples', count: 5 } },
+      { key: 'ui:story_mercury_0_n1', values: { a: 5 } },
+      { key: 'ui:story_mercury_0_n2', values: { total: 5 } },
     ],
+    {
+      kind: 'fill',
+      promptKey: 'ui:story_mercury_0_prompt',
+      promptValues: { total: 5 },
+      target: 5,
+      item: 'apples',
+      supply: 8,
+    },
     'count',
     [5, 0]
   ),
@@ -97,10 +132,17 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_mercury_1_title',
     [
-      { key: 'ui:story_mercury_1_l1', values: { a: 4 }, visual: { kind: 'apples', count: 4 } },
-      { key: 'ui:story_mercury_1_l2', values: { a: 6 }, visual: { kind: 'apples', count: 6 } },
-      { key: 'ui:story_mercury_1_l3', values: { a: 4, total: 4 }, visual: { kind: 'apples', count: 4 } },
+      { key: 'ui:story_mercury_1_n1', values: { a: 4 } },
+      { key: 'ui:story_mercury_1_n2', values: { a: 4, total: 4 } },
     ],
+    {
+      kind: 'fill',
+      promptKey: 'ui:story_mercury_1_prompt',
+      promptValues: { total: 4 },
+      target: 4,
+      item: 'apples',
+      supply: 7,
+    },
     'count',
     [4, 0]
   ),
@@ -111,10 +153,18 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     0,
     'ui:story_venus_0_title',
     [
-      { key: 'ui:story_venus_0_l1', values: { a: 3, b: 4 }, visual: { kind: 'stars', count: 7 } },
-      { key: 'ui:story_venus_0_l2', values: { a: 3 }, visual: { kind: 'stars', count: 3 } },
-      { key: 'ui:story_venus_0_l3', values: { total: 3 }, visual: { kind: 'stars', count: 3 } },
+      { key: 'ui:story_venus_0_n1', values: { a: 3, b: 4 } },
+      { key: 'ui:story_venus_0_n2', values: { a: 3, total: 3 } },
     ],
+    {
+      kind: 'select',
+      promptKey: 'ui:story_venus_0_prompt',
+      promptValues: { a: 3, total: 3 },
+      target: 3,
+      item: 'stars',
+      supply: 3,
+      distractors: 4,
+    },
     'count',
     [3, 0]
   ),
@@ -123,10 +173,18 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_venus_1_title',
     [
-      { key: 'ui:story_venus_1_l1', values: { a: 5, b: 2 }, visual: { kind: 'blocks', count: 7 } },
-      { key: 'ui:story_venus_1_l2', values: { b: 2 }, visual: { kind: 'blocks', count: 2 } },
-      { key: 'ui:story_venus_1_l3', values: { total: 2 }, visual: { kind: 'blocks', count: 2 } },
+      { key: 'ui:story_venus_1_n1', values: { a: 5, b: 2 } },
+      { key: 'ui:story_venus_1_n2', values: { b: 2, total: 2 } },
     ],
+    {
+      kind: 'select',
+      promptKey: 'ui:story_venus_1_prompt',
+      promptValues: { b: 2, total: 2 },
+      target: 2,
+      item: 'blocks',
+      supply: 2,
+      distractors: 5,
+    },
     'count',
     [2, 0]
   ),
@@ -137,10 +195,18 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     0,
     'ui:story_earth_0_title',
     [
-      { key: 'ui:story_earth_0_l1', values: { a: 3 }, visual: { kind: 'pencils', count: 3 } },
-      { key: 'ui:story_earth_0_l2', values: { a: 3, b: 2 }, visual: { kind: 'pencils', count: 3, add: 2 } },
-      { key: 'ui:story_earth_0_l3', values: { a: 3, b: 2, total: 5 }, visual: { kind: 'pencils', count: 5 } },
+      { key: 'ui:story_earth_0_n1', values: { a: 3 } },
+      { key: 'ui:story_earth_0_n2', values: { a: 3, b: 2, total: 5 } },
     ],
+    {
+      kind: 'add',
+      promptKey: 'ui:story_earth_0_prompt',
+      promptValues: { a: 3, b: 2, total: 5 },
+      target: 5,
+      item: 'pencils',
+      start: 3,
+      supply: 4,
+    },
     '+',
     [3, 2]
   ),
@@ -149,24 +215,40 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_earth_1_title',
     [
-      { key: 'ui:story_earth_1_l1', values: { a: 4 }, visual: { kind: 'pencils', count: 4 } },
-      { key: 'ui:story_earth_1_l2', values: { a: 4, b: 3 }, visual: { kind: 'pencils', count: 4, add: 3 } },
-      { key: 'ui:story_earth_1_l3', values: { total: 7 }, visual: { kind: 'pencils', count: 7 } },
+      { key: 'ui:story_earth_1_n1', values: { a: 4 } },
+      { key: 'ui:story_earth_1_n2', values: { a: 4, b: 3, total: 7 } },
     ],
+    {
+      kind: 'add',
+      promptKey: 'ui:story_earth_1_prompt',
+      promptValues: { a: 4, b: 3, total: 7 },
+      target: 7,
+      item: 'pencils',
+      start: 4,
+      supply: 5,
+    },
     '+',
     [4, 3]
   ),
 
-  // Mars — same total, two orders
+  // Mars — same total, two orders (child builds the total)
   story(
     'mars',
     0,
     'ui:story_mars_0_title',
     [
-      { key: 'ui:story_mars_0_l1', values: { a: 2, b: 5, total: 7 }, visual: { kind: 'pencils', count: 2, add: 5 } },
-      { key: 'ui:story_mars_0_l2', values: { a: 5, b: 2, total: 7 }, visual: { kind: 'pencils', count: 5, add: 2 } },
-      { key: 'ui:story_mars_0_l3', values: { total: 7 }, visual: { kind: 'pencils', count: 7 } },
+      { key: 'ui:story_mars_0_n1', values: { a: 2, b: 5, total: 7 } },
+      { key: 'ui:story_mars_0_n2', values: { total: 7 } },
     ],
+    {
+      kind: 'add',
+      promptKey: 'ui:story_mars_0_prompt',
+      promptValues: { a: 2, b: 5, total: 7 },
+      target: 7,
+      item: 'pencils',
+      start: 2,
+      supply: 6,
+    },
     '+',
     [2, 5]
   ),
@@ -175,10 +257,18 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_mars_1_title',
     [
-      { key: 'ui:story_mars_1_l1', values: { a: 3, b: 4, total: 7 }, visual: { kind: 'blocks', count: 3, add: 4 } },
-      { key: 'ui:story_mars_1_l2', values: { a: 4, b: 3, total: 7 }, visual: { kind: 'blocks', count: 4, add: 3 } },
-      { key: 'ui:story_mars_1_l3', values: { total: 7 }, visual: { kind: 'blocks', count: 7 } },
+      { key: 'ui:story_mars_1_n1', values: { a: 3, b: 4, total: 7 } },
+      { key: 'ui:story_mars_1_n2', values: { total: 7 } },
     ],
+    {
+      kind: 'add',
+      promptKey: 'ui:story_mars_1_prompt',
+      promptValues: { a: 4, b: 3, total: 7 },
+      target: 7,
+      item: 'blocks',
+      start: 4,
+      supply: 5,
+    },
     '+',
     [3, 4]
   ),
@@ -189,10 +279,18 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     0,
     'ui:story_jupiter_0_title',
     [
-      { key: 'ui:story_jupiter_0_l1', values: { a: 1, b: 4 }, visual: { kind: 'tens-ones', tens: 1, ones: 4 } },
-      { key: 'ui:story_jupiter_0_l2', values: { a: 10, b: 4, total: 14 }, visual: { kind: 'tens-ones', tens: 1, ones: 4 } },
-      { key: 'ui:story_jupiter_0_l3', values: { total: 14 }, visual: { kind: 'tens-ones', tens: 1, ones: 4 } },
+      { key: 'ui:story_jupiter_0_n1', values: { a: 1, b: 4 } },
+      { key: 'ui:story_jupiter_0_n2', values: { total: 14 } },
     ],
+    {
+      kind: 'tens-ones',
+      promptKey: 'ui:story_jupiter_0_prompt',
+      promptValues: { a: 1, b: 4, total: 14 },
+      target: 14,
+      item: 'blocks',
+      tens: 1,
+      ones: 4,
+    },
     '+',
     [10, 4]
   ),
@@ -201,10 +299,18 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_jupiter_1_title',
     [
-      { key: 'ui:story_jupiter_1_l1', values: { a: 2, b: 3 }, visual: { kind: 'tens-ones', tens: 2, ones: 3 } },
-      { key: 'ui:story_jupiter_1_l2', values: { a: 20, b: 3, total: 23 }, visual: { kind: 'tens-ones', tens: 2, ones: 3 } },
-      { key: 'ui:story_jupiter_1_l3', values: { total: 23 }, visual: { kind: 'tens-ones', tens: 2, ones: 3 } },
+      { key: 'ui:story_jupiter_1_n1', values: { a: 2, b: 3 } },
+      { key: 'ui:story_jupiter_1_n2', values: { total: 23 } },
     ],
+    {
+      kind: 'tens-ones',
+      promptKey: 'ui:story_jupiter_1_prompt',
+      promptValues: { a: 2, b: 3, total: 23 },
+      target: 23,
+      item: 'blocks',
+      tens: 2,
+      ones: 3,
+    },
     '+',
     [20, 3]
   ),
@@ -215,10 +321,17 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     0,
     'ui:story_saturn_0_title',
     [
-      { key: 'ui:story_saturn_0_l1', values: { a: 6 }, visual: { kind: 'pencils', count: 6 } },
-      { key: 'ui:story_saturn_0_l2', values: { a: 6, b: 2 }, visual: { kind: 'pencils', count: 6, crossed: 2 } },
-      { key: 'ui:story_saturn_0_l3', values: { a: 6, b: 2, total: 4 }, visual: { kind: 'pencils', count: 4 } },
+      { key: 'ui:story_saturn_0_n1', values: { a: 6 } },
+      { key: 'ui:story_saturn_0_n2', values: { a: 6, b: 2, total: 4 } },
     ],
+    {
+      kind: 'remove',
+      promptKey: 'ui:story_saturn_0_prompt',
+      promptValues: { a: 6, b: 2, total: 4 },
+      target: 4,
+      item: 'pencils',
+      start: 6,
+    },
     '−',
     [6, 2]
   ),
@@ -227,24 +340,38 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_saturn_1_title',
     [
-      { key: 'ui:story_saturn_1_l1', values: { a: 8 }, visual: { kind: 'apples', count: 8 } },
-      { key: 'ui:story_saturn_1_l2', values: { a: 8, b: 3 }, visual: { kind: 'apples', count: 8, crossed: 3 } },
-      { key: 'ui:story_saturn_1_l3', values: { b: 3, total: 5 }, visual: { kind: 'apples', count: 5 } },
+      { key: 'ui:story_saturn_1_n1', values: { a: 8 } },
+      { key: 'ui:story_saturn_1_n2', values: { a: 8, b: 3, total: 5 } },
     ],
+    {
+      kind: 'remove',
+      promptKey: 'ui:story_saturn_1_prompt',
+      promptValues: { a: 8, b: 3, total: 5 },
+      target: 5,
+      item: 'apples',
+      start: 8,
+    },
     '−',
     [8, 3]
   ),
 
-  // Uranus — take away the number the story says
+  // Uranus
   story(
     'uranus',
     0,
     'ui:story_uranus_0_title',
     [
-      { key: 'ui:story_uranus_0_l1', values: { a: 9 }, visual: { kind: 'pencils', count: 9 } },
-      { key: 'ui:story_uranus_0_l2', values: { a: 9, b: 4 }, visual: { kind: 'pencils', count: 9, crossed: 4 } },
-      { key: 'ui:story_uranus_0_l3', values: { b: 4, total: 5 }, visual: { kind: 'pencils', count: 5 } },
+      { key: 'ui:story_uranus_0_n1', values: { a: 9 } },
+      { key: 'ui:story_uranus_0_n2', values: { b: 4, total: 5 } },
     ],
+    {
+      kind: 'remove',
+      promptKey: 'ui:story_uranus_0_prompt',
+      promptValues: { a: 9, b: 4, total: 5 },
+      target: 5,
+      item: 'pencils',
+      start: 9,
+    },
     '−',
     [9, 4]
   ),
@@ -253,24 +380,38 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_uranus_1_title',
     [
-      { key: 'ui:story_uranus_1_l1', values: { a: 7 }, visual: { kind: 'blocks', count: 7 } },
-      { key: 'ui:story_uranus_1_l2', values: { a: 7, b: 2 }, visual: { kind: 'blocks', count: 7, crossed: 2 } },
-      { key: 'ui:story_uranus_1_l3', values: { b: 2, total: 5 }, visual: { kind: 'blocks', count: 5 } },
+      { key: 'ui:story_uranus_1_n1', values: { a: 7 } },
+      { key: 'ui:story_uranus_1_n2', values: { b: 2, total: 5 } },
     ],
+    {
+      kind: 'remove',
+      promptKey: 'ui:story_uranus_1_prompt',
+      promptValues: { a: 7, b: 2, total: 5 },
+      target: 5,
+      item: 'blocks',
+      start: 7,
+    },
     '−',
     [7, 2]
   ),
 
-  // Neptune — take away the story number
+  // Neptune
   story(
     'neptune',
     0,
     'ui:story_neptune_0_title',
     [
-      { key: 'ui:story_neptune_0_l1', values: { a: 10 }, visual: { kind: 'stars', count: 10 } },
-      { key: 'ui:story_neptune_0_l2', values: { a: 10, b: 3 }, visual: { kind: 'stars', count: 10, crossed: 3 } },
-      { key: 'ui:story_neptune_0_l3', values: { b: 3, total: 7 }, visual: { kind: 'stars', count: 7 } },
+      { key: 'ui:story_neptune_0_n1', values: { a: 10 } },
+      { key: 'ui:story_neptune_0_n2', values: { b: 3, total: 7 } },
     ],
+    {
+      kind: 'remove',
+      promptKey: 'ui:story_neptune_0_prompt',
+      promptValues: { a: 10, b: 3, total: 7 },
+      target: 7,
+      item: 'stars',
+      start: 10,
+    },
     '−',
     [10, 3]
   ),
@@ -279,10 +420,17 @@ export const TEACH_STORIES: TeachStoryDef[] = [
     1,
     'ui:story_neptune_1_title',
     [
-      { key: 'ui:story_neptune_1_l1', values: { a: 8 }, visual: { kind: 'apples', count: 8 } },
-      { key: 'ui:story_neptune_1_l2', values: { a: 8, b: 5 }, visual: { kind: 'apples', count: 8, crossed: 5 } },
-      { key: 'ui:story_neptune_1_l3', values: { b: 5, total: 3 }, visual: { kind: 'apples', count: 3 } },
+      { key: 'ui:story_neptune_1_n1', values: { a: 8 } },
+      { key: 'ui:story_neptune_1_n2', values: { b: 5, total: 3 } },
     ],
+    {
+      kind: 'remove',
+      promptKey: 'ui:story_neptune_1_prompt',
+      promptValues: { a: 8, b: 5, total: 3 },
+      target: 3,
+      item: 'apples',
+      start: 8,
+    },
     '−',
     [8, 5]
   ),
@@ -301,13 +449,14 @@ export const storyNumbersInRange = (def: TeachStoryDef): boolean => {
   const max = MAX_NUMBER[def.planet];
   const values = [
     ...def.operands,
-    ...def.lines.flatMap((line) => Object.values(line.values)),
-    ...(def.lines.flatMap((line) => {
-      const visual = line.visual;
-      return [visual.count, visual.add, visual.crossed, visual.tens, visual.ones].filter(
-        (n): n is number => typeof n === 'number'
-      );
-    })),
+    def.action.target,
+    def.action.start ?? 0,
+    def.action.supply ?? 0,
+    def.action.distractors ?? 0,
+    def.action.tens ?? 0,
+    def.action.ones ?? 0,
+    ...def.narrations.flatMap((line) => Object.values(line.values)),
+    ...Object.values(def.action.promptValues),
   ];
   return values.every((n) => n >= 0 && n <= max);
 };

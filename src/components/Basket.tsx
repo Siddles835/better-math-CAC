@@ -12,20 +12,23 @@ interface BasketProps {
   onRemove?: () => void;
 }
 
-/** Deterministic pile slots for 0..12 apples. Fills bottom-up, centred. */
+/**
+ * Bottom-up pile. Coordinates are apple centres in the basket opening.
+ * Kept low so tops sit under the rim and bottoms tuck behind the front wall.
+ */
 const PILE: Array<{ x: number; y: number; rot: number }> = [
-  { x: 200, y: 198, rot: -4 },
-  { x: 158, y: 196, rot: 6 },
-  { x: 242, y: 196, rot: -8 },
-  { x: 179, y: 168, rot: 3 },
-  { x: 221, y: 168, rot: -5 },
-  { x: 200, y: 142, rot: 2 },
-  { x: 152, y: 148, rot: -7 },
-  { x: 248, y: 148, rot: 8 },
-  { x: 179, y: 122, rot: 5 },
-  { x: 221, y: 122, rot: -3 },
-  { x: 200, y: 100, rot: -2 },
-  { x: 164, y: 108, rot: 4 },
+  { x: 200, y: 168, rot: -6 },
+  { x: 162, y: 166, rot: 8 },
+  { x: 238, y: 166, rot: -10 },
+  { x: 182, y: 142, rot: 4 },
+  { x: 218, y: 142, rot: -5 },
+  { x: 200, y: 122, rot: 2 },
+  { x: 155, y: 128, rot: -8 },
+  { x: 245, y: 128, rot: 7 },
+  { x: 180, y: 108, rot: 5 },
+  { x: 220, y: 108, rot: -3 },
+  { x: 200, y: 92, rot: -2 },
+  { x: 168, y: 96, rot: 3 },
 ];
 
 const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemove }) => {
@@ -40,7 +43,7 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
   useEffect(() => {
     if (shown > prev.current) {
       setAnimateIndex(shown - 1);
-      const id = window.setTimeout(() => setAnimateIndex(null), 260);
+      const id = window.setTimeout(() => setAnimateIndex(null), 220);
       prev.current = shown;
       return () => window.clearTimeout(id);
     }
@@ -53,23 +56,24 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
 
   const svg = (
     <svg
-      viewBox="0 0 400 280"
+      viewBox="0 0 400 260"
       fill="none"
       className="w-full h-auto pointer-events-none"
       role="img"
       aria-label={label}
     >
-      {/* Back rim + dark inside */}
-      <ellipse cx="200" cy="88" rx="168" ry="36" fill="hsl(var(--basket) / 0.85)" />
-      <ellipse cx="200" cy="96" rx="150" ry="30" fill="hsl(230 25% 10% / 0.55)" />
+      {/* Back rim */}
+      <ellipse cx="200" cy="78" rx="150" ry="28" fill="hsl(var(--basket) / 0.9)" />
+      {/* Dark inside of the bowl */}
+      <ellipse cx="200" cy="88" rx="132" ry="24" fill="hsl(var(--foreground) / 0.35)" />
 
-      {/* Apples sit above the back and below the front wall */}
+      {/* Apples between back and front */}
       {PILE.slice(0, shown).map((slot, index) => {
         const drop = !reduceMotion && animateIndex === index;
         return (
           <g
             key={index}
-            transform={`translate(${slot.x - 12} ${slot.y - 14}) rotate(${slot.rot} 12 14) scale(3.1)`}
+            transform={`translate(${slot.x - 12} ${slot.y - 14}) rotate(${slot.rot} 12 14) scale(2.85)`}
             className={drop ? 'basket-apple-drop' : undefined}
           >
             <AppleShape />
@@ -77,35 +81,38 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
         );
       })}
 
-      {/* Front woven body */}
+      {/* Front wall — covers lower apple halves only */}
       <path
-        d="M48 100 L78 248 Q200 268 322 248 L352 100"
+        d="M56 96 L78 220 Q200 242 322 220 L344 96"
         fill="hsl(var(--basket))"
-        stroke="hsl(var(--basket) / 0.75)"
-        strokeWidth="2"
       />
-      <path d="M70 140 Q200 152 330 140" stroke="hsl(var(--basket) / 0.45)" strokeWidth="5" fill="none" />
-      <path d="M66 176 Q200 188 334 176" stroke="hsl(var(--basket) / 0.4)" strokeWidth="5" fill="none" />
-      <path d="M62 212 Q200 224 338 212" stroke="hsl(var(--basket) / 0.35)" strokeWidth="5" fill="none" />
-      <path d="M120 104 L108 246" stroke="hsl(var(--basket) / 0.3)" strokeWidth="3" />
-      <path d="M200 100 L200 252" stroke="hsl(var(--basket) / 0.28)" strokeWidth="3" />
-      <path d="M280 104 L292 246" stroke="hsl(var(--basket) / 0.3)" strokeWidth="3" />
+      {/* Soft weave — two bands only */}
+      <path d="M74 140 Q200 152 326 140" stroke="hsl(var(--basket) / 0.4)" strokeWidth="6" fill="none" />
+      <path d="M70 178 Q200 190 330 178" stroke="hsl(var(--basket) / 0.35)" strokeWidth="6" fill="none" />
+      <path d="M140 100 L128 218" stroke="hsl(var(--basket) / 0.25)" strokeWidth="3" />
+      <path d="M260 100 L272 218" stroke="hsl(var(--basket) / 0.25)" strokeWidth="3" />
 
-      {/* Front rim over apples */}
-      <ellipse cx="200" cy="100" rx="156" ry="22" fill="hsl(var(--basket) / 0.95)" />
-      <ellipse cx="200" cy="96" rx="156" ry="12" fill="hsl(var(--basket))" />
+      {/* Front rim sits over the apple bottoms */}
+      <ellipse cx="200" cy="96" rx="146" ry="18" fill="hsl(var(--basket))" />
       <path
-        d="M70 92 Q200 64 330 92"
-        stroke="hsl(var(--basket) / 0.7)"
-        strokeWidth="8"
+        d="M70 90 Q200 68 330 90"
+        stroke="hsl(var(--basket) / 0.65)"
+        strokeWidth="7"
         strokeLinecap="round"
         fill="none"
       />
 
       {extra > 0 && (
         <g>
-          <rect x="300" y="40" width="56" height="32" rx="10" fill="hsl(var(--primary))" />
-          <text x="328" y="62" textAnchor="middle" fill="hsl(var(--primary-foreground))" fontSize="16" fontWeight="700">
+          <rect x="304" y="36" width="52" height="28" rx="10" fill="hsl(var(--primary))" />
+          <text
+            x="330"
+            y="55"
+            textAnchor="middle"
+            fill="hsl(var(--primary-foreground))"
+            fontSize="15"
+            fontWeight="700"
+          >
             +{extra}
           </text>
         </g>
@@ -114,14 +121,17 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
   );
 
   return (
-    <div className={cn('relative w-full max-w-[220px] sm:max-w-[300px] md:max-w-[380px] mx-auto', className)}>
+    <div className={cn('relative w-full max-w-[240px] sm:max-w-[300px] md:max-w-[360px] mx-auto', className)}>
       <style>{`
         @keyframes basket-apple-drop {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .basket-apple-drop {
           animation: basket-apple-drop 200ms ease-out;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .basket-apple-drop { animation: none; }
         }
       `}</style>
       {onRemove ? (
