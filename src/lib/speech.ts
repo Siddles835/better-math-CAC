@@ -14,6 +14,7 @@ let speechRatePref: SpeechRatePref = 'normal';
 let unavailableHandler: (() => void) | null = null;
 /** Bumps on every speak/stop so stale utterance callbacks do nothing. */
 let speechToken = 0;
+let naturalVoicePref = true;
 
 export type SpeechRatePref = 'slow' | 'normal';
 
@@ -47,6 +48,16 @@ export const setSpeechRatePref = (rate: SpeechRatePref) => {
 };
 
 export const getSpeechRatePref = (): SpeechRatePref => speechRatePref;
+
+export const setNaturalVoicePref = (enabled: boolean) => {
+  naturalVoicePref = enabled;
+  void import('./speechNeural').then(({ setNaturalVoiceEnabled, ensureNeuralReady }) => {
+    setNaturalVoiceEnabled(enabled);
+    if (enabled) void ensureNeuralReady();
+  });
+};
+
+export const getNaturalVoicePref = (): boolean => naturalVoicePref;
 
 export const rateForPref = (pref: SpeechRatePref = speechRatePref): number =>
   pref === 'slow' ? K2_SPEECH_RATE_SLOW : K2_SPEECH_RATE;
@@ -793,8 +804,6 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
   const ratePref = options?.ratePref ?? speechRatePref;
 
-  // Empty/missing manifest: start device voice immediately (no fetch delay).
-  // When clips exist, try the neural file first, then fall back.
   const startDevice = () => {
     if (token !== speechToken) return;
     if (!isSpeechSupported()) {
@@ -806,22 +815,39 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
     speakDevice(cleaned, lang, options, token);
   };
 
-  if (manifestCache === null || (manifestCache !== undefined && !manifestHasClips())) {
+  const afterClip = async () => {
+    if (token !== speechToken) return;
+    // Tier 2: warm on-device neural voice for English (Kokoro). Falls through on failure.
+    if (naturalVoicePref && lang === 'en') {
+      try {
+        const { speakWithNeural } = await import('./speechNeural');
+        const played = await speakWithNeural(cleaned, {
+          token,
+          isCurrent: (value) => value === speechToken,
+          ratePref,
+          onEnd: options?.onEnd,
+          bindAudio: (audio) => {
+            activeAudio = audio;
+          },
+        });
+        if (played || token !== speechToken) return;
+      } catch {
+        // fall through to device voice
+      }
+    }
     startDevice();
-    return 'spoken';
-  }
+  };
 
   if (manifestHasClips()) {
     void playPreRendered(lang, cleaned, ratePref, token, options?.onEnd).then((played) => {
       if (played || token !== speechToken) return;
-      startDevice();
+      void afterClip();
     });
     return 'spoken';
   }
 
-  // Manifest not loaded yet: speak on device now, warm the cache in the background.
-  startDevice();
-  void loadManifest();
+  if (manifestCache === undefined) void loadManifest();
+  void afterClip();
   return 'spoken';
 };
 

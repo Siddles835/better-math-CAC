@@ -32,5 +32,12 @@
   "voiceBestFound": "सबसे अच्छी आवाज़ मिली",
   "voiceQualityNatural": "प्राकृतिक",
   "voiceQualityStandard": "सामान्य",
-  "voiceLowQualityTip": "बेहतर आवाज़ के लिए अपने डिवाइस सेटिंग में Enhanced आवाज़ स्थापित करें।"
+  "voiceLowQualityTip": "बेहतर आवाज़ के लिए अपने डिवाइस सेटिंग में Enhanced आवाज़ स्थापित करें।",
+  "voiceNatural": "गर्म प्राकृतिक आवाज़",
+  "voiceNaturalHelp": "असली व्यक्ति जैसी लगती है। एक बार लगभग 90 MB डाउनलोड होती है, फिर ऑफ़लाइन चलती है। केवल अंग्रेज़ी।",
+  "voiceNaturalLoading": "गर्म आवाज़ डाउनलोड हो रही है। यह एक बार होता है।",
+  "voiceNaturalReady": "गर्म आवाज़ इस डिवाइस पर तैयार है।",
+  "voiceNaturalError": "गर्म आवाज़ लोड नहीं हो सकी। डिवाइस आवाज़ इस्तेमाल होगी।",
+  "voiceNaturalOn": "गर्म प्राकृतिक आवाज़ चालू",
+  "voiceNaturalOff": "गर्म प्राकृतिक आवाज़ बंद"
 }

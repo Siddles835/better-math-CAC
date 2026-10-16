@@ -32,5 +32,12 @@
   "voiceBestFound": "Mejor voz encontrada",
   "voiceQualityNatural": "Natural (neural)",
   "voiceQualityStandard": "Estándar",
-  "voiceLowQualityTip": "Para una voz más agradable, instala una voz Mejorada en los ajustes del dispositivo."
+  "voiceLowQualityTip": "Para una voz más agradable, instala una voz Mejorada en los ajustes del dispositivo.",
+  "voiceNatural": "Voz natural cálida",
+  "voiceNaturalHelp": "Suena más como una persona. Descarga unos 90 MB una vez y luego funciona sin conexión. Solo inglés.",
+  "voiceNaturalLoading": "Descargando la voz cálida. Esto ocurre una sola vez.",
+  "voiceNaturalReady": "La voz cálida ya está lista en este dispositivo.",
+  "voiceNaturalError": "No se pudo cargar la voz cálida. Se usa la voz del dispositivo.",
+  "voiceNaturalOn": "Voz natural cálida activada",
+  "voiceNaturalOff": "Voz natural cálida desactivada"
 }

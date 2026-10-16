@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import { isAppLang } from '@/lib/cognition/readingTime';
 import {
@@ -12,16 +13,18 @@ import {
   stopSpeaking,
   voiceQuality,
 } from '@/lib/speech';
+import { getNeuralStatus, onNeuralStatus, type NeuralStatus } from '@/lib/speechNeural';
 
 /**
- * Device-only voice picker + speed control for the current language.
- * Quality depends on voices installed on the device (no cloud TTS at runtime).
+ * Voice picker + warm neural English voice toggle.
+ * Neural audio stays on-device (Kokoro). No cloud TTS at runtime.
  */
 const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { t, i18n } = useTranslation(['settings']);
   const { prefs, setPref, announce } = useAccessibility();
   const lang = isAppLang(i18n.language) ? i18n.language : 'en';
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [neuralStatus, setNeuralStatus] = useState<NeuralStatus>(() => getNeuralStatus());
 
   useEffect(() => {
     const refresh = () => setVoices(getVoices());
@@ -31,9 +34,12 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
     return () => speechSynthesis.removeEventListener('voiceschanged', refresh);
   }, [lang]);
 
+  useEffect(() => onNeuralStatus(setNeuralStatus), []);
+
   const ranked = useMemo(() => listVoicesForLang(lang, voices), [lang, voices]);
   const best = ranked[0] ?? null;
   const onlyLowQuality = ranked.length > 0 && ranked.every((voice) => voiceQuality(voice) === 'standard');
+  const showNatural = lang === 'en';
 
   const playSample = (voiceURI: string | null) => {
     if (!prefs.voiceEnabled) {
@@ -48,8 +54,49 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
     });
   };
 
+  const neuralHint =
+    neuralStatus === 'loading'
+      ? t('settings:voiceNaturalLoading')
+      : neuralStatus === 'ready'
+        ? t('settings:voiceNaturalReady')
+        : neuralStatus === 'error'
+          ? t('settings:voiceNaturalError')
+          : t('settings:voiceNaturalHelp');
+
   return (
     <div className={`space-y-4 ${className}`}>
+      {showNatural && (
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <label className="flex min-h-[56px] cursor-pointer items-start gap-3">
+            <Switch
+              checked={!!prefs.naturalVoice}
+              disabled={!prefs.voiceEnabled}
+              onCheckedChange={(checked) => {
+                setPref('naturalVoice', checked);
+                announce(
+                  checked ? t('settings:voiceNaturalOn') : t('settings:voiceNaturalOff')
+                );
+                if (checked) {
+                  stopSpeaking();
+                  speak(sampleSpeechText('en'), { lang: 'en', ratePref: prefs.speechRate });
+                }
+              }}
+              aria-label={t('settings:voiceNatural')}
+              className="mt-1"
+            />
+            <span className="flex-1">
+              <span className="flex items-center gap-2 font-medium">
+                {t('settings:voiceNatural')}
+                {neuralStatus === 'loading' && (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden />
+                )}
+              </span>
+              <span className="mt-1 block text-sm text-muted-foreground">{neuralHint}</span>
+            </span>
+          </label>
+        </div>
+      )}
+
       <div>
         <h3 className="mb-1 text-base font-semibold">{t('settings:voiceSpeed')}</h3>
         <p className="mb-3 text-sm text-muted-foreground">{t('settings:voiceSpeedHelp')}</p>
@@ -82,7 +129,7 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
             <span>{best.name}</span>
           </p>
         )}
-        {onlyLowQuality && (
+        {onlyLowQuality && !prefs.naturalVoice && (
           <p className="mb-3 text-sm text-muted-foreground">{t('settings:voiceLowQualityTip')}</p>
         )}
         {ranked.length === 0 ? (

@@ -32,5 +32,12 @@
   "voiceBestFound": "أفضل صوت متوفر",
   "voiceQualityNatural": "طبيعي",
   "voiceQualityStandard": "قياسي",
-  "voiceLowQualityTip": "لصوت أجمل، ثبّت صوتا محسّنا في إعدادات جهازك."
+  "voiceLowQualityTip": "لصوت أجمل، ثبّت صوتا محسّنا في إعدادات جهازك.",
+  "voiceNatural": "صوت طبيعي دافئ",
+  "voiceNaturalHelp": "يبدو أقرب لصوت شخص حقيقي. ينزّل حوالي 90 ميغابايت مرة واحدة ثم يعمل دون اتصال. الإنجليزية فقط.",
+  "voiceNaturalLoading": "جار تنزيل الصوت الدافئ. يحدث هذا مرة واحدة.",
+  "voiceNaturalReady": "الصوت الدافئ جاهز على هذا الجهاز.",
+  "voiceNaturalError": "تعذر تحميل الصوت الدافئ. سيتم استخدام صوت الجهاز.",
+  "voiceNaturalOn": "الصوت الطبيعي الدافئ مفعّل",
+  "voiceNaturalOff": "الصوت الطبيعي الدافئ متوقّف"
 }

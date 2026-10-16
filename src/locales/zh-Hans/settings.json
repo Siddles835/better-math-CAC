@@ -32,5 +32,12 @@
   "voiceBestFound": "已找到的最佳声音",
   "voiceQualityNatural": "自然",
   "voiceQualityStandard": "标准",
-  "voiceLowQualityTip": "想要更好听的声音，请在设备设置中安装增强版语音。"
+  "voiceLowQualityTip": "想要更好听的声音，请在设备设置中安装增强版语音。",
+  "voiceNatural": "温暖自然语音",
+  "voiceNaturalHelp": "听起来更像真人。大约 90 MB，只下载一次，之后可离线使用。仅支持英语。",
+  "voiceNaturalLoading": "正在下载温暖语音。只需一次。",
+  "voiceNaturalReady": "温暖语音已在本设备准备好。",
+  "voiceNaturalError": "温暖语音加载失败。将使用设备语音。",
+  "voiceNaturalOn": "已开启温暖自然语音",
+  "voiceNaturalOff": "已关闭温暖自然语音"
 }

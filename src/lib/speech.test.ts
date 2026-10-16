@@ -8,6 +8,7 @@ import {
   packSpeechChunks,
   pickVoice,
   scoreVoice,
+  setNaturalVoicePref,
   setSpeechMuted,
   smoothProsodyText,
   speak,
@@ -230,6 +231,7 @@ describe('voice on/off and stale queue', () => {
 
   it('ignores stale callbacks after rapid back-to-back speak calls', async () => {
     vi.useFakeTimers();
+    setNaturalVoicePref(false);
     const utterances: Array<{
       onend: (() => void) | null;
       onerror: ((e: { error: string }) => void) | null;

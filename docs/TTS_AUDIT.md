@@ -35,5 +35,5 @@ Dynamic strings fall through to the device voice (Tier 3), or optional on-device
 ## Tiers
 
 1. **Pre-rendered Chirp 3 HD** under `public/audio/<lang>/<hash>.mp3` via `scripts/generate-tts.mjs`
-2. **Optional Kokoro-82M** for English dynamic text (feature flag, not enabled by default; skipped if heavy in Capacitor WebView)
-3. **Improved device `speechSynthesis`** with sentence-only splitting, better voice ranking, and a speech generation token to avoid stale queues
+2. **Kokoro-82M** warm English neural voice (`af_heart`). Pref `naturalVoice` defaults **on**. Downloads about 90 MB once, then stays on device. Falls back if load/play fails.
+3. **Improved device `speechSynthesis`** with packed utterances, soft prosody, better voice ranking, and a speech generation token to avoid stale queues

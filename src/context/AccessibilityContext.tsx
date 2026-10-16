@@ -6,6 +6,7 @@ import {
 } from '@/lib/accessibility';
 import {
   prefetchSpeechManifest,
+  setNaturalVoicePref,
   setPreferredVoiceURI,
   setSpeechMuted,
   setSpeechRatePref,
@@ -40,6 +41,7 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     setSpeechMuted(!prefs.voiceEnabled);
     setPreferredVoiceURI(prefs.voiceURI);
     setSpeechRatePref(prefs.speechRate);
+    setNaturalVoicePref(!!prefs.naturalVoice);
     if (!prefs.voiceEnabled) stopSpeaking();
     savePrefs(prefs);
     if (prefs.colorTheme !== 'system' || typeof window.matchMedia !== 'function') return;

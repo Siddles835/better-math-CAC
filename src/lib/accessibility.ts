@@ -40,6 +40,11 @@ export interface AccessibilityPrefs {
   voiceURI: string | null;
   /** Slow or normal speaking pace for kids. */
   speechRate: SpeechRatePref;
+  /**
+   * Warm on-device neural voice for English (Kokoro, ~90 MB download once).
+   * Default on so read-aloud sounds like a real person when possible.
+   */
+  naturalVoice: boolean;
   biggerButtons: boolean;
   answerMethod: AnswerMethod;
   pacing: Pacing;
@@ -67,6 +72,7 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   voiceEnabled: true,
   voiceURI: null,
   speechRate: 'normal',
+  naturalVoice: true,
   biggerButtons: false,
   answerMethod: 'any',
   pacing: 'normal',
@@ -121,6 +127,11 @@ export const loadPrefs = (): AccessibilityPrefs => {
     }
     if (merged.voiceURI != null && typeof merged.voiceURI !== 'string') {
       merged.voiceURI = null;
+    }
+    if (!('naturalVoice' in parsed)) {
+      merged.naturalVoice = true;
+    } else {
+      merged.naturalVoice = !!parsed.naturalVoice;
     }
     return merged;
   } catch {

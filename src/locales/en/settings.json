@@ -32,5 +32,12 @@
   "voiceBestFound": "Best voice found",
   "voiceQualityNatural": "Natural",
   "voiceQualityStandard": "Standard",
-  "voiceLowQualityTip": "For a nicer voice, install an Enhanced voice in your device settings."
+  "voiceLowQualityTip": "For a nicer voice, install an Enhanced voice in your device settings.",
+  "voiceNatural": "Warm natural voice",
+  "voiceNaturalHelp": "Sounds more like a real person. Downloads about 90 MB once, then works offline. English only.",
+  "voiceNaturalLoading": "Downloading the warm voice. This happens once.",
+  "voiceNaturalReady": "Warm voice is ready on this device.",
+  "voiceNaturalError": "Warm voice could not load. Using the device voice instead.",
+  "voiceNaturalOn": "Warm natural voice on",
+  "voiceNaturalOff": "Warm natural voice off"
 }
