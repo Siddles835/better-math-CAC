@@ -7,6 +7,7 @@ import type { AssessmentSummary } from '@/content/types';
 import { isDemoMode } from '@/lib/demo/mode';
 import { loadActiveLearner, saveActiveLearner } from '@/lib/paths/activeLearner';
 import { appendAssessment, switchPath } from '@/lib/paths/progress';
+import { buildAssessmentResultView } from '@/lib/assessmentLabels';
 import {
   bandsForScope,
   questionForBand,
@@ -16,7 +17,6 @@ import {
 } from '@/lib/placementBands';
 import { createStaircase, nextStaircaseState, type PlacementQuestion, type StaircaseState } from '@/lib/placement';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
-import { getPath } from '@/content/catalog';
 
 const STORE = 'mathlift:band-check';
 
@@ -112,22 +112,75 @@ const BandCheckPage = ({ pathId }: { pathId: string }) => {
   };
 
   if (summary) {
-    const path = getPath(summary.recommendedPathId);
+    const view = buildAssessmentResultView(summary, bands);
     return (
       <div className="min-h-screen bg-background p-6" data-testid="assessment-result">
         <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6">
           <h1 className="mb-3 text-2xl font-semibold">{tx('paths:resultTitle')}</h1>
-          <p className="mb-3">{tx('paths:resultRecommend', { path: path ? tx(path.titleKey) : summary.recommendedPathId, planet: summary.recommendedNodeId })}</p>
-          <h2 className="font-semibold">{tx('paths:resultStrength')}</h2>
-          <p className="mb-3 text-sm">{summary.strengths.join(', ') || tx('paths:noneYet')}</p>
-          <h2 className="font-semibold">{tx('paths:resultPractice')}</h2>
-          <p className="mb-3 text-sm">{summary.practiceTopics.join(', ') || tx('paths:noneYet')}</p>
-          <h2 className="mb-2 font-semibold">{tx('paths:perPath')}</h2>
-          <ul className="mb-4 space-y-1 text-sm">
-            {Object.entries(summary.byPath).map(([id, info]) => (
-              <li key={id} dir="ltr">{id}: {info.clearedBandId ?? tx('paths:resultNotChecked')}</li>
-            ))}
-          </ul>
+          <p className="mb-6 text-base leading-relaxed">
+            {tx('paths:resultRecommend', { path: view.pathTitle, step: view.stepTitle })}
+          </p>
+
+          <section className="mb-5">
+            <h2 className="mb-2 font-semibold">{tx('paths:resultStrength')}</h2>
+            {view.strengths.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{tx('paths:noneYet')}</p>
+            ) : (
+              <ul className="space-y-1.5 text-sm">
+                {view.strengths.map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-300" aria-hidden />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="mb-5">
+            <h2 className="mb-2 font-semibold">{tx('paths:resultPractice')}</h2>
+            {view.practice.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{tx('paths:noneYet')}</p>
+            ) : (
+              <ul className="space-y-1.5 text-sm">
+                {view.practice.map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-200" aria-hidden />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="mb-6">
+            <h2 className="mb-3 font-semibold">{tx('paths:perPath')}</h2>
+            <ul className="space-y-3">
+              {view.pathRows.map((row) => (
+                <li key={row.pathId} className="rounded-xl border border-border/70 bg-background/40 px-3 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium">{row.pathTitle}</p>
+                    <span className="flex items-center gap-1" aria-hidden>
+                      {[1, 2, 3].map((tier) => (
+                        <span
+                          key={tier}
+                          className={`h-2 w-2 rounded-full ${
+                            tier <= row.tiersCleared ? 'bg-sky-300' : 'bg-muted'
+                          }`}
+                        />
+                      ))}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {row.checked
+                      ? tx('paths:resultClearedThrough', { step: row.stepTitle })
+                      : tx('paths:resultNotChecked')}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+
           <Button type="button" className="min-h-[48px] w-full" onClick={() => navigate(STUDENT_HUB_PATH)}>
             {tx('paths:resultAccept')}
           </Button>
