@@ -163,7 +163,7 @@
   "pilotStudents": "Estudiantes",
   "pilotTeachers": "Docentes",
   "pilotProgress": "Progreso medio",
-  "pilotImprovement": "De la revisión a ahora",
+  "pilotImprovement": "Mejora promedio",
   "pilotEngagement": "Tiempo de trabajo",
   "pilotNow": "Dónde estamos",
   "pilotWant": "Dónde queremos estar",
@@ -237,5 +237,12 @@
   "currPublishedToast": "Publicado",
   "currAssignedToast": "Asignado",
   "currAssignFail": "No se pudo asignar. Revisa la conexión e inténtalo de nuevo.",
-  "currDeleteFail": "No se pudo eliminar. Revisa la conexión e inténtalo de nuevo."
+  "currDeleteFail": "No se pudo eliminar. Revisa la conexión e inténtalo de nuevo.",
+  "pilotMinutesValue": "{{minutes}} minutos",
+  "pilotNotAvailable": "No disponible",
+  "pilotLoadFail": "No se pudieron cargar los datos del piloto. Revisa la conexión e inténtalo de nuevo.",
+  "pilotLoadPartial": "Algunos datos del piloto no se pudieron cargar. Puedes reintentar.",
+  "pilotRetry": "Reintentar",
+  "pilotSaveFail": "No se pudieron guardar las metas. Revisa la conexión e inténtalo de nuevo.",
+  "currSplitNeedsProblems": "Agrega al menos 6 problemas antes de dividir en dos planetas."
 }

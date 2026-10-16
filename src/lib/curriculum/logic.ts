@@ -29,10 +29,38 @@ const generatorForLegacy = (planetId: string): GeneratorId => {
   return 'counting';
 };
 
+export const promptIdentity = (problem: Problem): string =>
+  (problem.prompt || `${problem.promptKey}|${JSON.stringify(problem.promptValues ?? {})}|${problem.equation ?? ''}`)
+    .trim()
+    .toLowerCase();
+
+/** Blank problem a teacher must fill in (used when splitting pads a short half). */
+export const blankProblem = (id: string): Problem => ({
+  id,
+  type: 'numeric',
+  prompt: '',
+  answer: '',
+  hints: ['', '', ''],
+  difficulty: 1,
+  topics: ['custom'],
+});
+
+const dedupeAuthored = (problems: Problem[]): Problem[] => {
+  const seen = new Set<string>();
+  const out: Problem[] = [];
+  for (const problem of problems) {
+    const identity = promptIdentity(problem);
+    if (seen.has(identity)) continue;
+    seen.add(identity);
+    out.push({ ...problem });
+  }
+  return out;
+};
+
 export const materializeNodeProblems = (path: Path, nodeId: string): Problem[] => {
   const node = path.nodes.find((item) => item.id === nodeId);
   if (!node) return [];
-  if (node.source.kind === 'authored') return node.source.problems.map((problem) => ({ ...problem }));
+  if (node.source.kind === 'authored') return dedupeAuthored(node.source.problems);
   if (node.source.kind === 'generated') {
     return problemsForNode(
       node.source.generatorId,
@@ -64,7 +92,8 @@ export const duplicatePath = (path: Path, classCode: string, id: string, name: s
   })),
 });
 
-const renumber = (nodes: CurriculumNode[]): CurriculumNode[] =>
+/** Fix order and chain prerequisites after add, remove, move, or split. */
+export const renumber = (nodes: CurriculumNode[]): CurriculumNode[] =>
   nodes.map((node, index) => ({
     ...node,
     order: index + 1,
@@ -80,28 +109,28 @@ export const moveNode = (curriculum: Curriculum, index: number, direction: -1 | 
   return { ...curriculum, nodes: renumber(nodes), updatedAt: Date.now() };
 };
 
+/** Split needs at least two halves of MIN_PROBLEMS each (no copied prompts). */
+export const canSplitNode = (node: CurriculumNode): boolean =>
+  node.source.problems.length >= MIN_PROBLEMS * 2;
+
+const padWithBlanks = (group: Problem[], nodeId: string, groupIndex: number): Problem[] => {
+  const next = [...group];
+  while (next.length < MIN_PROBLEMS) {
+    next.push(blankProblem(`${nodeId}-pad-${groupIndex}-${next.length}`));
+  }
+  return next;
+};
+
 export const splitNode = (curriculum: Curriculum, nodeId: string): Curriculum => {
   const index = curriculum.nodes.findIndex((node) => node.id === nodeId);
   if (index < 0) return curriculum;
   const node = curriculum.nodes[index];
+  if (!canSplitNode(node)) return curriculum;
   const problems = [...node.source.problems].sort((a, b) => a.difficulty - b.difficulty);
-  const mid = Math.max(1, Math.ceil(problems.length / 2));
+  const mid = Math.max(MIN_PROBLEMS, Math.ceil(problems.length / 2));
   const groups = [problems.slice(0, mid), problems.slice(mid)].filter((group) => group.length > 0);
-  if (groups.length < 2) {
-    const only = problems.length > 0 ? problems : node.source.problems;
-    const half = Math.max(1, Math.ceil(only.length / 2));
-    groups.splice(0, groups.length, only.slice(0, half), only.slice(half));
-  }
-  const padded = groups.map((group) => {
-    const next = [...group];
-    let copy = 0;
-    while (next.length < MIN_PROBLEMS && group.length > 0) {
-      const source = group[copy % group.length];
-      next.push({ ...source, id: `${source.id}-extra-${next.length}` });
-      copy += 1;
-    }
-    return next;
-  });
+  if (groups.length < 2) return curriculum;
+  const padded = groups.map((group, groupIndex) => padWithBlanks(group, node.id, groupIndex));
   const children: CurriculumNode[] = padded.map((group, groupIndex) => ({
     ...node,
     id: `${node.id}-step-${groupIndex + 1}`,
@@ -135,11 +164,6 @@ export type CurriculumIssue =
   | 'hint'
   | 'example'
   | 'size';
-
-const promptIdentity = (problem: Problem): string =>
-  (problem.prompt || `${problem.promptKey}|${JSON.stringify(problem.promptValues ?? {})}|${problem.equation ?? ''}`)
-    .trim()
-    .toLowerCase();
 
 export const validateCurriculum = (curriculum: Curriculum): CurriculumIssue[] => {
   const issues = new Set<CurriculumIssue>();

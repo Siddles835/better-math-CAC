@@ -163,7 +163,7 @@
   "pilotStudents": "الطلاب",
   "pilotTeachers": "المعلمون",
   "pilotProgress": "متوسط التقدم",
-  "pilotImprovement": "من الفحص إلى الآن",
+  "pilotImprovement": "متوسط التحسن",
   "pilotEngagement": "وقت العمل",
   "pilotNow": "أين نحن",
   "pilotWant": "أين نريد أن نكون",
@@ -237,5 +237,12 @@
   "currPublishedToast": "تم النشر",
   "currAssignedToast": "تم التعيين",
   "currAssignFail": "تعذر التعيين. تحقق من الاتصال وحاول مرة أخرى.",
-  "currDeleteFail": "تعذر الحذف. تحقق من الاتصال وحاول مرة أخرى."
+  "currDeleteFail": "تعذر الحذف. تحقق من الاتصال وحاول مرة أخرى.",
+  "pilotMinutesValue": "{{minutes}} دقيقة",
+  "pilotNotAvailable": "غير متاح",
+  "pilotLoadFail": "تعذر تحميل بيانات التجربة. تحقق من الاتصال وحاول مرة أخرى.",
+  "pilotLoadPartial": "تعذر تحميل بعض بيانات التجربة. يمكنك إعادة المحاولة.",
+  "pilotRetry": "إعادة المحاولة",
+  "pilotSaveFail": "تعذر حفظ الأهداف. تحقق من الاتصال وحاول مرة أخرى.",
+  "currSplitNeedsProblems": "أضف 6 مسائل على الأقل قبل التقسيم إلى كوكبين."
 }

@@ -2,7 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PATHS, getPath } from '@/content/catalog';
-import { duplicatePath, resolveAssignment, afterCurriculumDelete, validateCurriculum } from '@/lib/curriculum/logic';
+import {
+  duplicatePath,
+  resolveAssignment,
+  afterCurriculumDelete,
+  validateCurriculum,
+} from '@/lib/curriculum/logic';
+import { hydrateCurriculum } from '@/lib/curriculum/hydrate';
 import { PATH_GENERATOR_IDS, auditItem, generatePathItem } from '@/lib/paths/generators';
 import { computeExpectedAnswer } from '@/lib/answers/compute';
 import {
@@ -151,7 +157,16 @@ describe('paths and curricula', () => {
       curriculum.nodes.map((node) => node.source.problems.map((problem) => problem.answer))
     );
     expect(validateCurriculum({ ...curriculum, name: '' })).toContain('name');
-    expect(validateCurriculum(curriculum)).toEqual([]);
+    expect(validateCurriculum(hydrateCurriculum(curriculum))).toEqual([]);
+  });
+
+  it('duplicates every built-in path with zero validation issues', () => {
+    for (const path of PATHS) {
+      const curriculum = hydrateCurriculum(
+        duplicatePath(path, 'demo', `dup-${path.id}`, `${path.id} copy`)
+      );
+      expect(validateCurriculum(curriculum), path.id).toEqual([]);
+    }
   });
 
   it('is deterministic for every new generator', () => {

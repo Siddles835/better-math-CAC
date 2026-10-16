@@ -22,10 +22,13 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { getPort } from '@/lib/data/port';
 import {
+  blankProblem,
+  canSplitNode,
   duplicatePath,
   MAX_PROBLEMS,
   MIN_PROBLEMS,
   moveNode,
+  renumber,
   splitNode,
   validateCurriculum,
   type CurriculumIssue,
@@ -40,16 +43,6 @@ import {
 import { getClass } from '@/lib/classroom';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/sonner';
-
-const blankProblem = (id: string): Problem => ({
-  id,
-  type: 'numeric',
-  prompt: '',
-  answer: '',
-  hints: ['', '', ''],
-  difficulty: 1,
-  topics: ['custom'],
-});
 
 const blankNode = (id: string): CurriculumNode => ({
   id,
@@ -499,17 +492,16 @@ const Editor = ({
 
   const addPlanet = () => {
     const node = blankNode(`node-${Date.now()}`);
-    onChange({
-      ...curriculum,
-      nodes: [...curriculum.nodes, { ...node, order: curriculum.nodes.length + 1 }],
-    });
+    const nodes = renumber([...curriculum.nodes, node]);
+    onChange({ ...curriculum, nodes });
     onSelectNode(node.id);
   };
 
   const removePlanet = () => {
     if (curriculum.nodes.length <= 1) return;
     if (!window.confirm(tx('paths:currConfirmRemovePlanet'))) return;
-    const nodes = curriculum.nodes.filter((item) => item.id !== selectedNode.id);
+    const remaining = curriculum.nodes.filter((item) => item.id !== selectedNode.id);
+    const nodes = renumber(remaining);
     onChange({ ...curriculum, nodes });
     onSelectNode(nodes[Math.max(0, selectedIndex - 1)]?.id ?? nodes[0].id);
   };
@@ -691,6 +683,10 @@ const Editor = ({
               type="button"
               variant="outline"
               className="min-h-[48px] gap-2"
+              disabled={!canSplitNode(selectedNode)}
+              title={
+                canSplitNode(selectedNode) ? undefined : tx('paths:currSplitNeedsProblems')
+              }
               onClick={() => onChange(splitNode(curriculum, selectedNode.id))}
             >
               <Split className="h-4 w-4" aria-hidden />

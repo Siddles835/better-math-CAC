@@ -16,17 +16,22 @@ export const leaksAnswer = (texts: string[], answer: string): boolean => {
 export const exampleNumbersDiffer = (problem: Problem): boolean => {
   const example = problem.workedExample;
   if (!example) return true;
+  // Ignore trailing zeros used as padding on counting operands so "count 7"
+  // does not fail just because the example also carries b: 0.
+  const nonzero = (values: number[]) => values.filter((n) => n !== 0);
   const fromValues = [example.promptValues?.a, example.promptValues?.b]
     .map((value) => Number(value))
     .filter((value) => Number.isFinite(value));
-  const exampleNums =
+  const exampleNums = nonzero(
     fromValues.length > 0
       ? fromValues
-      : [...numbersIn(example.prompt ?? ''), ...numbersIn((example.steps ?? []).join(' '))];
-  const problemNums =
+      : [...numbersIn(example.prompt ?? ''), ...numbersIn((example.steps ?? []).join(' '))]
+  );
+  const problemNums = nonzero(
     problem.operands && problem.operands.length > 0
-      ? problem.operands
-      : [...numbersIn(problem.prompt ?? ''), ...numbersIn(problem.equation ?? '')];
+      ? [...problem.operands]
+      : [...numbersIn(problem.prompt ?? ''), ...numbersIn(problem.equation ?? '')]
+  );
   if (exampleNums.length === 0) return false;
   return !exampleNums.some((n) => problemNums.includes(n));
 };

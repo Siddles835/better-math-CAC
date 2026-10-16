@@ -163,7 +163,7 @@
   "pilotStudents": "Students",
   "pilotTeachers": "Teachers",
   "pilotProgress": "Average progress",
-  "pilotImprovement": "Check to now",
+  "pilotImprovement": "Average improvement",
   "pilotEngagement": "Time on task",
   "pilotNow": "Where we are",
   "pilotWant": "Where we want to be",
@@ -237,5 +237,12 @@
   "currPublishedToast": "Published",
   "currAssignedToast": "Assigned",
   "currAssignFail": "Could not assign. Check your connection and try again.",
-  "currDeleteFail": "Could not delete. Check your connection and try again."
+  "currDeleteFail": "Could not delete. Check your connection and try again.",
+  "pilotMinutesValue": "{{minutes}} min",
+  "pilotNotAvailable": "Not available",
+  "pilotLoadFail": "Could not load pilot data. Check your connection and try again.",
+  "pilotLoadPartial": "Some pilot data could not load. You can retry.",
+  "pilotRetry": "Retry",
+  "pilotSaveFail": "Could not save goals. Check your connection and try again.",
+  "currSplitNeedsProblems": "Add at least 6 problems before splitting into two planets."
 }

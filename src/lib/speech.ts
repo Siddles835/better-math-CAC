@@ -198,7 +198,7 @@ const FRIENDLY_VOICE = /samantha|karen|moira|tessa|fiona|victoria|veena|lekha|mo
 const QUALITY_VOICE = /natural|neural|premium|enhanced|online|wavenet|studio|superstar|eloquent|siri|google|microsoft/i;
 
 /** Novelty / compact / robotic voices to avoid for lessons. */
-const AVOID_VOICE = /espeak|compact|novelty|whisper|evil|zarvox|trinoids|bad news|good news|cellos|organ|bells|boing|bubbles|deranged|hysterical|pipe organ|ralph|albert|bahh|junior|kathy|princess|robot|fred|whisper/i;
+const AVOID_VOICE = /espeak|compact|novelty|whisper|evil|zarvox|trinoids|bad news|good news|cellos|organ|bells|boing|bubbles|deranged|hysterical|pipe organ|ralph|albert|bahh|junior|kathy|princess|robot|fred/i;
 
 export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number => {
   const name = voice.name.toLowerCase();

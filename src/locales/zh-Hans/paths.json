@@ -163,7 +163,7 @@
   "pilotStudents": "学生",
   "pilotTeachers": "教师",
   "pilotProgress": "平均进度",
-  "pilotImprovement": "从检查到现在",
+  "pilotImprovement": "平均进步",
   "pilotEngagement": "练习时间",
   "pilotNow": "我们现在在哪里",
   "pilotWant": "我们希望到达哪里",
@@ -237,5 +237,12 @@
   "currPublishedToast": "已发布",
   "currAssignedToast": "已分配",
   "currAssignFail": "无法分配。请检查网络后重试。",
-  "currDeleteFail": "无法删除。请检查网络后重试。"
+  "currDeleteFail": "无法删除。请检查网络后重试。",
+  "pilotMinutesValue": "{{minutes}} 分钟",
+  "pilotNotAvailable": "暂无",
+  "pilotLoadFail": "试点数据加载失败。请检查网络后重试。",
+  "pilotLoadPartial": "部分试点数据未能加载。你可以重试。",
+  "pilotRetry": "重试",
+  "pilotSaveFail": "无法保存目标。请检查网络后重试。",
+  "currSplitNeedsProblems": "至少添加 6 道题后再拆成两颗行星。"
 }

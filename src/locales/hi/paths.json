@@ -163,7 +163,7 @@
   "pilotStudents": "छात्र",
   "pilotTeachers": "शिक्षक",
   "pilotProgress": "औसत प्रगति",
-  "pilotImprovement": "जाँच से अब तक",
+  "pilotImprovement": "औसत सुधार",
   "pilotEngagement": "काम का समय",
   "pilotNow": "हम अभी कहाँ हैं",
   "pilotWant": "हम कहाँ पहुँचना चाहते हैं",
@@ -237,5 +237,12 @@
   "currPublishedToast": "प्रकाशित",
   "currAssignedToast": "असाइन हो गया",
   "currAssignFail": "असाइन नहीं हो सका। कनेक्शन जाँचकर फिर कोशिश करें।",
-  "currDeleteFail": "हटाया नहीं जा सका। कनेक्शन जाँचकर फिर कोशिश करें।"
+  "currDeleteFail": "हटाया नहीं जा सका। कनेक्शन जाँचकर फिर कोशिश करें।",
+  "pilotMinutesValue": "{{minutes}} मिनट",
+  "pilotNotAvailable": "उपलब्ध नहीं",
+  "pilotLoadFail": "पायलट डेटा लोड नहीं हो सका। कनेक्शन जाँचकर फिर कोशिश करें।",
+  "pilotLoadPartial": "कुछ पायलट डेटा लोड नहीं हो सका। आप फिर कोशिश कर सकते हैं।",
+  "pilotRetry": "फिर कोशिश करें",
+  "pilotSaveFail": "लक्ष्य सेव नहीं हो सके। कनेक्शन जाँचकर फिर कोशिश करें।",
+  "currSplitNeedsProblems": "दो ग्रहों में बाँटने से पहले कम से कम 6 समस्याएँ जोड़ें।"
 }

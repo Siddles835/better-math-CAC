@@ -3,7 +3,7 @@ import LessonDrill from '@/components/LessonDrill';
 import { insertedCount } from '@/lib/lessonDuration';
 import { tx } from '@/i18n/tx';
 // Subtraction Lesson - Saturn (Activity/Practice)
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import ThoughtCard from '@/components/ThoughtCard';
@@ -105,30 +105,30 @@ const SubtractionSaturn: React.FC = () => {
     }
   };
 
-  const resetActivity2 = () => {
+  const resetActivity2 = useCallback(() => {
     setActivity2Pencils(activity2Start);
     setActivity2Removed(0);
     setActivity2Checked(false);
     setShowGuided(false);
     setDiagnosis(null);
     traceRef.current.reset();
-  };
+  }, [activity2Start]);
 
   const practiceAgain = () => {
     resetActivity2();
     setStep(2);
   };
 
-  const resetPractice = () => {
+  const resetPractice = useCallback(() => {
     setLeftPencils(SATURN.practiceStart);
     setRemovedPencils(0);
-  };
+  }, []);
 
   useEffect(() => {
     if (step === 1) resetPractice();
     if (step === 2) resetActivity2();
     // Reset practice/target activities whenever the student returns to them.
-  }, [step]);
+  }, [step, resetPractice, resetActivity2]);
 
 
   const goToNextPlanet = () => {

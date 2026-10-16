@@ -59,5 +59,9 @@ export const saveActiveLearner = async (record: LearnerRecord): Promise<void> =>
   const active = getActiveStudent();
   if (!active) return;
   const solo = !!(active.solo || isSoloClassCode(active.classCode));
-  await getPort(active.classCode, solo).saveLearner(active.classCode, nicknameKey(active.nickname), record);
+  try {
+    await getPort(active.classCode, solo).saveLearner(active.classCode, nicknameKey(active.nickname), record);
+  } catch (error) {
+    console.error('Could not save learner progress', error);
+  }
 };

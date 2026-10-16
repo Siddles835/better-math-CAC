@@ -376,6 +376,16 @@ export const auditItem = (id: GeneratorId, seed: number): AuditableQuestion => {
   return generatePathItem(id, tier, seed).audit;
 };
 
+const problemIdentity = (problem: Problem): string =>
+  (problem.prompt || `${problem.promptKey}|${JSON.stringify(problem.promptValues ?? {})}|${problem.equation ?? ''}`)
+    .trim()
+    .toLowerCase();
+
+/**
+ * Build a unique problem list for a node. Keeps the original tier schedule, then
+ * regenerates with new seeds when the RNG repeats a prompt so duplicated
+ * curricula stay publishable.
+ */
 export const problemsForNode = (
   id: GeneratorId,
   tiers: Array<1 | 2 | 3>,
@@ -383,17 +393,29 @@ export const problemsForNode = (
   seed: number,
   extra = 0
 ): Problem[] => {
-  const out: Problem[] = [];
-  let n = 0;
+  const schedule: Array<1 | 2 | 3> = [];
   for (const tier of tiers) {
-    for (let i = 0; i < perTier; i += 1) {
-      out.push(generatePathItem(id, tier, (seed + n * 997) >>> 0).problem);
-      n += 1;
-    }
+    for (let i = 0; i < perTier; i += 1) schedule.push(tier);
   }
   const top = tiers[tiers.length - 1] ?? 1;
-  for (let i = 0; i < extra; i += 1) {
-    out.push(generatePathItem(id, top, (seed + 5000 + i * 13) >>> 0).problem);
+  for (let i = 0; i < extra; i += 1) schedule.push(top);
+
+  const out: Problem[] = [];
+  const seen = new Set<string>();
+  let n = 0;
+  for (const tier of schedule) {
+    let attempts = 0;
+    while (attempts < 64) {
+      const itemSeed = (seed + n * 997 + attempts * 7919) >>> 0;
+      n += 1;
+      attempts += 1;
+      const problem = generatePathItem(id, tier, itemSeed).problem;
+      const identity = problemIdentity(problem);
+      if (seen.has(identity)) continue;
+      seen.add(identity);
+      out.push(problem);
+      break;
+    }
   }
   return out;
 };
