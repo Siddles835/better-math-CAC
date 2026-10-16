@@ -28,5 +28,9 @@
   "voiceAuto": "सबसे अच्छी उपलब्ध",
   "voiceAutoHint": "स्वचालित रूप से सबसे साफ़ स्थापित आवाज़ चुनें।",
   "voiceNone": "इस डिवाइस पर इस भाषा की कोई आवाज़ नहीं है। लेखन स्क्रीन पर रहता है।",
-  "voiceSample": "नमूना सुनें"
+  "voiceSample": "नमूना सुनें",
+  "voiceBestFound": "सबसे अच्छी आवाज़ मिली",
+  "voiceQualityNatural": "प्राकृतिक",
+  "voiceQualityStandard": "सामान्य",
+  "voiceLowQualityTip": "बेहतर आवाज़ के लिए अपने डिवाइस सेटिंग में Enhanced आवाज़ स्थापित करें।"
 }

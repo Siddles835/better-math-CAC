@@ -28,3 +28,9 @@ ml/data/real/*.json
 ml/data/cache/
 ml/data/cache/
 *.pt
+
+# TTS / cloud credentials (never commit)
+keys/
+*.pem
+google-tts*.json
+

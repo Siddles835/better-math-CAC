@@ -28,5 +28,9 @@
   "voiceAuto": "Best available",
   "voiceAutoHint": "Automatically pick the clearest installed voice.",
   "voiceNone": "No voice for this language is installed on this device. Text stays on screen.",
-  "voiceSample": "Play sample"
+  "voiceSample": "Play sample",
+  "voiceBestFound": "Best voice found",
+  "voiceQualityNatural": "Natural",
+  "voiceQualityStandard": "Standard",
+  "voiceLowQualityTip": "For a nicer voice, install an Enhanced voice in your device settings."
 }

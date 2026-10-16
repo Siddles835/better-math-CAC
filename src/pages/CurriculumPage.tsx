@@ -326,12 +326,12 @@ const CurriculumPage = () => {
     return null;
   })();
 
-  const saveButtons = (
+  const saveButtons = (withTestId: boolean) => (
     <>
       <Button
         type="button"
         variant="outline"
-        className="min-h-[48px]"
+        className="min-h-[48px] flex-1 md:flex-none"
         disabled={!current || saving}
         onClick={() => void save('draft')}
       >
@@ -339,8 +339,8 @@ const CurriculumPage = () => {
       </Button>
       <Button
         type="button"
-        className="min-h-[48px]"
-        data-testid="curriculum-save"
+        className="min-h-[48px] flex-1 md:flex-none"
+        data-testid={withTestId ? 'curriculum-save' : undefined}
         disabled={!current || saving}
         onClick={() => void save('published')}
       >
@@ -366,7 +366,7 @@ const CurriculumPage = () => {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {statusChip}
-            {current && <div className="hidden md:flex flex-wrap gap-2">{saveButtons}</div>}
+            {current && <div className="hidden md:flex flex-wrap gap-2">{saveButtons(true)}</div>}
           </div>
         </div>
         {saveError && current && (
@@ -437,7 +437,7 @@ const CurriculumPage = () => {
 
       {current && (
         <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 p-3 backdrop-blur md:hidden">
-          <div className="mx-auto flex max-w-6xl gap-2">{saveButtons}</div>
+          <div className="mx-auto flex max-w-6xl gap-2">{saveButtons(false)}</div>
         </div>
       )}
     </div>

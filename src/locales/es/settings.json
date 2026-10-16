@@ -28,5 +28,9 @@
   "voiceAuto": "La mejor disponible",
   "voiceAutoHint": "Elige automáticamente la voz instalada más clara.",
   "voiceNone": "No hay una voz para este idioma en este dispositivo. El texto se queda en pantalla.",
-  "voiceSample": "Escuchar muestra"
+  "voiceSample": "Escuchar muestra",
+  "voiceBestFound": "Mejor voz encontrada",
+  "voiceQualityNatural": "Natural (neural)",
+  "voiceQualityStandard": "Estándar",
+  "voiceLowQualityTip": "Para una voz más agradable, instala una voz Mejorada en los ajustes del dispositivo."
 }

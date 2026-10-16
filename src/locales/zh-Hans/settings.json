@@ -28,5 +28,9 @@
   "voiceAuto": "自动最佳",
   "voiceAutoHint": "自动选择已安装中最清晰的声音。",
   "voiceNone": "这台设备没有安装当前语言的语音。文字仍会显示。",
-  "voiceSample": "试听"
+  "voiceSample": "试听",
+  "voiceBestFound": "已找到的最佳声音",
+  "voiceQualityNatural": "自然",
+  "voiceQualityStandard": "标准",
+  "voiceLowQualityTip": "想要更好听的声音，请在设备设置中安装增强版语音。"
 }

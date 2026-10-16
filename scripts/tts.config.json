@@ -1,0 +1,13 @@
+{
+  "speakingRate": 0.9,
+  "audioEncoding": "MP3",
+  "sampleRateHertz": 24000,
+  "voices": {
+    "en": "en-US-Chirp3-HD-Aoede",
+    "es": "es-US-Chirp3-HD-Aoede",
+    "hi": "hi-IN-Chirp3-HD-Aoede",
+    "zh-Hans": "cmn-CN-Chirp3-HD-Aoede",
+    "ar": "ar-XA-Chirp3-HD-Aoede"
+  },
+  "pricePerMillionCharsUsd": 30
+}
