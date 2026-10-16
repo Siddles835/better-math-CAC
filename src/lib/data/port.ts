@@ -24,6 +24,7 @@ import {
   demoSaveLearner,
 } from '@/lib/demo/store';
 import { db } from '@/lib/firebase';
+import { stripUndefined } from '@/lib/data/stripUndefined';
 import { isSoloClassCode, loadSoloProgress, saveSoloProgress } from '@/lib/solo';
 import { patchStudentFields } from '@/lib/classroom';
 
@@ -51,14 +52,14 @@ const asRecord = <T,>(value: unknown): T | null => (value ? (value as T) : null)
 const firestorePort: DataPort = {
   kind: 'firestore',
   async patchStudent(classCode, studentKey, fields) {
-    await patchStudentFields(classCode, studentKey, fields);
+    await patchStudentFields(classCode, studentKey, stripUndefined(fields));
   },
   async getLearner(classCode, studentKey) {
     const snap = await getDoc(learnerDoc(classCode, studentKey));
     return snap.exists() ? (snap.data() as LearnerRecord) : null;
   },
   async saveLearner(classCode, studentKey, record) {
-    await setDoc(learnerDoc(classCode, studentKey), record);
+    await setDoc(learnerDoc(classCode, studentKey), stripUndefined(record));
   },
   async listLearners(classCode) {
     const snap = await getDocs(collection(db, 'classrooms', classCode, 'learners'));
@@ -73,7 +74,10 @@ const firestorePort: DataPort = {
     return snap.docs.map((item) => item.data() as Curriculum);
   },
   async saveCurriculum(curriculum) {
-    await setDoc(doc(db, 'classrooms', curriculum.classCode, 'curricula', curriculum.id), curriculum);
+    await setDoc(
+      doc(db, 'classrooms', curriculum.classCode, 'curricula', curriculum.id),
+      stripUndefined(curriculum)
+    );
   },
   async deleteCurriculum(classCode, curriculumId) {
     await deleteDoc(doc(db, 'classrooms', classCode, 'curricula', curriculumId));
@@ -89,7 +93,10 @@ const firestorePort: DataPort = {
     return snap.docs.map((item) => item.data() as Assignment);
   },
   async saveAssignment(classCode, assignment) {
-    await setDoc(doc(db, 'classrooms', classCode, 'assignments', assignment.id), assignment);
+    await setDoc(
+      doc(db, 'classrooms', classCode, 'assignments', assignment.id),
+      stripUndefined(assignment)
+    );
   },
   async deleteAssignment(classCode, assignmentId) {
     await deleteDoc(doc(db, 'classrooms', classCode, 'assignments', assignmentId));
@@ -99,7 +106,7 @@ const firestorePort: DataPort = {
     return snap.exists() ? (snap.data() as PilotGoals) : null;
   },
   async saveGoals(classCode, goals) {
-    await setDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot'), goals);
+    await setDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot'), stripUndefined(goals));
   },
 };
 

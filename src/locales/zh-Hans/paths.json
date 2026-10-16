@@ -231,5 +231,11 @@
   "currAssignTitle": "分配",
   "currAssignLead": "选择这份课程是替换默认路径，还是与它一起显示。",
   "currAssignNeedsPublish": "请先发布且没有未保存的更改，再进行分配。",
-  "currWorkshop": "课程工坊"
+  "currWorkshop": "课程工坊",
+  "currSaveFail": "无法保存。你的更改还在。请检查网络后重试。",
+  "currDraftSavedToast": "草稿已保存",
+  "currPublishedToast": "已发布",
+  "currAssignedToast": "已分配",
+  "currAssignFail": "无法分配。请检查网络后重试。",
+  "currDeleteFail": "无法删除。请检查网络后重试。"
 }

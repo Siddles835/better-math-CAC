@@ -231,5 +231,11 @@
   "currAssignTitle": "Asignar",
   "currAssignLead": "Elige si este currículo reemplaza el camino predeterminado o va junto a él.",
   "currAssignNeedsPublish": "Publica sin cambios pendientes antes de asignar.",
-  "currWorkshop": "Taller de currículo"
+  "currWorkshop": "Taller de currículo",
+  "currSaveFail": "No se pudo guardar. Tus cambios siguen aquí. Revisa la conexión e inténtalo de nuevo.",
+  "currDraftSavedToast": "Borrador guardado",
+  "currPublishedToast": "Publicado",
+  "currAssignedToast": "Asignado",
+  "currAssignFail": "No se pudo asignar. Revisa la conexión e inténtalo de nuevo.",
+  "currDeleteFail": "No se pudo eliminar. Revisa la conexión e inténtalo de nuevo."
 }

@@ -1,5 +1,6 @@
 import type { Curriculum, CurriculumNode, Problem } from '@/content/types';
 import { tx } from '@/i18n/tx';
+import { stripUndefined } from '@/lib/data/stripUndefined';
 import { answerParses, exampleNumbersDiffer, leaksAnswer } from '@/lib/paths/text';
 import { MIN_PROBLEMS } from '@/lib/curriculum/logic';
 
@@ -31,20 +32,25 @@ export const hydrateProblem = (problem: Problem): Problem => {
 
   let workedExample = problem.workedExample;
   const examplePrompt = workedExample?.prompt?.trim() ?? '';
-  if (!examplePrompt && workedExample?.promptKey) {
-    workedExample = {
+  if (workedExample && !examplePrompt && workedExample.promptKey) {
+    const next: NonNullable<Problem['workedExample']> = {
       ...workedExample,
       prompt: resolveKey(workedExample.promptKey, workedExample.promptValues),
-      promptValues: workedExample.promptValues,
     };
+    if (workedExample.promptValues) next.promptValues = workedExample.promptValues;
+    if (workedExample.promptKey) next.promptKey = workedExample.promptKey;
+    workedExample = next;
   }
 
-  return {
+  const hydrated: Problem = {
     ...problem,
     prompt,
     hints: hints.slice(0, Math.max(3, hints.length)),
-    workedExample,
   };
+  // Never leave workedExample: undefined (Firestore setDoc rejects it).
+  if (workedExample) hydrated.workedExample = workedExample;
+  else delete hydrated.workedExample;
+  return stripUndefined(hydrated);
 };
 
 export const hydrateNode = (node: CurriculumNode): CurriculumNode => {
@@ -64,10 +70,11 @@ export const hydrateNode = (node: CurriculumNode): CurriculumNode => {
 };
 
 /** Fill editable text from i18n keys without changing updatedAt. */
-export const hydrateCurriculum = (curriculum: Curriculum): Curriculum => ({
-  ...curriculum,
-  nodes: curriculum.nodes.map(hydrateNode),
-});
+export const hydrateCurriculum = (curriculum: Curriculum): Curriculum =>
+  stripUndefined({
+    ...curriculum,
+    nodes: curriculum.nodes.map(hydrateNode),
+  });
 
 export type ProblemFieldIssue = 'prompt' | 'answer' | 'hint' | 'example';
 

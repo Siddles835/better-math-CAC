@@ -231,5 +231,11 @@
   "currAssignTitle": "تعيين",
   "currAssignLead": "اختر إن كان هذا المنهج يستبدل المسار الافتراضي أو يظهر بجانبه.",
   "currAssignNeedsPublish": "انشر بدون تغييرات غير محفوظة قبل التعيين.",
-  "currWorkshop": "ورشة المناهج"
+  "currWorkshop": "ورشة المناهج",
+  "currSaveFail": "تعذر الحفظ. تغييراتك ما زالت هنا. تحقق من الاتصال وحاول مرة أخرى.",
+  "currDraftSavedToast": "تم حفظ المسودة",
+  "currPublishedToast": "تم النشر",
+  "currAssignedToast": "تم التعيين",
+  "currAssignFail": "تعذر التعيين. تحقق من الاتصال وحاول مرة أخرى.",
+  "currDeleteFail": "تعذر الحذف. تحقق من الاتصال وحاول مرة أخرى."
 }

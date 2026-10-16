@@ -39,6 +39,7 @@ import {
 } from '@/lib/curriculum/hydrate';
 import { getClass } from '@/lib/classroom';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/ui/sonner';
 
 const blankProblem = (id: string): Problem => ({
   id,
@@ -103,6 +104,7 @@ const CurriculumPage = () => {
   const [current, setCurrent] = useState<Curriculum | null>(null);
   const [issues, setIssues] = useState<CurriculumIssue[]>([]);
   const [error, setError] = useState('');
+  const [saveError, setSaveError] = useState('');
   const [offline, setOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [dirty, setDirty] = useState(false);
   const [studentKey, setStudentKey] = useState('');
@@ -173,6 +175,7 @@ const CurriculumPage = () => {
     const next = { ...current, status, updatedAt: Date.now() };
     const found = validateCurriculum(next);
     setIssues(found);
+    setSaveError('');
     if (status === 'published') {
       setPublishAttempted(true);
       if (found.length > 0) return;
@@ -182,9 +185,14 @@ const CurriculumPage = () => {
       localStorage.removeItem(draftKey(classCode, next.id));
       setDirty(false);
       setCurrent(next);
+      toast.success(status === 'published' ? tx('paths:currPublishedToast') : tx('paths:currDraftSavedToast'));
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : tx('paths:currError'));
+      console.error(err);
+      const message = tx('paths:currSaveFail');
+      setSaveError(message);
+      toast.error(message);
+      // Keep dirty so the teacher does not lose the draft.
     }
   };
 
@@ -192,25 +200,36 @@ const CurriculumPage = () => {
 
   const assign = async (scope: Assignment['scope'], mode: Assignment['mode']) => {
     if (!current || !canAssign) return;
-    const assignment: Assignment = {
-      id: `as-${scope.kind}-${scope.kind === 'student' ? scope.studentKey : 'class'}-${current.id}`,
-      curriculumId: current.id,
-      scope,
-      mode,
-      updatedAt: Date.now(),
-    };
-    await getPort(classCode, false).saveAssignment(classCode, assignment);
-    await load();
+    try {
+      const assignment: Assignment = {
+        id: `as-${scope.kind}-${scope.kind === 'student' ? scope.studentKey : 'class'}-${current.id}`,
+        curriculumId: current.id,
+        scope,
+        mode,
+        updatedAt: Date.now(),
+      };
+      await getPort(classCode, false).saveAssignment(classCode, assignment);
+      toast.success(tx('paths:currAssignedToast'));
+      await load();
+    } catch (err) {
+      console.error(err);
+      toast.error(tx('paths:currAssignFail'));
+    }
   };
 
   const removeCurriculum = async (id: string) => {
     if (!window.confirm(tx('paths:currConfirmDelete'))) return;
-    await getPort(classCode, false).deleteCurriculum(classCode, id);
-    if (current?.id === id) {
-      setCurrent(null);
-      setDirty(false);
+    try {
+      await getPort(classCode, false).deleteCurriculum(classCode, id);
+      if (current?.id === id) {
+        setCurrent(null);
+        setDirty(false);
+      }
+      await load();
+    } catch (err) {
+      console.error(err);
+      toast.error(tx('paths:currDeleteFail'));
     }
-    await load();
   };
 
   const leaveEditor = () => {
@@ -306,6 +325,7 @@ const CurriculumPage = () => {
             issues={issueText}
             showPublishIssues={publishAttempted && issues.length > 0}
             dirty={dirty}
+            saveError={saveError}
             students={students}
             studentKey={studentKey}
             canAssign={canAssign}
@@ -430,6 +450,7 @@ const Editor = ({
   issues,
   showPublishIssues,
   dirty,
+  saveError,
   students,
   studentKey,
   canAssign,
@@ -448,6 +469,7 @@ const Editor = ({
   issues: string[];
   showPublishIssues: boolean;
   dirty: boolean;
+  saveError: string;
   students: string[];
   studentKey: string;
   canAssign: boolean;
@@ -514,6 +536,11 @@ const Editor = ({
             </Button>
           </div>
         </div>
+        {saveError && (
+          <p className="mt-3 text-sm text-destructive" role="alert">
+            {saveError}
+          </p>
+        )}
         {showPublishIssues && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
@@ -792,17 +819,27 @@ const Editor = ({
                       <textarea
                         className="min-h-[96px] w-full rounded-xl border border-border bg-background px-3 py-2 text-start"
                         value={problem.workedExample?.prompt ?? ''}
-                        onChange={(event) =>
-                          patchProblem(problemIndex, {
-                            ...problem,
-                            workedExample: {
-                              prompt: event.target.value,
-                              steps: problem.workedExample?.steps ?? [],
-                              promptValues: problem.workedExample?.promptValues,
-                              promptKey: problem.workedExample?.promptKey,
-                            },
-                          })
-                        }
+                        onChange={(event) => {
+                          const text = event.target.value;
+                          const steps = problem.workedExample?.steps ?? [];
+                          if (!text.trim() && steps.length === 0) {
+                            const next = { ...problem };
+                            delete next.workedExample;
+                            patchProblem(problemIndex, next);
+                            return;
+                          }
+                          const workedExample: NonNullable<Problem['workedExample']> = {
+                            prompt: text,
+                            steps,
+                          };
+                          if (problem.workedExample?.promptValues) {
+                            workedExample.promptValues = problem.workedExample.promptValues;
+                          }
+                          if (problem.workedExample?.promptKey) {
+                            workedExample.promptKey = problem.workedExample.promptKey;
+                          }
+                          patchProblem(problemIndex, { ...problem, workedExample });
+                        }}
                       />
                       {show('example') && (
                         <span className="mt-1 block text-sm text-destructive">{tx('paths:issue_example')}</span>

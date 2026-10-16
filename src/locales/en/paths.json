@@ -231,5 +231,11 @@
   "currAssignTitle": "Assign",
   "currAssignLead": "Choose whether this curriculum replaces the default path or sits beside it.",
   "currAssignNeedsPublish": "Publish with no unsaved changes before you assign.",
-  "currWorkshop": "Curriculum workshop"
+  "currWorkshop": "Curriculum workshop",
+  "currSaveFail": "Could not save. Your changes are still here. Check your connection and try again.",
+  "currDraftSavedToast": "Draft saved",
+  "currPublishedToast": "Published",
+  "currAssignedToast": "Assigned",
+  "currAssignFail": "Could not assign. Check your connection and try again.",
+  "currDeleteFail": "Could not delete. Check your connection and try again."
 }
