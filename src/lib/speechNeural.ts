@@ -6,11 +6,16 @@
 export type NeuralStatus = 'idle' | 'loading' | 'ready' | 'error' | 'unsupported';
 
 const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
-/** Warm American English female voice graded A. */
-const VOICE = 'af_heart';
-/** 1.0 is a normal speaking pace; slower values sound unnatural. */
-const SPEED_NORMAL = 1;
-const SPEED_SLOW = 0.88;
+/**
+ * Bella: clear American English, less "AI-cute" than Heart.
+ * Sounds closer to a normal person reading a lesson.
+ */
+const VOICE = 'af_bella';
+/** Everyday speaking pace (slightly brisk reads as more natural). */
+const SPEED_NORMAL = 1.05;
+const SPEED_SLOW = 0.92;
+/** Short breath between sentences, like a person pausing. */
+const BREATH_MS = 140;
 
 let status: NeuralStatus = 'idle';
 let loadPromise: Promise<boolean> | null = null;
@@ -53,6 +58,8 @@ const pickDevice = async (): Promise<'webgpu' | 'wasm'> => {
   return 'wasm';
 };
 
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
 /** Load Kokoro once. Safe to call repeatedly. */
 export const ensureNeuralReady = async (): Promise<boolean> => {
   if (!naturalEnabled) return false;
@@ -94,22 +101,32 @@ export const ensureNeuralReady = async (): Promise<boolean> => {
 };
 
 /**
- * Shape English for Kokoro: keep natural sentence rhythm.
- * Only expand math signs; leave everyday wording alone.
+ * Shape English the way a person would say it out loud.
+ * Expand math signs; keep wording casual, not teleprompter-stiff.
  */
 export const normalizeForNeural = (text: string): string => {
   let next = text
     .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ' ')
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
     .replace(/\s+/g, ' ')
     .trim();
+  // Full question forms first, so we never say "equals what".
+  next = next.replace(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/g, 'what is $1 plus $2?');
+  next = next.replace(/(\d+)\s*[−–—-]\s*(\d+)\s*=\s*\?/g, 'what is $1 minus $2?');
+  next = next.replace(/(\d+)\s*[×x]\s*(\d+)\s*=\s*\?/g, 'what is $1 times $2?');
+  next = next.replace(/(\d+)\s*÷\s*(\d+)\s*=\s*\?/g, 'what is $1 divided by $2?');
   next = next.replace(/(\d+)\s*[−–—-]\s*(\d+)/g, '$1 minus $2');
   next = next.replace(/(\d+)\s*\+\s*(\d+)/g, '$1 plus $2');
   next = next.replace(/(\d+)\s*[×x]\s*(\d+)/g, '$1 times $2');
   next = next.replace(/(\d+)\s*÷\s*(\d+)/g, '$1 divided by $2');
-  next = next.replace(/=\s*\?/g, ' equals what?');
-  next = next.replace(/=/g, ' equals ');
-  // Digits stay as digits: Kokoro reads them more naturally than forced word lists.
-  return next.replace(/\s+/g, ' ').trim();
+  next = next.replace(/=\s*\?/g, '?');
+  next = next.replace(/=/g, ' is ');
+  // Soften leftover textbook phrasing from older copy.
+  next = next.replace(/\bequals what\??/gi, 'what is that');
+  next = next.replace(/\bequals\b/gi, 'is');
+  // Digits stay as digits: Kokoro already reads them naturally.
+  return next.replace(/\s+/g, ' ').trim().replace(/\s+\?/g, '?');
 };
 
 const playBlob = (
@@ -151,6 +168,56 @@ const playBlob = (
     );
   });
 
+/**
+ * Generate sentence-by-sentence so intonation resets like real speech,
+ * then play with a short breath between lines.
+ */
+const generateAndPlay = async (
+  spoken: string,
+  options: {
+    token: number;
+    isCurrent: (token: number) => boolean;
+    ratePref?: 'slow' | 'normal';
+    onEnd?: () => void;
+    bindAudio?: (audio: HTMLAudioElement | null) => void;
+  }
+): Promise<boolean> => {
+  const speed = options.ratePref === 'slow' ? SPEED_SLOW : SPEED_NORMAL;
+  const clips: Blob[] = [];
+
+  // Stream by sentence: long one-shot generations sound flat and "AI".
+  if (typeof ttsInstance.stream === 'function') {
+    for await (const part of ttsInstance.stream(spoken, { voice: VOICE, speed })) {
+      if (!options.isCurrent(options.token)) return false;
+      const audio = part?.audio;
+      if (!audio?.toBlob) continue;
+      clips.push(audio.toBlob() as Blob);
+    }
+  } else {
+    const raw = await ttsInstance.generate(spoken, { voice: VOICE, speed });
+    if (!options.isCurrent(options.token)) return false;
+    clips.push(raw.toBlob() as Blob);
+  }
+
+  if (clips.length === 0) return false;
+
+  for (let i = 0; i < clips.length; i += 1) {
+    if (!options.isCurrent(options.token)) return false;
+    const isLast = i === clips.length - 1;
+    const ok = await playBlob(clips[i], {
+      token: options.token,
+      isCurrent: options.isCurrent,
+      bindAudio: options.bindAudio,
+      onEnd: isLast ? options.onEnd : undefined,
+    });
+    if (!ok) return false;
+    if (!isLast && options.isCurrent(options.token)) {
+      await sleep(BREATH_MS);
+    }
+  }
+  return true;
+};
+
 export const speakWithNeural = async (
   text: string,
   options: {
@@ -179,11 +246,7 @@ export const speakWithNeural = async (
   try {
     const spoken = normalizeForNeural(text);
     if (!spoken) return false;
-    const speed = options.ratePref === 'slow' ? SPEED_SLOW : SPEED_NORMAL;
-    const raw = await ttsInstance.generate(spoken, { voice: VOICE, speed });
-    if (!options.isCurrent(options.token)) return false;
-    const blob: Blob = raw.toBlob();
-    return playBlob(blob, options);
+    return generateAndPlay(spoken, options);
   } catch (error) {
     console.warn('Natural voice playback failed; falling back.', error);
     options.bindAudio?.(null);

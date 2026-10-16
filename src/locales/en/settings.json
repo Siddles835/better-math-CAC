@@ -33,11 +33,11 @@
   "voiceQualityNatural": "Natural",
   "voiceQualityStandard": "Standard",
   "voiceLowQualityTip": "For a nicer voice, install an Enhanced voice in your device settings.",
-  "voiceNatural": "Warm natural voice",
-  "voiceNaturalHelp": "Sounds more like a real person. Downloads about 90 MB once, then works offline. English only.",
-  "voiceNaturalLoading": "Downloading the warm voice. This happens once.",
-  "voiceNaturalReady": "Warm voice is ready on this device.",
-  "voiceNaturalError": "Warm voice could not load. Using the device voice instead.",
-  "voiceNaturalOn": "Warm natural voice on",
-  "voiceNaturalOff": "Warm natural voice off"
+  "voiceNatural": "Natural voice",
+  "voiceNaturalHelp": "Uses the most human-sounding voice available. May download about 90 MB once for English, then works offline.",
+  "voiceNaturalLoading": "Getting the natural voice ready. This happens once.",
+  "voiceNaturalReady": "Natural voice is ready on this device.",
+  "voiceNaturalError": "Natural voice could not load. Using the device voice instead.",
+  "voiceNaturalOn": "Natural voice on",
+  "voiceNaturalOff": "Natural voice off"
 }

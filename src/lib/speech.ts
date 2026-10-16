@@ -19,16 +19,16 @@ let naturalVoicePref = true;
 export type SpeechRatePref = 'slow' | 'normal';
 
 /**
- * Near-natural pace. Too-slow rates sound slurred; pitch above 1.0 can sound
- * cartoonish on many device voices.
+ * Everyday pace. Slowing below ~0.9 makes device voices sound slurred;
+ * pitch above 1.0 can sound cartoonish.
  */
-export const K2_SPEECH_RATE = 0.95;
-export const K2_SPEECH_RATE_SLOW = 0.85;
+export const K2_SPEECH_RATE = 1;
+export const K2_SPEECH_RATE_SLOW = 0.88;
 export const K2_SPEECH_PITCH = 1;
 /** Tiny gap only when a long passage must be split. */
-export const SENTENCE_GAP_MS = 90;
+export const SENTENCE_GAP_MS = 110;
 /** Prefer one utterance; Chrome can cut off much longer strings. */
-export const LONG_CHUNK_CHARS = 240;
+export const LONG_CHUNK_CHARS = 280;
 
 export const setSpeechMuted = (muted: boolean) => {
   speechMuted = muted;
@@ -292,7 +292,8 @@ const equalsWord = (lang: AppLang) => {
   if (lang === 'hi') return 'बराबर';
   if (lang === 'es') return 'es igual a';
   if (lang === 'ar') return 'يساوي';
-  return 'equals';
+  // "is" sounds like normal speech; "equals" sounds like a textbook.
+  return 'is';
 };
 
 const equalsWhat = (lang: AppLang) => {
@@ -300,7 +301,8 @@ const equalsWhat = (lang: AppLang) => {
   if (lang === 'hi') return 'कितने';
   if (lang === 'es') return 'cuánto es';
   if (lang === 'ar') return 'يساوي كم';
-  return 'equals what?';
+  // How a person asks, not "equals what".
+  return 'what is that';
 };
 
 export const numberWord = (n: number, lang: AppLang = loadLanguage()): string => wordsUpTo9999(n, lang);
@@ -474,6 +476,10 @@ export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number =
   return score;
 };
 
+/** True when this OS voice is labeled Natural / Neural / Online / Siri-class. */
+export const isOsNaturalVoice = (voice: SpeechSynthesisVoice): boolean =>
+  HUMAN_VOICE.test(voice.name) || voiceQuality(voice) === 'natural';
+
 /** When a human-quality voice exists for the language, ignore flat robotic ones. */
 export const pickHumanVoice = (
   lang: AppLang,
@@ -484,12 +490,23 @@ export const pickHumanVoice = (
   if (ranked.length === 0) return null;
   if (preferredURI) {
     const preferred = ranked.find((voice) => voice.voiceURI === preferredURI);
-    if (preferred && (HUMAN_VOICE.test(preferred.name) || voiceQuality(preferred) === 'natural')) {
+    if (preferred && isOsNaturalVoice(preferred)) {
       return preferred;
     }
   }
-  const human = ranked.find((voice) => HUMAN_VOICE.test(voice.name) || voiceQuality(voice) === 'natural');
+  const human = ranked.find((voice) => isOsNaturalVoice(voice));
   return human ?? ranked[0];
+};
+
+/** Best OS Natural/Neural voice for this language, if any. */
+export const findOsNaturalVoice = (
+  lang: AppLang,
+  voices: SpeechSynthesisVoice[] = getVoices(),
+  preferredURI: string | null = preferredVoiceURI
+): SpeechSynthesisVoice | null => {
+  const picked = pickHumanVoice(lang, voices, preferredURI);
+  if (picked && isOsNaturalVoice(picked)) return picked;
+  return null;
 };
 
 export const listVoicesForLang = (
@@ -685,7 +702,7 @@ const speakChunk = (
   utterance.lang = voice.lang;
   utterance.voice = voice;
   utterance.rate = rate;
-  utterance.pitch = Math.min(1.1, K2_SPEECH_PITCH);
+  utterance.pitch = K2_SPEECH_PITCH;
   const finish = (event?: SpeechSynthesisErrorEvent) => {
     if (token !== speechToken) return;
     if (event && (event.error === 'interrupted' || event.error === 'canceled')) return;
@@ -839,9 +856,17 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
   const afterClip = async () => {
     if (token !== speechToken) return;
-    // Tier 2: Kokoro neural English. Wait briefly for the model so kids hear a
-    // human voice instead of a flat device voice when natural mode is on.
     if (naturalVoicePref && lang === 'en') {
+      // Prefer a real OS Natural/Neural voice when the browser has one.
+      // Edge Aria, macOS Enhanced, etc. usually sound more like a person than
+      // a small on-device model.
+      const uri = options?.voiceURI !== undefined ? options.voiceURI : preferredVoiceURI;
+      const osNatural = findOsNaturalVoice(lang, getVoices(), uri);
+      if (osNatural) {
+        startDevice();
+        return;
+      }
+      // Tier 2: Kokoro when the OS only has flat robotic voices.
       try {
         const { speakWithNeural, getNeuralStatus, ensureNeuralReady } = await import('./speechNeural');
         if (getNeuralStatus() !== 'ready') void ensureNeuralReady();
@@ -893,9 +918,9 @@ export const stopSpeaking = () => {
 
 /** Short demo line for the Settings voice picker. */
 export const sampleSpeechText = (lang: AppLang): string => {
-  if (lang === 'zh-Hans') return '你好。我们一起数一数：一，二，三。';
-  if (lang === 'hi') return 'नमस्ते। चलो गिनते हैं: एक, दो, तीन।';
-  if (lang === 'es') return 'Hola. Contemos juntos: uno, dos, tres.';
-  if (lang === 'ar') return 'مرحبًا. لنعد معًا: واحد، اثنان، ثلاثة.';
-  return 'Hello. Let’s count together: one, two, three.';
+  if (lang === 'zh-Hans') return '你好。我们一起数一数。一，二，三。';
+  if (lang === 'hi') return 'नमस्ते। चलो गिनते हैं। एक, दो, तीन।';
+  if (lang === 'es') return 'Hola. Contemos juntos. Uno, dos, tres.';
+  if (lang === 'ar') return 'مرحبًا. لنعد معًا. واحد، اثنان، ثلاثة.';
+  return 'Hi there. Let’s count together. One, two, three.';
 };

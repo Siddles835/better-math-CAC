@@ -98,9 +98,9 @@ describe('pickVoice ranking', () => {
 });
 
 describe('K–2 speech defaults', () => {
-  it('uses a near-natural rate and pitch', () => {
-    expect(K2_SPEECH_RATE).toBeCloseTo(0.95);
-    expect(K2_SPEECH_RATE_SLOW).toBeCloseTo(0.85);
+  it('uses an everyday speaking rate and pitch', () => {
+    expect(K2_SPEECH_RATE).toBeCloseTo(1);
+    expect(K2_SPEECH_RATE_SLOW).toBeCloseTo(0.88);
     expect(K2_SPEECH_PITCH).toBeCloseTo(1);
     expect(K2_SPEECH_PITCH).toBeLessThanOrEqual(1.1);
   });
