@@ -57,11 +57,14 @@ export const demoVerifyPin = (classCode: string, pin: string) => {
 export const demoRegisterStudent = (nickname: string): { student: StudentState; classCode: string } => {
   const name = nickname.trim().replace(/\s+/g, ' ');
   const key = keyOf(name);
+  const pathway = getClassroomPathwayId(world.classroom);
+  setSolarPathHint(pathway);
+  const startPlanet = getClassroomUnlockPlanet(world.classroom) ?? 'sun';
   const student: StudentState = {
     nickname: name,
-    planet: world.classroom.defaultStart?.planet ?? 'sun',
-    lesson: world.classroom.defaultStart?.lesson ?? 'counting',
-    completedPlanets: [],
+    planet: startPlanet,
+    lesson: getLessonForPlanet(startPlanet, pathway),
+    completedPlanets: planetsBefore(startPlanet),
     planetSteps: {},
     lastUpdated: Date.now(),
   };
@@ -72,7 +75,7 @@ export const demoRegisterStudent = (nickname: string): { student: StudentState; 
   world.learners = {
     ...world.learners,
     [key]: {
-      activePathId: world.classroom.defaultStart?.pathId ?? 'foundations',
+      activePathId: pathway,
       paths: {},
       curriculumProgress: {},
       assessments: [],
