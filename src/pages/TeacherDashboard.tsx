@@ -20,6 +20,7 @@ import {
   type PlanetId,
 } from '@/lib/planets';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import ClassBriefing from '@/components/ClassBriefing';
 import ClassTrends from '@/components/ClassTrends';
 import FamilyNote from '@/components/FamilyNote';
@@ -316,13 +317,12 @@ const TeacherDashboard: React.FC = () => {
             </p>
           )}
 
-          <label className="mt-5 flex min-h-[48px] cursor-pointer items-start gap-3 rounded-xl border border-border bg-background/50 p-3">
-            <input
-              type="checkbox"
-              className="mt-1 h-5 w-5"
+          <label className="mt-5 flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/50 p-3">
+            <Switch
               checked={usePlacement}
               disabled={savingPlacement || !!loadError || sample}
-              onChange={(e) => void handlePlacementToggle(e.target.checked)}
+              onCheckedChange={(checked) => void handlePlacementToggle(checked)}
+              aria-label={tx('ui:planetLevel_usePlacement')}
             />
             <span>
               <span className="block font-medium text-foreground">{tx('ui:planetLevel_usePlacement')}</span>
