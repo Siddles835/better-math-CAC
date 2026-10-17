@@ -11,7 +11,7 @@ import { diagnoseTrace, LessonTrace, type Diagnosis } from '@/lib/cognition';
 import { useLessonStep } from '@/hooks/useLessonStep';
 import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
 import PracticeAgainButton from '@/components/PracticeAgainButton';
-import Pencil from '@/components/Pencil';
+import ActiveObjectGlyph from '@/components/objects/ActiveObjectGlyph';
 import Counter from '@/components/Counter';
 import PlanetTransition from '@/components/PlanetTransition';
 import LessonShell from '@/components/LessonShell';
@@ -162,14 +162,14 @@ const SubtractionSaturn: React.FC = () => {
               <div className="flex justify-center items-end gap-3 mb-6 min-h-[120px]">
                 {Array.from({ length: saturnDemoLeft }).map((_, i) => (
                   <div key={i}>
-                    <Pencil className="pointer-events-none" size="lg" />
+                    <ActiveObjectGlyph role="subtract" className="pointer-events-none" size="lg" />
                   </div>
                 ))}
                 {!hidePencils && animationPhase !== 'final' && (
                   <>
                     {Array.from({ length: SATURN.demoTake }).map((_, i) => (
                       <div key={`take-${i}`} className={hidePencils ? 'animate-pencil-disappear' : ''}>
-                        <Pencil className="pointer-events-none" size="lg" />
+                        <ActiveObjectGlyph role="subtract" className="pointer-events-none" size="lg" />
                       </div>
                     ))}
                   </>
@@ -177,7 +177,7 @@ const SubtractionSaturn: React.FC = () => {
                 {animationPhase === 'animating' && (
                   <div className="flex gap-3 animate-pencil-disappear">
                     {Array.from({ length: SATURN.demoTake }).map((_, i) => (
-                      <Pencil key={`gone-${i}`} className="pointer-events-none opacity-50" size="lg" />
+                      <ActiveObjectGlyph role="subtract" key={`gone-${i}`} className="pointer-events-none opacity-50" size="lg" />
                     ))}
                   </div>
                 )}
@@ -221,7 +221,7 @@ const SubtractionSaturn: React.FC = () => {
                   {Array.from({ length: SATURN.practiceStart }).map((_, i) => {
                     const taken = i >= leftPencils;
                     return (
-                      <Pencil
+                      <ActiveObjectGlyph role="subtract"
                         key={i}
                         onClick={!taken ? removePencil : undefined}
                         className={taken ? 'pointer-events-none opacity-25 grayscale' : ''}
@@ -235,7 +235,7 @@ const SubtractionSaturn: React.FC = () => {
                 <div className="flex gap-2 min-w-[100px] justify-center flex-wrap opacity-40 grayscale">
                   {Array.from({ length: removedPencils }).map((_, i) => (
                     <div key={i} className="animate-pencil-appear">
-                      <Pencil className="pointer-events-none" />
+                      <ActiveObjectGlyph role="subtract" className="pointer-events-none" />
                     </div>
                   ))}
                 </div>
@@ -278,7 +278,7 @@ const SubtractionSaturn: React.FC = () => {
                   {Array.from({ length: activity2Start }).map((_, i) => {
                     const taken = i >= activity2Pencils;
                     return (
-                      <Pencil
+                      <ActiveObjectGlyph role="subtract"
                         key={i}
                         onClick={
                           !(activity2Checked && activity2Pencils === activity2Target) && !taken
@@ -302,7 +302,7 @@ const SubtractionSaturn: React.FC = () => {
                 <div className="flex gap-2 min-w-[100px] justify-center flex-wrap opacity-40 grayscale">
                   {Array.from({ length: activity2Removed }).map((_, i) => (
                     <div key={i} className="animate-pencil-appear">
-                      <Pencil className="pointer-events-none" />
+                      <ActiveObjectGlyph role="subtract" className="pointer-events-none" />
                     </div>
                   ))}
                 </div>

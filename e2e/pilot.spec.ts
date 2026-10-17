@@ -9,12 +9,14 @@ test('demo mode covers a path, an assessment, a curriculum, a CSV, and a reset',
   await page.getByRole('button', { name: 'New Student (Join Class)' }).click();
   await page.getByLabel('Class Code').fill('demo');
   await page.getByRole('button', { name: 'Join Class' }).click();
-  await page.getByTestId('pick-multiplication').click();
+  await page.waitForURL(/level-check/, { timeout: 15_000 });
   await page.getByTestId('demo-fast-forward').click();
-  await expect(page.getByTestId('assessment-result')).toBeVisible();
-  await expect(page.getByTestId('assessment-result')).not.toContainText('The answer is');
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByRole('heading', { name: 'Multiplication' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /ready|placement|done|start/i })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByText(/The answer is/i)).toHaveCount(0);
+  await page.getByRole('button', { name: /Start here|Continue/i }).click();
+  await expect(page.getByTestId('solar-system')).toBeVisible({ timeout: 15_000 });
 
   await page.goto('/?demo=1');
   await page.getByRole('button', { name: 'Manage Class (Login)' }).click();

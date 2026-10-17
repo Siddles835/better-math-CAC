@@ -13,7 +13,7 @@ import NumberDraw from '@/components/NumberDraw';
 import ThoughtCard from '@/components/ThoughtCard';
 import { diagnoseTrace, LessonTrace, type Diagnosis, type DigitRead } from '@/lib/cognition';
 import { useAnswerCheck } from '@/hooks/useAnswerCheck';
-import Apple from '@/components/Apple';
+import ActiveObjectGlyph from '@/components/objects/ActiveObjectGlyph';
 import Basket from '@/components/Basket';
 import Counter from '@/components/Counter';
 import ConceptVisual from '@/components/ConceptVisual';
@@ -152,7 +152,7 @@ const CountingSun: React.FC = () => {
               
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-sm">
                 {Array.from({ length: availableApples }).map((_, i) => (
-                  <Apple key={i} onClick={addAppleToBasket} size="md" label={tx('ui:s_476432a3e8')} />
+                  <ActiveObjectGlyph role="count" key={i} onClick={addAppleToBasket} size="md" label={tx('ui:s_476432a3e8')} />
                 ))}
               </div>
               {basketCount > 0 && (
@@ -229,7 +229,7 @@ const CountingSun: React.FC = () => {
                     <span className="text-2xl sm:text-4xl font-bold text-primary leading-none">{num}</span>
                     <div className="flex flex-wrap justify-center gap-1 max-w-[80px] pointer-events-none">
                       {Array.from({ length: num }).map((_, i) => (
-                        <Apple key={i} size="sm" className="pointer-events-none" />
+                        <ActiveObjectGlyph role="count" key={i} size="sm" className="pointer-events-none" />
                       ))}
                     </div>
                     <span className="text-sm text-muted-foreground">{word}</span>

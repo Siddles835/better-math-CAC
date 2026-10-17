@@ -14,6 +14,8 @@ export interface ObjectGlyphProps {
   label?: string;
   className?: string;
   diePips?: 1 | 2 | 3 | 4 | 5 | 6;
+  /** Optional Playwright / test hook. */
+  testId?: string;
 }
 
 const SIZE = {
@@ -130,6 +132,7 @@ const ObjectGlyph: React.FC<ObjectGlyphProps> = ({
   label,
   className,
   diePips,
+  testId,
 }) => {
   const builtin = resolveBuiltin(objectId);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -168,6 +171,7 @@ const ObjectGlyph: React.FC<ObjectGlyphProps> = ({
       type="button"
       onClick={handleClick}
       disabled={!onClick}
+      data-testid={testId}
       className={cn(
         'inline-flex items-center justify-center min-h-[48px] min-w-[48px] rounded-xl transition-transform duration-200',
         onClick && 'hover:scale-110 active:scale-95 cursor-pointer',

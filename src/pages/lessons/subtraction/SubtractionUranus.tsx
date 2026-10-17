@@ -10,7 +10,7 @@ import { useLessonStep } from '@/hooks/useLessonStep';
 import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
 import PracticeAgainButton from '@/components/PracticeAgainButton';
 import ConceptVisual from '@/components/ConceptVisual';
-import Pencil from '@/components/Pencil';
+import ActiveObjectGlyph from '@/components/objects/ActiveObjectGlyph';
 import Counter from '@/components/Counter';
 import PlanetTransition from '@/components/PlanetTransition';
 import LessonShell from '@/components/LessonShell';
@@ -188,7 +188,7 @@ const SubtractionUranus: React.FC = () => {
                   {Array.from({ length: wordStart }).map((_, i) => {
                     const givenAway = i >= wordPencils;
                     return (
-                      <Pencil
+                      <ActiveObjectGlyph role="subtract"
                         key={i}
                         onClick={
                           !(wordChecked && wordPencils === wordTarget) && !givenAway
@@ -210,7 +210,7 @@ const SubtractionUranus: React.FC = () => {
                 <div className="flex gap-2 min-w-[80px] justify-center flex-wrap opacity-40 grayscale">
                   {Array.from({ length: wordRemoved }).map((_, i) => (
                     <div key={i} className="animate-pencil-appear">
-                      <Pencil className="pointer-events-none" />
+                      <ActiveObjectGlyph role="subtract" className="pointer-events-none" />
                     </div>
                   ))}
                 </div>

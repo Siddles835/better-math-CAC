@@ -1,6 +1,6 @@
 import { tx } from '@/i18n/tx';
 import React, { useEffect, useMemo, useState } from 'react';
-import Apple from '@/components/Apple';
+import ActiveObjectGlyph from '@/components/objects/ActiveObjectGlyph';
 import Basket from '@/components/Basket';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,8 @@ const Dot: React.FC<{
 }> = ({ item, selected, distractor, onClick, label }) => {
   if (item === 'apples') {
     return (
-      <Apple
+      <ActiveObjectGlyph
+        role="count"
         size="md"
         onClick={onClick}
         label={label}
@@ -41,23 +42,13 @@ const Dot: React.FC<{
   }
   if (item === 'pencils') {
     return (
-      <button
-        type="button"
+      <ActiveObjectGlyph
+        role="add"
+        size="md"
         onClick={onClick}
-        aria-label={label}
-        aria-pressed={selected}
-        className={cn(
-          'inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-          selected && 'ring-2 ring-primary'
-        )}
-      >
-        <svg viewBox="0 0 20 60" className="h-12 w-4" aria-hidden>
-          <polygon points="10,60 5,48 15,48" fill="hsl(var(--foreground))" opacity="0.8" />
-          <rect x="5" y="10" width="10" height="38" fill="hsl(var(--pencil))" />
-          <rect x="5" y="0" width="10" height="10" fill="hsl(var(--apple))" opacity="0.7" />
-          <rect x="5" y="8" width="10" height="4" fill="hsl(var(--muted-foreground))" />
-        </svg>
-      </button>
+        label={label}
+        className={cn(selected && 'ring-2 ring-primary', distractor && 'opacity-80')}
+      />
     );
   }
   // Stars / blocks: correct picks use primary; distractors use muted so kids can tell them apart.
