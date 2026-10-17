@@ -363,7 +363,10 @@ describe('path locales', () => {
         const source = english[key].match(/\{\{[^}]+\}\}/g) ?? [];
         const translated = messages[key].match(/\{\{[^}]+\}\}/g) ?? [];
         expect(translated.sort()).toEqual(source.sort());
-        if (locale !== 'en') expect(messages[key]).not.toBe(english[key]);
+        // Template-only strings (for example "{{n}}") stay identical on purpose.
+        if (locale !== 'en' && /[A-Za-z\u00C0-\u024F]/.test(english[key].replace(/\{\{[^}]+\}\}/g, ''))) {
+          expect(messages[key]).not.toBe(english[key]);
+        }
       }
     }
   });

@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { CURRICULUM_BASE_PATHS, getPath } from '@/content/catalog';
 import type { Assignment, Curriculum, CurriculumNode, Problem } from '@/content/types';
+import ThreeTopicWizard from '@/components/curriculum/ThreeTopicWizard';
+import { parseBulkPromptLines, bulkLinesToProblems } from '@/lib/curriculum/bulkPrompts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertDialog,
@@ -131,6 +133,7 @@ const CurriculumPage = () => {
   const { classCode = '' } = useParams();
   const navigate = useNavigate();
   const [list, setList] = useState<Curriculum[]>([]);
+  const [showBuilder, setShowBuilder] = useState(false);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [students, setStudents] = useState<string[]>([]);
   const [current, setCurrent] = useState<Curriculum | null>(null);
@@ -390,7 +393,18 @@ const CurriculumPage = () => {
           </Alert>
         )}
 
-        {!current && (
+        {!current && showBuilder && (
+          <ThreeTopicWizard
+            classCode={classCode}
+            onCancel={() => setShowBuilder(false)}
+            onBuilt={(curriculum) => {
+              setShowBuilder(false);
+              openEditor(curriculum, true);
+            }}
+          />
+        )}
+
+        {!current && !showBuilder && (
           <ListView
             list={list}
             assignments={assignments}
@@ -398,6 +412,7 @@ const CurriculumPage = () => {
             error={error}
             onRetry={() => void load()}
             onCreate={() => openEditor(blankCurriculum(classCode), true)}
+            onBuild={() => setShowBuilder(true)}
             onDuplicate={(pathId) => {
               const path = getPath(pathId);
               if (!path) return;
@@ -451,6 +466,7 @@ const ListView = ({
   error,
   onRetry,
   onCreate,
+  onBuild,
   onDuplicate,
   onEdit,
   onDelete,
@@ -461,6 +477,7 @@ const ListView = ({
   error: string;
   onRetry: () => void;
   onCreate: () => void;
+  onBuild: () => void;
   onDuplicate: (pathId: string) => void;
   onEdit: (item: Curriculum) => void;
   onDelete: (id: string) => void;
@@ -480,7 +497,7 @@ const ListView = ({
           <h2 className="text-[28px] font-semibold leading-tight sm:text-[30px]">{tx('paths:currStart')}</h2>
           <p className="mt-1 text-[15px] text-muted-foreground sm:text-base">{tx('paths:currStartLead')}</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <button
             type="button"
             onClick={onCreate}
@@ -488,6 +505,18 @@ const ListView = ({
           >
             <Plus className="h-8 w-8 text-primary" aria-hidden />
             <span className="text-xl font-semibold text-foreground">{tx('paths:currCreate')}</span>
+          </button>
+          <button
+            type="button"
+            data-testid="curriculum-build-for-me"
+            onClick={onBuild}
+            className="flex min-h-[148px] flex-col items-start justify-between rounded-2xl border-2 border-border bg-card p-5 text-start shadow-sm transition duration-150 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Orbit className="h-8 w-8 text-primary" aria-hidden />
+            <span>
+              <span className="block text-xl font-semibold text-foreground">{tx('paths:builderTitle')}</span>
+              <span className="mt-1 block text-sm text-muted-foreground">{tx('paths:builderCardLead')}</span>
+            </span>
           </button>
           <label className="flex min-h-[148px] flex-col justify-between gap-3 rounded-2xl border-2 border-border bg-card p-5 text-start shadow-sm">
             <span>
@@ -649,9 +678,13 @@ const Editor = ({
 }) => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [openProblems, setOpenProblems] = useState<string[]>([]);
+  const [bulkText, setBulkText] = useState('');
   const titleRef = useRef<HTMLInputElement>(null);
   const planetRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const problemRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  const bulkResults = useMemo(() => parseBulkPromptLines(bulkText), [bulkText]);
+  const bulkValid = useMemo(() => bulkResults.filter((row) => row.ok), [bulkResults]);
 
   const step = canAssign ? 3 : curriculum.status === 'published' && !dirty ? 2 : 1;
 
@@ -1244,6 +1277,72 @@ const Editor = ({
                 );
               })}
             </Accordion>
+
+            <div className="mt-6 space-y-3 rounded-2xl border border-dashed border-border p-4">
+              <div>
+                <h3 className="text-sm font-semibold">{tx('paths:bulkTitle')}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{tx('paths:bulkLead')}</p>
+              </div>
+              <textarea
+                data-testid="bulk-prompts"
+                className="min-h-[120px] w-full rounded-xl border border-border bg-background px-3 py-2 font-mono text-sm text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                dir="ltr"
+                placeholder={tx('paths:bulkPlaceholder')}
+                value={bulkText}
+                onChange={(event) => setBulkText(event.target.value)}
+              />
+              {bulkText.trim() && (
+                <ul className="max-h-40 space-y-1 overflow-y-auto text-sm" aria-live="polite">
+                  {bulkResults
+                    .filter((row) => row.error !== 'blank')
+                    .map((row) => (
+                      <li key={`${row.line}-${row.raw}`} className="flex gap-2">
+                        <span className="tabular-nums text-muted-foreground" dir="ltr">
+                          {row.line}.
+                        </span>
+                        <span className={row.ok ? 'text-success' : 'text-destructive'}>
+                          {row.ok
+                            ? tx('paths:bulkOk')
+                            : tx(`paths:bulkError_${row.error}` as 'paths:bulkError_blank')}
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+              )}
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-[48px] w-full"
+                data-testid="bulk-add-valid"
+                disabled={bulkValid.length === 0}
+                onClick={() => {
+                  const room = MAX_PROBLEMS - selectedNode.source.problems.length;
+                  if (room <= 0) {
+                    window.alert(tx('paths:bulkLimit'));
+                    return;
+                  }
+                  const toAdd = bulkLinesToProblems(bulkValid, `${selectedNode.id}-bulk-${Date.now()}`).slice(
+                    0,
+                    room
+                  );
+                  if (toAdd.length < bulkValid.length) {
+                    window.alert(tx('paths:bulkLimit'));
+                  }
+                  if (toAdd.length === 0) return;
+                  patchNode(selectedIndex, {
+                    ...selectedNode,
+                    source: {
+                      kind: 'authored',
+                      problems: [...selectedNode.source.problems, ...toAdd],
+                    },
+                  });
+                  setBulkText('');
+                  setOpenProblems((prev) => [...prev, ...toAdd.map((item) => item.id)]);
+                }}
+              >
+                {tx('paths:bulkAddValid')}
+              </Button>
+            </div>
 
             <Button
               type="button"

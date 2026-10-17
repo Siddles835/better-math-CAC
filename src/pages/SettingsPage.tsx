@@ -163,6 +163,14 @@ const SettingsPage: React.FC = () => {
           <AppearanceSection />
         </section>
 
+        <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5">
+          <h2 className="text-lg font-semibold mb-1">{tx('objects:settingsSection')}</h2>
+          <p className="text-sm text-muted-foreground mb-4">{tx('objects:lead')}</p>
+          <Button type="button" className="min-h-[48px]" onClick={() => navigate('/objects')}>
+            {tx('objects:title')}
+          </Button>
+        </section>
+
         {student && (
           <section className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
             <p className="text-sm text-emerald-200/80">{tx('ui:s_f7b63f030b')}</p>

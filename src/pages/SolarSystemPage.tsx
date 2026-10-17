@@ -159,6 +159,12 @@ const SolarSystemPage: React.FC = () => {
               onClick={() => navigate('/settings')}
               className="underline underline-offset-2 hover:text-foreground"
             >{tx('ui:s_c7f73bb54d')}</button>
+            {' · '}
+            <button
+              type="button"
+              onClick={() => navigate('/objects')}
+              className="underline underline-offset-2 hover:text-foreground"
+            >{tx('objects:title')}</button>
             {solo && (
               <>
                 {' · '}
