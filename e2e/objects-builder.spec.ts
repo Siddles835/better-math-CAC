@@ -34,11 +34,15 @@ test('objects page accepts a file photo for a solo learner', async ({ page }) =>
   await page.getByTestId('objects-file-input').setInputFiles(fixturePng);
   await expect(page.getByTestId('objects-review')).toBeVisible({ timeout: 20_000 });
   await page.getByTestId('objects-looks-good').click();
-  await page.getByTestId('objects-name-one').fill('crayon');
-  await page.getByTestId('objects-name-many').fill('crayons');
+  await page.getByTestId('objects-name-one').fill('redstick');
+  await page.getByTestId('objects-name-many').fill('redsticks');
   await page.getByTestId('objects-preview').click();
   await page.getByTestId('objects-save').click();
-  await expect(page.getByText(/crayon/i).first()).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByTestId('objects-page')).toBeVisible();
+  // Prefer a visible library label; avoid matching hidden <option> builtins like "crayon".
+  await expect(page.getByRole('button', { name: /redstick/i }).or(page.getByText('redstick')).first()).toBeVisible({
+    timeout: 15_000,
+  });
 });
 
 test('demo teacher can open the 3-topic builder', async ({ page }) => {
