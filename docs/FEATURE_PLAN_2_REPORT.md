@@ -51,9 +51,12 @@ Touched: CurriculumPage, TeacherDashboard, SettingsPage, ConceptVisual, Basket, 
 
 - MediaPipe Image Segmenter + Face Detector (self-hosted models) not bundled.
 - Fix-edges brush UI.
-- Full generators + audits for SS3–SS8 (design only / coming soon).
+- Full generators + audits for SS3–SS8 (design only / coming soon). SS5 stays off: the existing `geometry` generator cannot separate shapes / perimeter / area cleanly.
+- Generators do not yet auto-attach `Problem.visual`; explore DotField / TenFrame still use abstract marks.
 - Complete Playwright matrix (phone/tablet/desktop × themes × RTL) and axe on every key screen.
 - Measured cutout timings on physical iPad (report lab numbers only if collected in e2e follow-up).
+
+Counting, addition, and subtraction lesson pages plus TeachStory now render through `ActiveObjectGlyph` so an active sticker shows in those lessons.
 
 ## 5. Risks
 
