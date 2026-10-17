@@ -39,7 +39,27 @@ Topics: Tens and ones, Hundreds, Compare and order. Theme: cool blue. Generators
 Topics: Length, Time, Money. Theme: green.
 
 ### SS5 Geometry
-Topics: Shapes, Perimeter, Area. Reuses geometry generator for perimeter/area; shapes need a dedicated generator.
+Topics: Shapes, Perimeter, Area. Theme: rose.
+
+**Status: coming soon — geometry generator gap.** Do not set `comingSoon: false` until dedicated generators exist.
+
+Why the existing `geometry` generator cannot ship SS5:
+
+| SS5 need (3-3-3 band) | What `geometry` actually does |
+|-----------------------|-------------------------------|
+| Shapes (Sun–Venus): identify / count sides | **No shapes mode.** Tier 1 always emits rectangle perimeter. |
+| Perimeter (Earth–Jupiter): perimeter at rising difficulty | Tier selects **skill**, not difficulty: T1=perimeter, T2=area, T3=angles. A perimeter band with tiers `[1]`, `[1,2]`, `[2,3]` would mix perimeter, area, and angles. |
+| Area (Saturn–Neptune): area at rising difficulty | Same problem: tier 1 inside an “area” band still generates perimeter. |
+
+Mapping `shapes` / `perimeter` / `area` all to `geometry` (as `generatorForTopic` does today for scaffolding) would give every planet band the **same** perimeter→area→angles schedule while labeling planets as Shapes / Perimeter / Area. That is mislabeled content, not a live solar system.
+
+To go live, SS5 needs:
+
+1. A **shapes** `GeneratorId` (and audit-clean items), e.g. sides/vertices of common polygons.
+2. **Perimeter** and **area** generators (or a geometry mode keyed by topic) where **all tiers** stay on that skill and only number ranges ramp — matching how addition/multiplication work on SS1/SS2.
+3. Classroom path plumbing: today `SolarPathId` / `PATHS` / `setClassDefaultStart` only accept `foundations` | `operations`, so a live SS5 also needs a real path id students can join.
+
+Until then, keep `comingSoon: true` so SS5 stays out of `LIVE_SOLAR_SYSTEMS`.
 
 ### SS6 Equal Shares and Fractions
 Topics: Equal shares, Halves and quarters, Fractions of a group. Theme: violet.

@@ -4,6 +4,7 @@ import {
   BUILDER_TOPICS,
   LIVE_SOLAR_SYSTEMS,
   SOLAR_SYSTEMS,
+  generatorForTopic,
   isTopicStartPlanet,
   legacyPathIdForSolar,
   resolveSolarSystem,
@@ -68,5 +69,32 @@ describe('solarSystems registry', () => {
       expect(system.nodes).toHaveLength(9);
       expect(system.topics).toHaveLength(3);
     }
+  });
+
+  it('keeps SS5 coming soon until shapes/perimeter/area are distinct generators', () => {
+    const ss5 = SOLAR_SYSTEMS.find((system) => system.id === 'ss5');
+    expect(ss5).toBeTruthy();
+    expect(ss5!.comingSoon).toBe(true);
+    expect(ss5!.topics).toEqual(['shapes', 'perimeter', 'area']);
+    expect(LIVE_SOLAR_SYSTEMS.map((system) => system.id)).not.toContain('ss5');
+    expect(resolveSolarSystemId('ss5')).toBe('ss1');
+    expect(legacyPathIdForSolar('ss5')).toBe('foundations');
+    // Scaffolding still points at geometry; that single generator cannot
+    // distinguish the three SS5 topics (see docs/SOLAR_SYSTEMS.md).
+    expect(generatorForTopic('shapes')).toBe('geometry');
+    expect(generatorForTopic('perimeter')).toBe('geometry');
+    expect(generatorForTopic('area')).toBe('geometry');
+    expect(ss5!.nodes).toHaveLength(9);
+    expect(ss5!.nodes.map((node) => node.topics[0])).toEqual([
+      'shapes',
+      'shapes',
+      'shapes',
+      'perimeter',
+      'perimeter',
+      'perimeter',
+      'area',
+      'area',
+      'area',
+    ]);
   });
 });
