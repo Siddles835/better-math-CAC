@@ -10,7 +10,7 @@ import { useLessonStep } from '@/hooks/useLessonStep';
 import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
 import PracticeAgainButton from '@/components/PracticeAgainButton';
 import ConceptVisual from '@/components/ConceptVisual';
-import Pencil from '@/components/Pencil';
+import ActiveObjectGlyph from '@/components/objects/ActiveObjectGlyph';
 import Counter from '@/components/Counter';
 import PlanetTransition from '@/components/PlanetTransition';
 import LessonShell from '@/components/LessonShell';
@@ -201,14 +201,14 @@ const AdditionMars: React.FC = () => {
               <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
                 <div className="flex flex-wrap justify-center gap-2 max-w-[10rem] sm:max-w-none">
                   {Array.from({ length: wordLeft }).map((_, i) => (
-                    <Pencil key={i} className="pointer-events-none" />
+                    <ActiveObjectGlyph role="add" key={i} className="pointer-events-none" />
                   ))}
                 </div>
                 <span className="text-4xl font-bold text-mars">+</span>
                 <div className="flex flex-wrap justify-center gap-2 min-w-[4rem] max-w-[10rem] sm:max-w-none">
                   {Array.from({ length: wordRight }).map((_, i) => (
                     <div key={i} className="animate-pencil-appear">
-                      <Pencil className="pointer-events-none" />
+                      <ActiveObjectGlyph role="add" className="pointer-events-none" />
                     </div>
                   ))}
                 </div>
@@ -218,7 +218,7 @@ const AdditionMars: React.FC = () => {
             {!(wordChecked && wordLeft + wordRight === wordTarget) && (
               <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto mb-8">
                 {Array.from({ length: wordAvailable }).map((_, i) => (
-                  <Pencil key={i} onClick={addPencilWord} />
+                  <ActiveObjectGlyph role="add" key={i} onClick={addPencilWord} />
                 ))}
               </div>
             )}

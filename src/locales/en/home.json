@@ -24,5 +24,8 @@
   "privacy": "Privacy Policy",
   "cookies": "Cookie Policy",
   "learnAlone": "Learn on my own",
-  "soloBadge": "Solo on this device"
+  "soloBadge": "Solo on this device",
+  "demoShortcutsLead": "Demo ready — one tap into the sample class.",
+  "tryAsTeacher": "Try as demo teacher",
+  "tryAsStudent": "Try as demo student"
 }

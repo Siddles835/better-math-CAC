@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import GeometryDiagram from '@/components/GeometryDiagram';
 import NumberDraw from '@/components/NumberDraw';
+import ProblemVisual from '@/components/objects/ProblemVisual';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
 import { getPath } from '@/content/catalog';
@@ -12,6 +13,7 @@ import { useGame } from '@/context/GameContext';
 import { useAnswerCheck } from '@/hooks/useAnswerCheck';
 import { parseStudentAnswer } from '@/lib/answers/parse';
 import { getPort } from '@/lib/data/port';
+import { loadObjectPrefs } from '@/lib/objects/prefs';
 import { problemsForNode } from '@/lib/paths/generators';
 import { loadActiveLearner, saveActiveLearner } from '@/lib/paths/activeLearner';
 import { recordAttempt } from '@/lib/paths/progress';
@@ -48,6 +50,9 @@ const ProblemPlayerPage = () => {
   const [threshold, setThreshold] = useState(80);
   const [topics, setTopics] = useState<string[]>([]);
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null);
+  const [showPictures, setShowPictures] = useState(
+    () => loadObjectPrefs().showPicturesWithProblems
+  );
   const active = getActiveStudent();
   const solo = !!(active?.solo || isSoloClassCode(active?.classCode));
   const solarPlay = isSolarPathId(pathId);
@@ -98,6 +103,10 @@ const ProblemPlayerPage = () => {
   const spoken = useMemo(() => (problem ? `${promptText(problem)} ${problem.equation ?? ''}` : ''), [problem]);
   const digits = problem ? String(problem.answer).length : 0;
   const allowDraw = !!problem && digits <= 2 && problem.type !== 'multipleChoice' && prefs.answerMethod !== 'type';
+
+  useEffect(() => {
+    setShowPictures(loadObjectPrefs().showPicturesWithProblems);
+  }, [index, problem?.id]);
 
   const grade = async (raw: string) => {
     if (!problem) return;
@@ -179,6 +188,7 @@ const ProblemPlayerPage = () => {
     <div className="min-h-screen bg-background subtle-stars p-6">
       <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6">
         {preview && <p className="mb-3 text-sm font-medium">{tx('paths:previewBanner')}</p>}
+        {showPictures && problem.visual && <ProblemVisual visual={problem.visual} />}
         <div className="mb-4 flex items-start justify-between gap-2">
           <h1 className="text-xl font-semibold">{promptText(problem)}</h1>
           <ReadAloudButton text={spoken} />

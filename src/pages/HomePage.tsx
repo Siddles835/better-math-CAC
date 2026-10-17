@@ -5,6 +5,8 @@ import LanguagePicker from '@/components/LanguagePicker';
 import { VersionMark } from '@/components/DemoChrome';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import { tx } from '@/i18n/tx';
+import { enterDemoAsStudent, enterDemoAsTeacher } from '@/lib/demo/login';
+import { isDemoMode } from '@/lib/demo/mode';
 import {
   clearActiveStudent,
   clearActiveTeacher,
@@ -31,12 +33,14 @@ const HomePage: React.FC = () => {
         : 'paths:welcomeStandard';
   const [studentSession, setStudentSession] = useState<ActiveStudent | null>(null);
   const [teacherSession, setTeacherSession] = useState<ActiveTeacher | null>(null);
+  const [demoOn, setDemoOn] = useState(false);
 
   useEffect(() => {
     const sync = () => {
       reconcileExclusiveSession();
       setStudentSession(getActiveStudent());
       setTeacherSession(getActiveTeacher());
+      setDemoOn(isDemoMode());
     };
     sync();
     window.addEventListener(SESSION_CHANGED, sync);
@@ -99,6 +103,33 @@ const HomePage: React.FC = () => {
           )}
         </p>
       </div>
+
+      {demoOn && (
+        <div
+          className="w-full max-w-2xl mb-6 space-y-3 animate-fade-in rounded-2xl border border-amber-300/60 bg-amber-50/90 p-4 text-start shadow-sm"
+          data-testid="demo-one-tap"
+        >
+          <p className="text-sm font-medium text-amber-950">{t('demoShortcutsLead')}</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              data-testid="demo-try-teacher"
+              onClick={() => navigate(enterDemoAsTeacher())}
+              className="flex-1 min-h-[48px] px-5 py-2.5 text-base font-semibold rounded-xl bg-sky-600 text-white hover:bg-sky-500 active:scale-[0.98] transition-all duration-200 shadow-sm"
+            >
+              {t('tryAsTeacher')}
+            </button>
+            <button
+              type="button"
+              data-testid="demo-try-student"
+              onClick={() => navigate(enterDemoAsStudent())}
+              className="flex-1 min-h-[48px] px-5 py-2.5 text-base font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 active:scale-[0.98] transition-all duration-200 shadow-sm"
+            >
+              {t('tryAsStudent')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {(studentSession || teacherSession) && (
         <div className="w-full max-w-2xl mb-6 space-y-3 animate-fade-in">

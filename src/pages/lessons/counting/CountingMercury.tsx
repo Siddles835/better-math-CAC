@@ -9,7 +9,7 @@ import { useCognitionSession } from '@/hooks/useCognitionSession';
 import { useLessonStep } from '@/hooks/useLessonStep';
 import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
 import PracticeAgainButton from '@/components/PracticeAgainButton';
-import Apple from '@/components/Apple';
+import ActiveObjectGlyph from '@/components/objects/ActiveObjectGlyph';
 import Basket from '@/components/Basket';
 import Counter from '@/components/Counter';
 import PlanetTransition from '@/components/PlanetTransition';
@@ -140,7 +140,7 @@ const CountingMercury: React.FC = () => {
               {!wordProblemCorrect && (
                 <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-md">
                   {Array.from({ length: wordProblemAvailable }).map((_, i) => (
-                    <Apple key={i} onClick={addAppleToWordProblem} size="md" label={tx('ui:s_476432a3e8')} />
+                    <ActiveObjectGlyph role="count" key={i} onClick={addAppleToWordProblem} size="md" label={tx('ui:s_476432a3e8')} />
                   ))}
                 </div>
               )}

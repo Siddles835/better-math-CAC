@@ -53,6 +53,15 @@ export interface Problem {
   difficulty: Difficulty;
   topics: string[];
   diagram?: DiagramSpec;
+  /**
+   * Optional picture groups for counting-style problems.
+   * `objectId` may be a sticker id, a builtin id, or `'active'`.
+   */
+  visual?: {
+    objectId: string | 'active';
+    groups: number[];
+    op?: 'count' | 'add' | 'subtract';
+  };
   /** Operands and operator used to derive `answer`. Present on generated items. */
   operands?: number[];
   operator?: Operator;
@@ -145,6 +154,12 @@ export interface Curriculum {
   status: 'draft' | 'published';
   nodes: CurriculumNode[];
   updatedAt: number;
+  /** Present when the curriculum was created by the 3-topic builder. */
+  generatedFrom?: {
+    topics: [string, string, string];
+    grade?: 'K' | '1' | '2';
+    pace?: 'gentle' | 'standard' | 'challenge';
+  };
 }
 
 export interface Assignment {

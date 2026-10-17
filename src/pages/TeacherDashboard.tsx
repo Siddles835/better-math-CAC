@@ -6,6 +6,7 @@ import AuthNavButton from '@/components/AuthNavButton';
 import {
   Classroom,
   deleteStudent,
+  setClassAllowStudentObjectPhotos,
   setClassDefaultStart,
   setClassUsePlacementCheck,
   subscribeToClass,
@@ -27,7 +28,13 @@ import ClassTrends from '@/components/ClassTrends';
 import FamilyNote from '@/components/FamilyNote';
 import { misconceptionLabel, teacherLineFor } from '@/lib/cognition';
 import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
-import { CLASSROOM_PATHS } from '@/content/catalog';
+import {
+  LIVE_SOLAR_SYSTEMS,
+  isTopicStartPlanet,
+  legacyPathIdForSolar,
+  resolveSolarSystemId,
+  topicLabelKey,
+} from '@/content/solarSystems';
 import PilotOverview from '@/components/PilotOverview';
 import { isDemoMode } from '@/lib/demo/mode';
 import { cn } from '@/lib/utils';
@@ -49,8 +56,10 @@ const TeacherDashboard: React.FC = () => {
     null
   );
   const [usePlacement, setUsePlacement] = useState(false);
+  const [allowStudentPhotos, setAllowStudentPhotos] = useState(false);
   const [defaultPath, setDefaultPath] = useState('foundations');
   const [savingPlacement, setSavingPlacement] = useState(false);
+  const [savingPhotos, setSavingPhotos] = useState(false);
 
   const sample = classCode.toUpperCase() === SAMPLE_CLASS_CODE;
 
@@ -81,8 +90,9 @@ const TeacherDashboard: React.FC = () => {
           setDefaultPlanet(unlock);
         }
         setUsePlacement(!!data.usePlacementCheck);
-        const pathway =
-          data.defaultStart?.pathId === 'operations' ? 'operations' : 'foundations';
+        setAllowStudentPhotos(!!data.allowStudentObjectPhotos);
+        const solarId = resolveSolarSystemId(data.defaultStart?.pathId);
+        const pathway = legacyPathIdForSolar(solarId);
         setDefaultPath(pathway);
         setSolarPathHint(pathway);
       },
@@ -158,6 +168,22 @@ const TeacherDashboard: React.FC = () => {
       setSaveError(tx('ui:planetLevel_placementSaveFail'));
     } finally {
       setSavingPlacement(false);
+    }
+  };
+
+  const handleStudentPhotosToggle = async (enabled: boolean) => {
+    setAllowStudentPhotos(enabled);
+    if (sample) return;
+    setSavingPhotos(true);
+    setSaveError('');
+    try {
+      await setClassAllowStudentObjectPhotos(classCode, enabled);
+    } catch (err) {
+      console.error(err);
+      setAllowStudentPhotos(!enabled);
+      setSaveError(tx('ui:dashSaveFail'));
+    } finally {
+      setSavingPhotos(false);
     }
   };
 
@@ -287,17 +313,18 @@ const TeacherDashboard: React.FC = () => {
                 {planetOptions.map((info) => (
                   <option key={info.id} value={info.id}>
                     {tx(`ui:${info.labelKey}`)}
+                    {isTopicStartPlanet(info.id) ? ` (${tx('paths:topicStartTag')})` : ''}
                   </option>
                 ))}
               </select>
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">{tx('paths:defaultPath')}</span>
+              <span className="mb-1 block font-medium">{tx('paths:solarSystem')}</span>
               <select
-                value={defaultPath}
+                value={resolveSolarSystemId(defaultPath)}
                 disabled={savingDefault || !!loadError || sample}
                 onChange={(e) => {
-                  const pathId = e.target.value === 'operations' ? 'operations' : 'foundations';
+                  const pathId = legacyPathIdForSolar(e.target.value);
                   setDefaultPath(pathId);
                   setSolarPathHint(pathId);
                   setDefaultSaved(false);
@@ -312,11 +339,11 @@ const TeacherDashboard: React.FC = () => {
                     .finally(() => setSavingDefault(false));
                 }}
                 className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={tx('paths:defaultPath')}
+                aria-label={tx('paths:solarSystem')}
               >
-                {CLASSROOM_PATHS.map((path) => (
-                  <option key={path.id} value={path.id}>
-                    {tx(path.titleKey)}
+                {LIVE_SOLAR_SYSTEMS.map((system) => (
+                  <option key={system.id} value={system.id}>
+                    {tx(system.nameKey)}: {system.topics.map((topic) => tx(topicLabelKey(topic))).join(', ')}
                   </option>
                 ))}
               </select>
@@ -324,6 +351,7 @@ const TeacherDashboard: React.FC = () => {
           </div>
 
           <p className="mt-2 text-sm text-muted-foreground">{tx('ui:planetLevel_how')}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{tx('paths:topicStartsHelp')}</p>
           {(savingDefault || defaultSaved || saveError) && (
             <p
               className={cn(
@@ -345,6 +373,19 @@ const TeacherDashboard: React.FC = () => {
             <span>
               <span className="block font-medium text-foreground">{tx('ui:planetLevel_usePlacement')}</span>
               <span className="text-sm text-muted-foreground">{tx('ui:planetLevel_usePlacementHelp')}</span>
+            </span>
+          </label>
+
+          <label className="mt-3 flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/50 p-3">
+            <Switch
+              checked={allowStudentPhotos}
+              disabled={savingPhotos || !!loadError || sample}
+              onCheckedChange={(checked) => void handleStudentPhotosToggle(checked)}
+              aria-label={tx('paths:allowStudentPhotos')}
+            />
+            <span>
+              <span className="block font-medium text-foreground">{tx('paths:allowStudentPhotos')}</span>
+              <span className="text-sm text-muted-foreground">{tx('paths:allowStudentPhotosHelp')}</span>
             </span>
           </label>
 

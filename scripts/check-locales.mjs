@@ -18,6 +18,8 @@ const allowValues = new Set([
   'Macro-F1',
   'mathlift1234@gmail.com',
   'PIN',
+  '{{n}}',
+  '3 {{name}} + 2 {{name}}',
 ]);
 const errors = [];
 

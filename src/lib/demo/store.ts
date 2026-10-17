@@ -1,5 +1,6 @@
 import type { Assignment, Curriculum, LearnerRecord, PilotGoals } from '@/content/types';
 import type { Classroom, StudentState } from '@/lib/classroom';
+import { seedDemoObjectPrefs } from '@/lib/demo/objects';
 import { DEMO_CLASS_CODE, DEMO_PIN, buildDemoWorld, type DemoWorld } from '@/lib/demo/seed';
 import {
   getClassroomPathwayId,
@@ -22,6 +23,7 @@ const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 export const resetDemoStore = (): void => {
   world = buildDemoWorld();
+  seedDemoObjectPrefs();
   emit();
 };
 
@@ -158,6 +160,11 @@ export const demoSetDefaultStart = (planet: string, pathId?: string): void => {
 
 export const demoSetPlacement = (enabled: boolean): void => {
   world.classroom = { ...world.classroom, usePlacementCheck: enabled };
+  emit();
+};
+
+export const demoSetAllowStudentPhotos = (enabled: boolean): void => {
+  world.classroom = { ...world.classroom, allowStudentObjectPhotos: enabled };
   emit();
 };
 

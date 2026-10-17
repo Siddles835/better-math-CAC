@@ -9,7 +9,7 @@ import { useGame } from '@/context/GameContext';
 import { useLessonStep } from '@/hooks/useLessonStep';
 import { usePlanetHandoff } from '@/hooks/usePlanetHandoff';
 import PracticeAgainButton from '@/components/PracticeAgainButton';
-import Pencil from '@/components/Pencil';
+import ActiveObjectGlyph from '@/components/objects/ActiveObjectGlyph';
 import Counter from '@/components/Counter';
 import PlanetTransition from '@/components/PlanetTransition';
 import LessonShell from '@/components/LessonShell';
@@ -223,12 +223,12 @@ const AdditionEarth: React.FC = () => {
               <div className="flex justify-center items-end gap-2 sm:gap-3 mb-6 min-h-[120px] flex-wrap max-w-[16rem] sm:max-w-none mx-auto">
                 {Array.from({ length: demoLeft }).map((_, i) => (
                   <div key={i}>
-                    <Pencil className="pointer-events-none" size="lg" />
+                    <ActiveObjectGlyph role="add" className="pointer-events-none" size="lg" />
                   </div>
                 ))}
                 {Array.from({ length: arrivedPencils }).map((_, i) => (
                   <div key={`new-${i}`} className="animate-pencil-appear">
-                    <Pencil className="pointer-events-none" size="lg" />
+                    <ActiveObjectGlyph role="add" className="pointer-events-none" size="lg" />
                   </div>
                 ))}
               </div>
@@ -267,7 +267,7 @@ const AdditionEarth: React.FC = () => {
               <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
                 <div className="flex flex-wrap justify-center gap-2 max-w-[10rem] sm:max-w-none">
                   {Array.from({ length: leftPencils }).map((_, i) => (
-                    <Pencil key={i} className="pointer-events-none" />
+                    <ActiveObjectGlyph role="add" key={i} className="pointer-events-none" />
                   ))}
                 </div>
                 
@@ -276,7 +276,7 @@ const AdditionEarth: React.FC = () => {
                 <div className="flex flex-wrap justify-center gap-2 min-w-[4rem] max-w-[10rem] sm:max-w-none">
                   {Array.from({ length: rightPencils }).map((_, i) => (
                     <div key={i} className="animate-pencil-appear">
-                      <Pencil className="pointer-events-none" />
+                      <ActiveObjectGlyph role="add" className="pointer-events-none" />
                     </div>
                   ))}
                 </div>
@@ -289,7 +289,7 @@ const AdditionEarth: React.FC = () => {
             
             <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto">
               {Array.from({ length: availablePencils }).map((_, i) => (
-                <Pencil key={i} onClick={addPencilRight} />
+                <ActiveObjectGlyph role="add" key={i} onClick={addPencilRight} />
               ))}
             </div>
           </div>
@@ -317,7 +317,7 @@ const AdditionEarth: React.FC = () => {
               <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
                 <div className="flex flex-wrap justify-center gap-2 max-w-[10rem] sm:max-w-none">
                   {Array.from({ length: activity2Left }).map((_, i) => (
-                    <Pencil key={i} className="pointer-events-none" />
+                    <ActiveObjectGlyph role="add" key={i} className="pointer-events-none" />
                   ))}
                 </div>
                 
@@ -326,7 +326,7 @@ const AdditionEarth: React.FC = () => {
                 <div className="flex flex-wrap justify-center gap-2 min-w-[4rem] max-w-[10rem] sm:max-w-none">
                   {Array.from({ length: activity2Right }).map((_, i) => (
                     <div key={i} className="animate-pencil-appear">
-                      <Pencil className="pointer-events-none" />
+                      <ActiveObjectGlyph role="add" className="pointer-events-none" />
                     </div>
                   ))}
                 </div>
@@ -336,7 +336,7 @@ const AdditionEarth: React.FC = () => {
             {!activity2Ok && (
               <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto mb-8">
                 {Array.from({ length: activity2Available }).map((_, i) => (
-                  <Pencil key={i} onClick={addPencilActivity2} testId="add-pencil" />
+                  <ActiveObjectGlyph role="add" key={i} onClick={addPencilActivity2} testId="add-pencil" />
                 ))}
               </div>
             )}

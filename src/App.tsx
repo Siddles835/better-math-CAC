@@ -48,6 +48,8 @@ import ForegroundTime from "./components/ForegroundTime";
 import ExplorePage from "./pages/ExplorePage";
 import ExploreActivityPage from "./pages/ExploreActivityPage";
 
+const ObjectsPage = lazy(() => import("./pages/ObjectsPage"));
+
 const queryClient = new QueryClient();
 const DigitCollectPage = import.meta.env.DEV
   ? lazy(() => import("./pages/DigitCollectPage"))
@@ -108,6 +110,14 @@ const App = () => {
               <Route path="/explore" element={lesson(<ExplorePage />)} />
               <Route path="/explore/:activityId" element={lesson(<ExploreActivityPage />)} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route
+                path="/objects"
+                element={
+                  <Suspense fallback={null}>
+                    <ObjectsPage />
+                  </Suspense>
+                }
+              />
               <Route path="/planets" element={lesson(<StudentHubPage />)} />
               <Route path="/solar-system" element={<Navigate to="/planets" replace />} />
               <Route path="/planet-select" element={<Navigate to="/planets" replace />} />

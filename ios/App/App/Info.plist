@@ -68,5 +68,11 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>MathLift uses the camera so you can turn your own objects into math pictures. Photos stay on this device.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MathLift lets you choose a photo of an object to turn into a math sticker. Photos stay on this device.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>MathLift does not save photos to your library. This permission is unused.</string>
 </dict>
 </plist>
