@@ -1,13 +1,21 @@
 import { tx } from '@/i18n/tx';
-import React, { useState } from 'react';
-import Apple from './Apple';
-import Pencil from './Pencil';
+import React, { useEffect, useState } from 'react';
+import ObjectGlyph from '@/components/objects/ObjectGlyph';
 import ReadAloudButton from './ReadAloudButton';
+import {
+  loadEnabledObjectIds,
+  resolveActiveGlyphId,
+  type ObjectGlyphRole,
+} from '@/lib/objects/activeGlyph';
+import { loadObjectPrefs } from '@/lib/objects/prefs';
 
 interface ConceptVisualProps {
   type: 'counting' | 'addition' | 'subtraction';
   step: number;
 }
+
+const roleForType = (type: ConceptVisualProps['type']): ObjectGlyphRole =>
+  type === 'counting' ? 'count' : type === 'addition' ? 'add' : 'subtract';
 
 const countingStepNarration = (step: number) => {
   const parts: string[] = [];
@@ -49,7 +57,48 @@ const HearLessonPrompt: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
+const useLessonGlyphIds = (role: ObjectGlyphRole, count: number): string[] => {
+  const [ids, setIds] = useState<string[]>(() =>
+    Array.from({ length: count }, (_, index) =>
+      resolveActiveGlyphId({ role, activeId: loadObjectPrefs().activeId, index })
+    )
+  );
+
+  useEffect(() => {
+    let cancel = false;
+    void (async () => {
+      const prefs = loadObjectPrefs();
+      const enabledIds = await loadEnabledObjectIds();
+      if (cancel) return;
+      setIds(
+        Array.from({ length: count }, (_, index) =>
+          resolveActiveGlyphId({
+            role,
+            activeId: prefs.activeId,
+            enabledIds,
+            index,
+          })
+        )
+      );
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [role, count]);
+
+  return ids;
+};
+
+const Glyph: React.FC<{ objectId: string; size?: 'sm' | 'md' | 'lg' }> = ({
+  objectId,
+  size = 'lg',
+}) => <ObjectGlyph objectId={objectId} size={size} className="pointer-events-none" />;
+
 const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
+  const role = roleForType(type);
+  const glyphs = useLessonGlyphIds(role, 8);
+  const g = (index: number) => glyphs[index] ?? resolveActiveGlyphId({ role, index });
+
   if (type === 'counting') {
     return (
       <div className="flex flex-col items-center gap-4 sm:gap-8 w-full px-1">
@@ -65,7 +114,7 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_701531d5d8')}</p>
             <div className="flex justify-center gap-4 mb-4">
               <div className="flex flex-col items-center">
-                <Apple size="lg" className="pointer-events-none" />
+                <Glyph objectId={g(0)} />
                 <span className="text-2xl font-bold text-primary mt-2">1</span>
               </div>
             </div>
@@ -77,9 +126,9 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
           <div className="animate-concept-delay-2 bg-card rounded-xl p-6 border border-border">
             <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_899e3dcb7b')}</p>
             <div className="flex justify-center gap-4 mb-4">
-              {[1, 2, 3].map(num => (
+              {[1, 2, 3].map((num) => (
                 <div key={num} className="flex flex-col items-center">
-                  <Apple size="lg" className="pointer-events-none" />
+                  <Glyph objectId={g(num - 1)} />
                   <span className="text-2xl font-bold text-primary mt-2">{num}</span>
                 </div>
               ))}
@@ -155,8 +204,8 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
           <div className="animate-concept-delay-1 bg-card rounded-xl p-6 border border-border">
             <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_d1a30123a7')}</p>
             <div className="flex justify-center gap-3 mb-4">
-              <Pencil size="lg" className="pointer-events-none" />
-              <Pencil size="lg" className="pointer-events-none" />
+              <Glyph objectId={g(0)} />
+              <Glyph objectId={g(1)} />
             </div>
           </div>
         )}
@@ -166,11 +215,11 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_67d346279e')}</p>
             <div className="flex justify-center items-center gap-4 mb-4">
               <div className="flex gap-3">
-                <Pencil size="lg" className="pointer-events-none" />
-                <Pencil size="lg" className="pointer-events-none" />
+                <Glyph objectId={g(0)} />
+                <Glyph objectId={g(1)} />
               </div>
               <span className="text-4xl font-bold text-venus">+</span>
-              <Pencil size="lg" className="pointer-events-none" />
+              <Glyph objectId={g(2)} />
             </div>
           </div>
         )}
@@ -179,9 +228,9 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
           <div className="animate-concept-delay-3 bg-card rounded-xl p-6 border border-border">
             <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_f6a49b3395')}</p>
             <div className="flex justify-center gap-3 mb-4">
-              {[1, 2, 3].map(num => (
+              {[1, 2, 3].map((num) => (
                 <div key={num} className="flex flex-col items-center">
-                  <Pencil size="lg" className="pointer-events-none" />
+                  <Glyph objectId={g(num - 1)} />
                   <span className="text-xl font-bold text-venus mt-2">{num}</span>
                 </div>
               ))}
@@ -219,9 +268,9 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
           <div className="animate-concept-delay-1 bg-card rounded-xl p-6 border border-border">
             <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_ac6f9848be')}</p>
             <div className="flex justify-center gap-3 mb-4">
-              {[1, 2, 3, 4].map(num => (
+              {[1, 2, 3, 4].map((num) => (
                 <div key={num} className="flex flex-col items-center">
-                  <Pencil size="lg" className="pointer-events-none" />
+                  <Glyph objectId={g(num - 1)} />
                   <span className="text-xl font-bold text-earth mt-2">{num}</span>
                 </div>
               ))}
@@ -234,13 +283,13 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_f0b93f50ea')}</p>
             <div className="flex justify-center items-center gap-4 mb-4">
               <div className="flex gap-3">
-                <Pencil size="lg" className="pointer-events-none" />
-                <Pencil size="lg" className="pointer-events-none" />
-                <Pencil size="lg" className="pointer-events-none" />
+                <Glyph objectId={g(0)} />
+                <Glyph objectId={g(1)} />
+                <Glyph objectId={g(2)} />
               </div>
               <span className="text-4xl font-bold text-earth">−</span>
               <div className="opacity-40">
-                <Pencil size="lg" className="pointer-events-none" />
+                <Glyph objectId={g(3)} />
               </div>
             </div>
           </div>
@@ -250,9 +299,9 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
           <div className="animate-concept-delay-3 bg-card rounded-xl p-6 border border-border">
             <p className="text-muted-foreground mb-4 text-center">{tx('ui:s_c187e37438')}</p>
             <div className="flex justify-center gap-3 mb-4">
-              {[1, 2, 3].map(num => (
+              {[1, 2, 3].map((num) => (
                 <div key={num} className="flex flex-col items-center">
-                  <Pencil size="lg" className="pointer-events-none" />
+                  <Glyph objectId={g(num - 1)} />
                   <span className="text-xl font-bold text-earth mt-2">{num}</span>
                 </div>
               ))}

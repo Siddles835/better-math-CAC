@@ -2,9 +2,15 @@ import { tx } from '@/i18n/tx';
 import React, { useEffect, useRef, useState } from 'react';
 import { Minus } from 'lucide-react';
 import { AppleShape } from '@/components/AppleShape';
+import ObjectGlyph from '@/components/objects/ObjectGlyph';
 import { Button } from '@/components/ui/button';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import { hapticTap } from '@/lib/haptics';
+import {
+  loadEnabledObjectIds,
+  resolveActiveGlyphId,
+} from '@/lib/objects/activeGlyph';
+import { loadObjectPrefs } from '@/lib/objects/prefs';
 import { cn } from '@/lib/utils';
 
 interface BasketProps {
@@ -41,6 +47,37 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
   const extra = Math.max(0, total - 12);
   const [animateIndex, setAnimateIndex] = useState<number | null>(null);
   const prev = useRef(shown);
+  const [glyphIds, setGlyphIds] = useState<string[]>(() =>
+    Array.from({ length: 12 }, (_, index) =>
+      resolveActiveGlyphId({
+        role: 'count',
+        activeId: loadObjectPrefs().activeId,
+        index,
+      })
+    )
+  );
+
+  useEffect(() => {
+    let cancel = false;
+    void (async () => {
+      const objectPrefs = loadObjectPrefs();
+      const enabledIds = await loadEnabledObjectIds();
+      if (cancel) return;
+      setGlyphIds(
+        Array.from({ length: 12 }, (_, index) =>
+          resolveActiveGlyphId({
+            role: 'count',
+            activeId: objectPrefs.activeId,
+            enabledIds,
+            index,
+          })
+        )
+      );
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (shown > prev.current) {
@@ -56,33 +93,30 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
   const reduceMotion = prefs.reduceMotion;
   const label = tx('ui:basketCount', { count: total });
   const canRemove = Boolean(onRemove) && total > 0;
+  const useApplePile = glyphIds.every(
+    (id) => id === 'builtin:apple' || id === 'apple'
+  );
 
-  const svg = (
-    <svg
-      viewBox="0 0 400 280"
-      fill="none"
-      className="w-full h-auto pointer-events-none"
-      role="img"
-      aria-label={label}
-    >
+  const basketShell = (
+    <>
       {/* Back rim */}
       <ellipse cx="200" cy="48" rx="152" ry="22" fill="hsl(var(--basket))" />
       {/* Inside shadow */}
       <ellipse cx="200" cy="62" rx="130" ry="28" fill="hsl(var(--foreground) / 0.25)" />
 
-      {/* Distinct apples */}
-      {PILE.slice(0, shown).map((slot, index) => {
-        const drop = !reduceMotion && animateIndex === index;
-        return (
-          <g
-            key={index}
-            opacity={drop ? 0.45 : 1}
-            transform={`translate(${slot.x - 12} ${slot.y - 14}) rotate(${slot.rot} 12 14) scale(2.7)`}
-          >
-            <AppleShape />
-          </g>
-        );
-      })}
+      {useApplePile &&
+        PILE.slice(0, shown).map((slot, index) => {
+          const drop = !reduceMotion && animateIndex === index;
+          return (
+            <g
+              key={index}
+              opacity={drop ? 0.45 : 1}
+              transform={`translate(${slot.x - 12} ${slot.y - 14}) rotate(${slot.rot} 12 14) scale(2.7)`}
+            >
+              <AppleShape />
+            </g>
+          );
+        })}
 
       {/* Front wall — sits under apple centres so each apple stays countable */}
       <path
@@ -119,12 +153,48 @@ const Basket: React.FC<BasketProps> = ({ count, children, className = '', onRemo
           </text>
         </g>
       )}
+    </>
+  );
+
+  const svg = (
+    <svg
+      viewBox="0 0 400 280"
+      fill="none"
+      className="w-full h-auto pointer-events-none"
+      role="img"
+      aria-label={label}
+    >
+      {basketShell}
     </svg>
   );
 
   return (
     <div className={cn('relative w-full max-w-[240px] sm:max-w-[300px] md:max-w-[360px] mx-auto', className)}>
       {svg}
+      {!useApplePile && (
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          {PILE.slice(0, shown).map((slot, index) => {
+            const drop = !reduceMotion && animateIndex === index;
+            return (
+              <div
+                key={index}
+                className={cn('absolute', drop && 'opacity-45')}
+                style={{
+                  left: `${(slot.x / 400) * 100}%`,
+                  top: `${(slot.y / 280) * 100}%`,
+                  transform: `translate(-50%, -50%) rotate(${slot.rot}deg) scale(0.75)`,
+                }}
+              >
+                <ObjectGlyph
+                  objectId={glyphIds[index] ?? 'builtin:apple'}
+                  size="sm"
+                  className="pointer-events-none min-h-0 min-w-0"
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
       {onRemove && (
         <Button
           type="button"
