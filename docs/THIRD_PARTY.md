@@ -14,6 +14,7 @@ Google MediaPipe image segmentation / face helpers are **not bundled** in this b
 
 Until then, `prepareStickerFromBlob` uses classic cutout (`strategy: 'auto'`) or a whole-photo rounded sticker (`strategy: 'none'`).
 
-## Capacitor Camera (optional)
+## Capacitor Camera and Filesystem
 
-`@capacitor/camera` is optional. When the package is installed and `Capacitor.isNativePlatform()` is true, My Objects prefers native `takePhoto` / `getPhoto` and gallery pick APIs. On the web, capture uses `getUserMedia` with a file-picker fallback.
+- `@capacitor/camera` (Apache-2.0): native `takePhoto` / `getPhoto` and gallery pick when `Capacitor.isNativePlatform()` is true. On the web, capture uses `getUserMedia` with a file-picker fallback.
+- `@capacitor/filesystem` (Apache-2.0): native sticker blob storage under `Directory.Data` so WebView IndexedDB eviction does not wipe My Objects on iOS.
