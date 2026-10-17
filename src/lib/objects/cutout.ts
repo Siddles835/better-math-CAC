@@ -54,29 +54,44 @@ const roundedRectSticker = (source: HTMLCanvasElement): HTMLCanvasElement => {
   return out;
 };
 
+export type CutoutStrategy = 'auto' | 'none';
+
+export interface PrepareStickerOptions {
+  /** `auto` runs classic cutout (ML deferred). `none` keeps the whole photo as a rounded sticker. */
+  strategy?: CutoutStrategy;
+}
+
 /**
  * Build a sticker from a photo Blob.
- * Tries classic cutout first in this build (ML strategy is wired for models under
- * public/models/ when present). Falls back to whole-photo rounded sticker.
+ * Canvas re-encode strips EXIF. Classic cutout runs when strategy is `auto`.
+ * ML MediaPipe is deferred until models are bundled under public/models/.
  */
-export const prepareStickerFromBlob = async (blob: Blob): Promise<PreparedSticker> => {
+export const prepareStickerFromBlob = async (
+  blob: Blob,
+  options: PrepareStickerOptions = {}
+): Promise<PreparedSticker> => {
+  const strategy = options.strategy ?? 'auto';
   const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' } as ImageBitmapOptions);
   try {
     const { canvas, ctx } = await downscaleForCutout(bitmap);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const classic = classicCutoutFromImageData(imageData);
-
     let working = canvas;
     let segmentation: SegmentationKind = 'none';
     let coverage = 1;
 
-    if (classic.ok) {
-      working = classic.canvas;
-      segmentation = 'classic';
-      coverage = classic.coverage;
-    } else {
+    if (strategy === 'none') {
       working = roundedRectSticker(canvas);
       segmentation = 'none';
+    } else {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const classic = classicCutoutFromImageData(imageData);
+      if (classic.ok) {
+        working = classic.canvas;
+        segmentation = 'classic';
+        coverage = classic.coverage;
+      } else {
+        working = roundedRectSticker(canvas);
+        segmentation = 'none';
+      }
     }
 
     const sticker = cropAndScaleSticker(working, STICKER_MAX_PX);

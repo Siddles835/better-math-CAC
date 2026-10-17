@@ -416,5 +416,7 @@
   "bulkError_missing-answer": "Falta la respuesta después de =",
   "bulkError_non-numeric": "La respuesta debe ser un número",
   "bulkError_too-long": "La línea es demasiado larga",
-  "bulkError_duplicate": "Pregunta duplicada"
+  "bulkError_duplicate": "Pregunta duplicada",
+  "allowStudentPhotos": "Permitir que el alumnado añada fotos de objetos",
+  "allowStudentPhotosHelp": "Desactivado por defecto. Si se activa, el alumnado puede usar la cámara en su dispositivo. Las fotos se quedan ahí."
 }

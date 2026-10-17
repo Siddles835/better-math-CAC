@@ -416,5 +416,7 @@
   "bulkError_missing-answer": "Missing answer after =",
   "bulkError_non-numeric": "Answer must be a number",
   "bulkError_too-long": "Line is too long",
-  "bulkError_duplicate": "Duplicate question"
+  "bulkError_duplicate": "Duplicate question",
+  "allowStudentPhotos": "Let students add object photos",
+  "allowStudentPhotosHelp": "Off by default. When on, students can use the camera on their own device. Photos stay on that device."
 }

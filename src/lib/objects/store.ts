@@ -268,9 +268,23 @@ export const createIndexedDbStore = (): ObjectStore => {
 };
 
 let singleton: ObjectStore | null = null;
+let nativeTried = false;
 
 export const getObjectStore = (): ObjectStore => {
-  singleton ??= createIndexedDbStore();
+  if (!singleton) {
+    singleton = createIndexedDbStore();
+    if (!nativeTried && typeof window !== 'undefined') {
+      nativeTried = true;
+      void import('@/lib/objects/nativeStore')
+        .then(({ createNativeObjectStore }) => createNativeObjectStore())
+        .then((native) => {
+          if (native) singleton = native;
+        })
+        .catch(() => {
+          // Keep IndexedDB / memory store.
+        });
+    }
+  }
   return singleton;
 };
 

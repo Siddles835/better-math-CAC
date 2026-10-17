@@ -12,6 +12,7 @@ import { checkObjectName, guessMany } from '@/lib/objects/nameFilter';
 import { loadObjectPrefs, patchObjectPrefs } from '@/lib/objects/prefs';
 import { getObjectStore } from '@/lib/objects/store';
 import type { ObjectSticker } from '@/lib/objects/types';
+import { getClass } from '@/lib/classroom';
 import { loadLanguage } from '@/lib/i18n/language';
 import { getActiveStudent, getActiveTeacher } from '@/lib/session';
 import { isSoloClassCode } from '@/lib/solo';
@@ -37,6 +38,7 @@ const ObjectsPage: React.FC = () => {
   const [stats, setStats] = useState({ photoCount: 0, bytesUsed: 0, sessionOnly: false });
   const [prefs, setPrefs] = useState(loadObjectPrefs());
   const [error, setError] = useState('');
+  const [classAllowsPhotos, setClassAllowsPhotos] = useState(false);
   const [pending, setPending] = useState<PendingSticker | null>(null);
   const [one, setOne] = useState('');
   const [many, setMany] = useState('');
@@ -53,6 +55,31 @@ const ObjectsPage: React.FC = () => {
     void refresh();
   }, []);
 
+  useEffect(() => {
+    const activeStudent = getActiveStudent();
+    const activeTeacher = getActiveTeacher();
+    if (
+      activeTeacher ||
+      !activeStudent?.classCode ||
+      activeStudent.solo ||
+      isSoloClassCode(activeStudent.classCode)
+    ) {
+      setClassAllowsPhotos(false);
+      return;
+    }
+    let cancelled = false;
+    void getClass(activeStudent.classCode)
+      .then((cls) => {
+        if (!cancelled) setClassAllowsPhotos(!!cls?.allowStudentObjectPhotos);
+      })
+      .catch(() => {
+        if (!cancelled) setClassAllowsPhotos(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(
     () => () => {
       if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
@@ -63,11 +90,14 @@ const ObjectsPage: React.FC = () => {
   const student = getActiveStudent();
   const teacher = getActiveTeacher();
   const solo = !!(student?.solo || isSoloClassCode(student?.classCode));
-  const canCapture = !!teacher || solo || prefs.grownUpUnlocked;
+  const canCapture =
+    !!teacher || (solo && prefs.grownUpUnlocked) || (!!student && !solo && classAllowsPhotos);
 
   const clearPending = () => {
-    if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
-    setPending(null);
+    setPending((prev) => {
+      if (prev?.previewUrl) URL.revokeObjectURL(prev.previewUrl);
+      return null;
+    });
   };
 
   const startCapture = () => {
@@ -76,7 +106,11 @@ const ObjectsPage: React.FC = () => {
       setStep('grown-up');
       return;
     }
-    if (!canCapture && !solo) {
+    if (!teacher && !solo && !classAllowsPhotos) {
+      setError(tx('objects:cameraClassOff'));
+      return;
+    }
+    if (!canCapture) {
       setError(tx('objects:cameraClassOff'));
       return;
     }
@@ -94,8 +128,10 @@ const ObjectsPage: React.FC = () => {
       }
       const prepared = await prepareStickerFromBlob(blob, { strategy });
       const previewUrl = URL.createObjectURL(prepared.thumb);
-      if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
-      setPending({ ...prepared, previewUrl, sourceBlob: blob });
+      setPending((prev) => {
+        if (prev?.previewUrl) URL.revokeObjectURL(prev.previewUrl);
+        return { ...prepared, previewUrl, sourceBlob: blob };
+      });
       setOne('');
       setMany('');
       setStep('review');
@@ -113,8 +149,10 @@ const ObjectsPage: React.FC = () => {
     try {
       const prepared = await prepareStickerFromBlob(source, { strategy: 'none' });
       const previewUrl = URL.createObjectURL(prepared.thumb);
-      URL.revokeObjectURL(pending.previewUrl);
-      setPending({ ...prepared, previewUrl, sourceBlob: source });
+      setPending((prev) => {
+        if (prev?.previewUrl) URL.revokeObjectURL(prev.previewUrl);
+        return { ...prepared, previewUrl, sourceBlob: source };
+      });
       setStep('review');
     } catch {
       setError(tx('objects:cutoutFail'));

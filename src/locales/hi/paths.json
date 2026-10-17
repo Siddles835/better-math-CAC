@@ -416,5 +416,7 @@
   "bulkError_missing-answer": "= के बाद उत्तर नहीं है",
   "bulkError_non-numeric": "उत्तर संख्या होनी चाहिए",
   "bulkError_too-long": "पंक्ति बहुत लंबी है",
-  "bulkError_duplicate": "दोहरा प्रश्न"
+  "bulkError_duplicate": "दोहरा प्रश्न",
+  "allowStudentPhotos": "छात्र वस्तु फ़ोटो जोड़ सकें",
+  "allowStudentPhotosHelp": "डिफ़ॉल्ट रूप से बंद। चालू होने पर छात्र अपने उपकरण पर कैमरा इस्तेमाल कर सकते हैं। फ़ोटो उसी उपकरण पर रहती हैं।"
 }

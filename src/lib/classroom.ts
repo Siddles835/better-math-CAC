@@ -86,6 +86,11 @@ export interface Classroom {
    * before starting. Older class docs omit this field (treated as false).
    */
   usePlacementCheck?: boolean;
+  /**
+   * When true, students in this class may capture object photos on their device.
+   * Defaults to false (OFF). Teachers can always capture.
+   */
+  allowStudentObjectPhotos?: boolean;
   students: Record<string, StudentState>;
 }
 
@@ -398,6 +403,18 @@ export const setClassUsePlacementCheck = async (
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   await updateDoc(doc(db, 'classrooms', resolved), {
     usePlacementCheck: enabled,
+  });
+};
+
+/** Let students in this class capture My Objects photos (default OFF). */
+export const setClassAllowStudentObjectPhotos = async (
+  classCode: string,
+  enabled: boolean
+): Promise<void> => {
+  if (isDemoMode()) return;
+  const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
+  await updateDoc(doc(db, 'classrooms', resolved), {
+    allowStudentObjectPhotos: enabled,
   });
 };
 

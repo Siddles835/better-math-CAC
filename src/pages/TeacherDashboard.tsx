@@ -6,6 +6,7 @@ import AuthNavButton from '@/components/AuthNavButton';
 import {
   Classroom,
   deleteStudent,
+  setClassAllowStudentObjectPhotos,
   setClassDefaultStart,
   setClassUsePlacementCheck,
   subscribeToClass,
@@ -55,8 +56,10 @@ const TeacherDashboard: React.FC = () => {
     null
   );
   const [usePlacement, setUsePlacement] = useState(false);
+  const [allowStudentPhotos, setAllowStudentPhotos] = useState(false);
   const [defaultPath, setDefaultPath] = useState('foundations');
   const [savingPlacement, setSavingPlacement] = useState(false);
+  const [savingPhotos, setSavingPhotos] = useState(false);
 
   const sample = classCode.toUpperCase() === SAMPLE_CLASS_CODE;
 
@@ -87,6 +90,7 @@ const TeacherDashboard: React.FC = () => {
           setDefaultPlanet(unlock);
         }
         setUsePlacement(!!data.usePlacementCheck);
+        setAllowStudentPhotos(!!data.allowStudentObjectPhotos);
         const solarId = resolveSolarSystemId(data.defaultStart?.pathId);
         const pathway = legacyPathIdForSolar(solarId);
         setDefaultPath(pathway);
@@ -164,6 +168,22 @@ const TeacherDashboard: React.FC = () => {
       setSaveError(tx('ui:planetLevel_placementSaveFail'));
     } finally {
       setSavingPlacement(false);
+    }
+  };
+
+  const handleStudentPhotosToggle = async (enabled: boolean) => {
+    setAllowStudentPhotos(enabled);
+    if (sample) return;
+    setSavingPhotos(true);
+    setSaveError('');
+    try {
+      await setClassAllowStudentObjectPhotos(classCode, enabled);
+    } catch (err) {
+      console.error(err);
+      setAllowStudentPhotos(!enabled);
+      setSaveError(tx('ui:dashSaveFail'));
+    } finally {
+      setSavingPhotos(false);
     }
   };
 
@@ -353,6 +373,19 @@ const TeacherDashboard: React.FC = () => {
             <span>
               <span className="block font-medium text-foreground">{tx('ui:planetLevel_usePlacement')}</span>
               <span className="text-sm text-muted-foreground">{tx('ui:planetLevel_usePlacementHelp')}</span>
+            </span>
+          </label>
+
+          <label className="mt-3 flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/50 p-3">
+            <Switch
+              checked={allowStudentPhotos}
+              disabled={savingPhotos || !!loadError || sample}
+              onCheckedChange={(checked) => void handleStudentPhotosToggle(checked)}
+              aria-label={tx('paths:allowStudentPhotos')}
+            />
+            <span>
+              <span className="block font-medium text-foreground">{tx('paths:allowStudentPhotos')}</span>
+              <span className="text-sm text-muted-foreground">{tx('paths:allowStudentPhotosHelp')}</span>
             </span>
           </label>
 

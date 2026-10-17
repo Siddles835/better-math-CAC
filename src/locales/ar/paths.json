@@ -416,5 +416,7 @@
   "bulkError_missing-answer": "الجواب ناقص بعد =",
   "bulkError_non-numeric": "يجب أن يكون الجواب رقماً",
   "bulkError_too-long": "السطر طويل جداً",
-  "bulkError_duplicate": "سؤال مكرر"
+  "bulkError_duplicate": "سؤال مكرر",
+  "allowStudentPhotos": "السماح للطلاب بإضافة صور للأشياء",
+  "allowStudentPhotosHelp": "إيقاف افتراضياً. عند التشغيل يمكن للطلاب استخدام الكاميرا على أجهزتهم. تبقى الصور على ذلك الجهاز."
 }
