@@ -51,5 +51,9 @@
   "grownUpLead": "需要大人点一下，才能用相机拍你自己的物品。",
   "grownUpConfirm": "大人同意",
   "cameraClassOff": "老师还没有为班级打开物品照片。你仍可使用入门贴纸。",
-  "settingsSection": "照片与物品"
+  "settingsSection": "照片与物品",
+  "showPictures": "题目旁显示图片",
+  "showPicturesHelp": "启用物体后，计数类题目可以显示贴纸。",
+  "deleteAll": "删除我的全部照片物体",
+  "deleteAllConfirm": "删除本设备上的全部照片贴纸？内置物体会保留。"
 }

@@ -51,5 +51,9 @@
   "grownUpLead": "Un adulto debe tocar para permitir la cámara para tus fotos de objetos.",
   "grownUpConfirm": "Un adulto dice que sí",
   "cameraClassOff": "Tu docente aún no ha activado fotos de objetos. Puedes usar el paquete inicial.",
-  "settingsSection": "Fotos y objetos"
+  "settingsSection": "Fotos y objetos",
+  "showPictures": "Mostrar imágenes con los problemas",
+  "showPicturesHelp": "Si hay un objeto activo, los problemas de conteo pueden mostrar calcomanías.",
+  "deleteAll": "Borrar todos mis objetos con foto",
+  "deleteAllConfirm": "¿Borrar todas las calcomanías con foto de este dispositivo? Los objetos incluidos se quedan."
 }

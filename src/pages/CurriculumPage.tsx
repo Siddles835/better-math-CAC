@@ -21,6 +21,7 @@ import { CURRICULUM_BASE_PATHS, getPath } from '@/content/catalog';
 import type { Assignment, Curriculum, CurriculumNode, Problem } from '@/content/types';
 import ThreeTopicWizard from '@/components/curriculum/ThreeTopicWizard';
 import { parseBulkPromptLines, bulkLinesToProblems } from '@/lib/curriculum/bulkPrompts';
+import { rebuildAllPlanets, rebuildPlanetProblems } from '@/lib/curriculum/threeTopicBuild';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertDialog,
@@ -976,6 +977,36 @@ const Editor = ({
                     <Trash2 className="me-2 h-4 w-4" />
                     {tx('paths:currRemove')}
                   </DropdownMenuItem>
+                  {curriculum.generatedFrom?.topics && (
+                    <>
+                      <DropdownMenuItem
+                        data-testid="rebuild-planet"
+                        onClick={() => {
+                          if (!window.confirm(tx('paths:rebuildConfirm'))) return;
+                          try {
+                            onChange(rebuildPlanetProblems(curriculum, selectedNode.id));
+                          } catch {
+                            window.alert(tx('paths:builderFail'));
+                          }
+                        }}
+                      >
+                        {tx('paths:rebuildPlanet')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        data-testid="rebuild-all"
+                        onClick={() => {
+                          if (!window.confirm(tx('paths:rebuildAllConfirm'))) return;
+                          try {
+                            onChange(rebuildAllPlanets(curriculum));
+                          } catch {
+                            window.alert(tx('paths:builderFail'));
+                          }
+                        }}
+                      >
+                        {tx('paths:rebuildAll')}
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

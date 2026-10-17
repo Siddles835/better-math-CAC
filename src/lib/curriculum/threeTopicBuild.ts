@@ -123,3 +123,65 @@ export const buildThreeTopicCurriculum = (spec: ThreeTopicSpec): Curriculum => {
 
 export const assertThreeTopicValid = (curriculum: Curriculum): string[] =>
   validateCurriculum(curriculum);
+
+/** Regenerate problems for one planet using the curriculum's generatedFrom topics. */
+export const rebuildPlanetProblems = (
+  curriculum: Curriculum,
+  planetId: string
+): Curriculum => {
+  const from = curriculum.generatedFrom;
+  if (!from?.topics || from.topics.length !== 3) {
+    throw new Error('Curriculum was not built from three topics');
+  }
+  const topics = from.topics as [TopicId, TopicId, TopicId];
+  const pace = from.pace ?? 'standard';
+  const index = curriculum.nodes.findIndex((node) => node.id === planetId);
+  if (index < 0) throw new Error('Planet not found');
+  const topic = topics[Math.floor(index / 3)];
+  if (!isBuilderTopic(topic)) throw new Error(`Unsupported topic: ${topic}`);
+  const bandIndex = index % 3;
+  const generatorId = generatorForTopic(topic);
+  const seed = planetId.length * 97 + index * 13 + topic.length * 3 + Date.now() % 997;
+  const problems: Problem[] = problemsForNode(
+    generatorId,
+    tiersFor(bandIndex, pace),
+    perTierFor(pace),
+    seed,
+    0
+  ).slice(0, 8);
+  const nodes = curriculum.nodes.map((node, nodeIndex) =>
+    nodeIndex === index
+      ? {
+          ...node,
+          title: `${planetTitle(planetId)}: ${TOPIC_TITLE_EN[topic]} (${BAND_LABEL[bandIndex]})`,
+          topics: [topic],
+          source: { kind: 'authored' as const, problems },
+        }
+      : node
+  );
+  return hydrateCurriculum(stripUndefined({ ...curriculum, nodes, updatedAt: Date.now() }));
+};
+
+/** Rebuild every planet from generatedFrom. */
+export const rebuildAllPlanets = (curriculum: Curriculum): Curriculum => {
+  const from = curriculum.generatedFrom;
+  if (!from?.topics || from.topics.length !== 3) {
+    throw new Error('Curriculum was not built from three topics');
+  }
+  const fresh = buildThreeTopicCurriculum({
+    classCode: curriculum.classCode,
+    topics: from.topics as [TopicId, TopicId, TopicId],
+    grade: from.grade,
+    pace: from.pace,
+    name: curriculum.name,
+    id: curriculum.id,
+  });
+  return hydrateCurriculum(
+    stripUndefined({
+      ...fresh,
+      status: curriculum.status,
+      basedOnPathId: curriculum.basedOnPathId,
+      updatedAt: Date.now(),
+    })
+  );
+};

@@ -51,5 +51,9 @@
   "grownUpLead": "A grown-up should tap to allow the camera for your own object photos.",
   "grownUpConfirm": "Grown-up says OK",
   "cameraClassOff": "Your teacher has not turned on object photos for this class yet. You can still use the starter pack.",
-  "settingsSection": "Photos and objects"
+  "settingsSection": "Photos and objects",
+  "showPictures": "Show pictures with problems",
+  "showPicturesHelp": "When an object is active, counting-style problems can show stickers.",
+  "deleteAll": "Delete all my photo objects",
+  "deleteAllConfirm": "Delete every photo sticker on this device? Built-in objects stay."
 }

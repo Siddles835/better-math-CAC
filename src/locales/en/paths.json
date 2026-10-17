@@ -418,5 +418,9 @@
   "bulkError_too-long": "Line is too long",
   "bulkError_duplicate": "Duplicate question",
   "allowStudentPhotos": "Let students add object photos",
-  "allowStudentPhotosHelp": "Off by default. When on, students can use the camera on their own device. Photos stay on that device."
+  "allowStudentPhotosHelp": "Off by default. When on, students can use the camera on their own device. Photos stay on that device.",
+  "rebuildPlanet": "Rebuild this planet",
+  "rebuildAll": "Rebuild all planets",
+  "rebuildConfirm": "Replace generated problems? Your edits on this planet will be lost.",
+  "rebuildAllConfirm": "Rebuild every planet from your three topics? Edits will be lost."
 }

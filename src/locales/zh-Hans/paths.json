@@ -418,5 +418,9 @@
   "bulkError_too-long": "这一行太长",
   "bulkError_duplicate": "重复的问题",
   "allowStudentPhotos": "允许学生添加物体照片",
-  "allowStudentPhotosHelp": "默认关闭。开启后，学生可在自己的设备上使用相机。照片只保存在该设备上。"
+  "allowStudentPhotosHelp": "默认关闭。开启后，学生可在自己的设备上使用相机。照片只保存在该设备上。",
+  "rebuildPlanet": "重新生成这颗行星",
+  "rebuildAll": "重新生成全部行星",
+  "rebuildConfirm": "替换生成的题目？你在这颗行星上的编辑会丢失。",
+  "rebuildAllConfirm": "根据你的三个主题重新生成全部行星？编辑会丢失。"
 }

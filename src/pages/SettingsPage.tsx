@@ -26,6 +26,9 @@ import AppearanceSection from '@/components/AppearanceSection';
 import { VersionMark } from '@/components/DemoChrome';
 import VoiceToggle from '@/components/VoiceToggle';
 import VoiceSettings from '@/components/VoiceSettings';
+import { Switch } from '@/components/ui/switch';
+import { loadObjectPrefs, patchObjectPrefs } from '@/lib/objects/prefs';
+import { getObjectStore } from '@/lib/objects/store';
 
 const SUPPORT_EMAIL = 'mathlift1234@gmail.com';
 
@@ -40,6 +43,8 @@ const SettingsPage: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<'student' | 'class' | null>(null);
+  const [objectPrefs, setObjectPrefs] = useState(loadObjectPrefs());
+  const [objectStats, setObjectStats] = useState({ photoCount: 0, bytesUsed: 0, sessionOnly: false });
 
   const refresh = () => {
     reconcileExclusiveSession();
@@ -51,6 +56,14 @@ const SettingsPage: React.FC = () => {
     refresh();
     window.addEventListener(SESSION_CHANGED, refresh);
     return () => window.removeEventListener(SESSION_CHANGED, refresh);
+  }, []);
+
+  useEffect(() => {
+    setObjectPrefs(loadObjectPrefs());
+    void getObjectStore()
+      .stats()
+      .then(setObjectStats)
+      .catch(() => setObjectStats({ photoCount: 0, bytesUsed: 0, sessionOnly: true }));
   }, []);
 
   const handleStudentSignOut = () => {
@@ -163,12 +176,53 @@ const SettingsPage: React.FC = () => {
           <AppearanceSection />
         </section>
 
-        <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5">
-          <h2 className="text-lg font-semibold mb-1">{tx('objects:settingsSection')}</h2>
-          <p className="text-sm text-muted-foreground mb-4">{tx('objects:lead')}</p>
-          <Button type="button" className="min-h-[48px]" onClick={() => navigate('/objects')}>
-            {tx('objects:title')}
-          </Button>
+        <section className="mb-6 rounded-2xl border border-border bg-card/90 p-5 space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold mb-1">{tx('objects:settingsSection')}</h2>
+            <p className="text-sm text-muted-foreground">{tx('objects:lead')}</p>
+          </div>
+          <label className="flex min-h-[48px] cursor-pointer items-center justify-between gap-3 rounded-xl border border-border px-3 py-2">
+            <span>
+              <span className="block font-medium">{tx('objects:showPictures')}</span>
+              <span className="text-sm text-muted-foreground">{tx('objects:showPicturesHelp')}</span>
+            </span>
+            <Switch
+              checked={objectPrefs.showPicturesWithProblems}
+              onCheckedChange={(checked) => setObjectPrefs(patchObjectPrefs({ showPicturesWithProblems: checked }))}
+              aria-label={tx('objects:showPictures')}
+            />
+          </label>
+          <p className="text-sm text-muted-foreground">
+            {tx('objects:storageLine', {
+              count: objectStats.photoCount,
+              mb: (objectStats.bytesUsed / (1024 * 1024)).toFixed(1),
+            })}
+            {objectStats.sessionOnly ? ` · ${tx('objects:sessionOnly')}` : ''}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" className="min-h-[48px]" onClick={() => navigate('/objects')}>
+              {tx('objects:title')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-[48px]"
+              disabled={objectStats.photoCount === 0}
+              onClick={() => {
+                if (!window.confirm(tx('objects:deleteAllConfirm'))) return;
+                void getObjectStore()
+                  .clearPhotos()
+                  .then(async () => {
+                    patchObjectPrefs({ activeId: null });
+                    setObjectPrefs(loadObjectPrefs());
+                    setObjectStats(await getObjectStore().stats());
+                  })
+                  .catch(() => setMessage(tx('objects:saveFail')));
+              }}
+            >
+              {tx('objects:deleteAll')}
+            </Button>
+          </div>
         </section>
 
         {student && (
