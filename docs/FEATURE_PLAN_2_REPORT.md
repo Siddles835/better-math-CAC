@@ -74,7 +74,8 @@ Touched: CurriculumPage, TeacherDashboard, SettingsPage, ConceptVisual, Basket, 
 
 | Metric | Value |
 |--------|--------|
-| Vitest | 200+ tests passing at last full run |
+| Vitest | 203 tests passing |
+| Prompt 2 Playwright | 4/4 passed (`objects-builder`, `prompt2-builder`, `prompt2-objects`) |
 | `npm run test:answers` | 0 focused violations |
 | `npm run check:i18n` | pass (5 langs, 13 namespaces) |
 | ObjectsPage chunk | ~26.2 kB / ~8.6 kB gzip |
