@@ -1,6 +1,6 @@
 # Demo click path
 
-Demo data stays in memory. It does not read or write a real class. Open the app with `?demo=1`, or tap the version label five times. A persistent DEMO DATA badge stays on screen. Reset demo puts the sample class back.
+Demo data stays in memory. It does not read or write a real class. Open the app with `?demo=1`, or tap the version label five times. A persistent DEMO DATA badge stays on screen (with Reset demo). Reset puts the sample class, published 3-topic curriculum, and object starter prefs back. Playwright covers the builder and objects file-input paths; `@axe-core/playwright` was not added (skip a11y axe for now).
 
 Class code `demo`. PIN `DEMO01`.
 

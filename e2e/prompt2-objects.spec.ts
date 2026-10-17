@@ -22,8 +22,9 @@ test('objects page accepts a file-input photo and saves a sticker', async ({ pag
   await expect(page.getByTestId('objects-review')).toBeVisible({ timeout: 20_000 });
 
   await page.getByTestId('objects-looks-good').click();
-  await page.getByLabel('Name for one').fill('pencil');
-  await page.getByRole('button', { name: 'Preview' }).click();
+  await page.getByTestId('objects-name-one').fill('pencil');
+  await page.getByTestId('objects-name-many').fill('pencils');
+  await page.getByTestId('objects-preview').click();
   await page.getByTestId('objects-save').click();
 
   await expect(page.getByTestId('objects-page')).toBeVisible();
