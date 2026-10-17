@@ -5,8 +5,13 @@ import ObjectGlyph from '@/components/objects/ObjectGlyph';
 import { speak, stopSpeaking } from '@/lib/speech';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import { cn } from '@/lib/utils';
+import {
+  clampCount,
+  computeGroupTotal,
+  type GroupOp,
+} from './groupAnimationMath';
 
-export type GroupOp = 'add' | 'subtract' | 'count' | 'multiply' | 'divide';
+export type { GroupOp };
 
 export interface GroupAnimationProps {
   op: GroupOp;
@@ -27,8 +32,6 @@ type Phase =
   | 'merge'
   | 'result'
   | 'done';
-
-const clampCount = (n: number) => Math.max(0, Math.min(20, Math.floor(n)));
 
 const Dot: React.FC<{ lit?: boolean; leaving?: boolean; reduceMotion: boolean }> = ({
   lit,
@@ -59,21 +62,10 @@ const GroupAnimation: React.FC<GroupAnimationProps> = ({
   className,
 }) => {
   const { prefs } = useAccessibility();
-  const reduceMotion = prefs.reduceMotion;
+  const reduceMotion = prefs.reduceMotion || prefs.calmBackground;
   const a = clampCount(rawA);
   const b = clampCount(rawB);
-  const total =
-    op === 'add' || op === 'count'
-      ? op === 'count'
-        ? a
-        : a + b
-      : op === 'subtract'
-        ? Math.max(0, a - b)
-        : op === 'multiply'
-          ? Math.min(20, a * Math.max(1, b))
-          : b > 0
-            ? Math.floor(a / b)
-            : 0;
+  const total = computeGroupTotal(op, a, b);
 
   const phases: Phase[] = useMemo(() => {
     if (op === 'count') return ['show-a', 'result', 'done'];

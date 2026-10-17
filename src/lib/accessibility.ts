@@ -148,6 +148,23 @@ export const savePrefs = (prefs: AccessibilityPrefs) => {
   }
 };
 
+/**
+ * Calm mode: plain background + less motion + muted SFX.
+ * Turning Calm on bundles reduceMotion and muteSounds; turning it off only clears the calm flag.
+ */
+export const withCalmMode = (
+  prefs: AccessibilityPrefs,
+  enabled: boolean
+): AccessibilityPrefs => {
+  if (!enabled) return { ...prefs, calmBackground: false };
+  return {
+    ...prefs,
+    calmBackground: true,
+    reduceMotion: true,
+    muteSounds: true,
+  };
+};
+
 /** mirror the preferences onto <html> so plain CSS can react to them */
 export const applyPrefsToDocument = (prefs: AccessibilityPrefs) => {
   if (typeof document === 'undefined') return;
@@ -161,10 +178,11 @@ export const applyPrefsToDocument = (prefs: AccessibilityPrefs) => {
   el.setAttribute('data-display', prefs.displayStyle);
   if (prefs.planetTheme) el.setAttribute('data-planet-theme', prefs.planetTheme);
   else el.removeAttribute('data-planet-theme');
-  el.setAttribute('data-motion', prefs.reduceMotion ? 'reduce' : 'allow');
+  const reduceMotion = prefs.reduceMotion || prefs.calmBackground;
+  el.setAttribute('data-motion', reduceMotion ? 'reduce' : 'allow');
   el.toggleAttribute('data-calm', prefs.calmBackground);
   el.toggleAttribute('data-focus-mode', prefs.focusMode);
-  el.toggleAttribute('data-reduce-motion', prefs.reduceMotion);
+  el.toggleAttribute('data-reduce-motion', reduceMotion);
   el.toggleAttribute('data-big-targets', prefs.biggerButtons);
   el.toggleAttribute('data-relaxed-pacing', prefs.pacing === 'relaxed');
   el.toggleAttribute('data-voice-off', !prefs.voiceEnabled);

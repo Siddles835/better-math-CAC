@@ -1,8 +1,9 @@
 import { tx } from '@/i18n/tx';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, ImagePlus, Trash2 } from 'lucide-react';
+import { Camera, Trash2 } from 'lucide-react';
 import GroupAnimation from '@/components/animations/GroupAnimation';
+import CaptureFlow from '@/components/objects/CaptureFlow';
 import ObjectGlyph from '@/components/objects/ObjectGlyph';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
@@ -17,24 +18,26 @@ import { isSoloClassCode } from '@/lib/solo';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 import { cn } from '@/lib/utils';
 
-type Step = 'library' | 'capture' | 'processing' | 'name' | 'preview' | 'grown-up';
+type Step = 'library' | 'capture' | 'processing' | 'review' | 'name' | 'preview' | 'grown-up';
+
+interface PendingSticker {
+  full: Blob;
+  thumb: Blob;
+  width: number;
+  height: number;
+  segmentation: ObjectSticker['segmentation'];
+  previewUrl: string;
+  sourceBlob: Blob;
+}
 
 const ObjectsPage: React.FC = () => {
   const navigate = useNavigate();
-  const fileRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<Step>('library');
   const [items, setItems] = useState<ObjectSticker[]>([]);
   const [stats, setStats] = useState({ photoCount: 0, bytesUsed: 0, sessionOnly: false });
   const [prefs, setPrefs] = useState(loadObjectPrefs());
   const [error, setError] = useState('');
-  const [pending, setPending] = useState<{
-    full: Blob;
-    thumb: Blob;
-    width: number;
-    height: number;
-    segmentation: ObjectSticker['segmentation'];
-    previewUrl: string;
-  } | null>(null);
+  const [pending, setPending] = useState<PendingSticker | null>(null);
   const [one, setOne] = useState('');
   const [many, setMany] = useState('');
   const lang = loadLanguage();
@@ -62,6 +65,11 @@ const ObjectsPage: React.FC = () => {
   const solo = !!(student?.solo || isSoloClassCode(student?.classCode));
   const canCapture = !!teacher || solo || prefs.grownUpUnlocked;
 
+  const clearPending = () => {
+    if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
+    setPending(null);
+  };
+
   const startCapture = () => {
     setError('');
     if (solo && !prefs.grownUpUnlocked && !teacher) {
@@ -75,25 +83,42 @@ const ObjectsPage: React.FC = () => {
     setStep('capture');
   };
 
-  const onFile = async (file: File | null) => {
-    if (!file) return;
+  const processBlob = async (blob: Blob, strategy: 'auto' | 'none' = 'auto') => {
     setError('');
     setStep('processing');
     try {
-      if (await likelyContainsFaceHeuristic(file)) {
+      if (await likelyContainsFaceHeuristic(blob)) {
         setError(tx('objects:faceBlocked'));
         setStep('capture');
         return;
       }
-      const prepared = await prepareStickerFromBlob(file);
+      const prepared = await prepareStickerFromBlob(blob, { strategy });
       const previewUrl = URL.createObjectURL(prepared.thumb);
-      setPending({ ...prepared, previewUrl });
+      if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
+      setPending({ ...prepared, previewUrl, sourceBlob: blob });
       setOne('');
       setMany('');
-      setStep('name');
+      setStep('review');
     } catch {
       setError(tx('objects:cutoutFail'));
       setStep('capture');
+    }
+  };
+
+  const keepWholePhoto = async () => {
+    if (!pending?.sourceBlob) return;
+    const source = pending.sourceBlob;
+    setError('');
+    setStep('processing');
+    try {
+      const prepared = await prepareStickerFromBlob(source, { strategy: 'none' });
+      const previewUrl = URL.createObjectURL(prepared.thumb);
+      URL.revokeObjectURL(pending.previewUrl);
+      setPending({ ...prepared, previewUrl, sourceBlob: source });
+      setStep('review');
+    } catch {
+      setError(tx('objects:cutoutFail'));
+      setStep('review');
     }
   };
 
@@ -139,7 +164,7 @@ const ObjectsPage: React.FC = () => {
           </Button>
         </div>
         <p className="mb-6 text-muted-foreground">{tx('objects:lead')}</p>
-        {error && (
+        {error && step !== 'capture' && (
           <p className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
             {error}
           </p>
@@ -180,8 +205,7 @@ const ObjectsPage: React.FC = () => {
                   value={prefs.activeId ?? ''}
                   onChange={(event) => {
                     const value = event.target.value;
-                    const next =
-                      value === '' ? null : value === 'mix' ? 'mix' : value;
+                    const next = value === '' ? null : value === 'mix' ? 'mix' : value;
                     setPrefs(patchObjectPrefs({ activeId: next }));
                   }}
                   aria-label={tx('objects:activeLabel')}
@@ -213,7 +237,11 @@ const ObjectsPage: React.FC = () => {
               <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {items.map((item) => (
                   <li key={item.id} className="rounded-2xl border border-border bg-card p-3 flex flex-col items-center gap-2">
-                    <ObjectGlyph objectId={item.kind === 'builtin' ? `builtin:${item.builtinId}` : item.id} size="lg" label={item.name.one} />
+                    <ObjectGlyph
+                      objectId={item.kind === 'builtin' ? `builtin:${item.builtinId}` : item.id}
+                      size="lg"
+                      label={item.name.one}
+                    />
                     <span className="font-medium text-center">{item.name.one}</span>
                     <span className="text-xs text-muted-foreground">{item.name.many}</span>
                     {item.kind === 'photo' && (
@@ -235,35 +263,68 @@ const ObjectsPage: React.FC = () => {
         )}
 
         {step === 'capture' && (
-          <section className="rounded-2xl border border-border bg-card p-6 space-y-4">
-            <h2 className="text-xl font-semibold">{tx('objects:captureTitle')}</h2>
-            <p className="text-muted-foreground">{tx('objects:captureTips')}</p>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="sr-only"
-              onChange={(event) => void onFile(event.target.files?.[0] ?? null)}
-            />
-            <Button
-              type="button"
-              className="min-h-[48px] w-full"
-              data-testid="objects-pick-file"
-              onClick={() => fileRef.current?.click()}
-            >
-              <ImagePlus className="me-2 h-5 w-5" aria-hidden />
-              {tx('objects:choosePhoto')}
-            </Button>
-            <Button type="button" variant="ghost" className="min-h-[48px]" onClick={() => setStep('library')}>
-              {tx('objects:cancel')}
-            </Button>
-          </section>
+          <CaptureFlow
+            error={error}
+            onCancel={() => {
+              setError('');
+              setStep('library');
+            }}
+            onCapture={(blob) => void processBlob(blob, 'auto')}
+          />
         )}
 
         {step === 'processing' && (
           <section className="rounded-2xl border border-border bg-card p-8 text-center" aria-live="polite">
             <p className="text-lg font-medium">{tx('objects:processing')}</p>
+          </section>
+        )}
+
+        {step === 'review' && pending && (
+          <section className="rounded-2xl border border-border bg-card p-6 space-y-4" data-testid="objects-review">
+            <h2 className="text-xl font-semibold">{tx('objects:reviewTitle')}</h2>
+            <div
+              className="subtle-stars flex min-h-[220px] items-center justify-center rounded-2xl border border-border bg-background p-8"
+              data-testid="objects-sticker-stage"
+            >
+              <img
+                src={pending.previewUrl}
+                alt=""
+                className="max-h-48 max-w-full object-contain drop-shadow-md"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">{tx('objects:reviewLead')}</p>
+            <Button
+              type="button"
+              className="min-h-[48px] w-full"
+              data-testid="objects-looks-good"
+              onClick={() => {
+                setError('');
+                setStep('name');
+              }}
+            >
+              {tx('objects:looksGood')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-[48px] w-full"
+              data-testid="objects-keep-whole"
+              onClick={() => void keepWholePhoto()}
+            >
+              {tx('objects:keepWhole')}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="min-h-[48px]"
+              onClick={() => {
+                clearPending();
+                setError('');
+                setStep('capture');
+              }}
+            >
+              {tx('objects:tryAgain')}
+            </Button>
           </section>
         )}
 
@@ -298,8 +359,8 @@ const ObjectsPage: React.FC = () => {
             <Button type="button" className="min-h-[48px]" onClick={() => setStep('preview')} disabled={!one.trim()}>
               {tx('objects:preview')}
             </Button>
-            <Button type="button" variant="ghost" className="min-h-[48px]" onClick={() => setStep('capture')}>
-              {tx('objects:tryAgain')}
+            <Button type="button" variant="ghost" className="min-h-[48px]" onClick={() => setStep('review')}>
+              {tx('objects:back')}
             </Button>
           </section>
         )}

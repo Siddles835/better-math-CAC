@@ -3,6 +3,7 @@ import React, {
 } from 'react';
 import {
   AccessibilityPrefs, DEFAULT_PREFS, applyPrefsToDocument, loadPrefs, savePrefs,
+  withCalmMode,
 } from '@/lib/accessibility';
 import {
   prefetchSpeechManifest,
@@ -53,7 +54,12 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const setPref = useCallback(
     <K extends keyof AccessibilityPrefs>(key: K, value: AccessibilityPrefs[K]) => {
-      setPrefs((prev) => ({ ...prev, [key]: value }));
+      setPrefs((prev) => {
+        if (key === 'calmBackground') {
+          return withCalmMode(prev, Boolean(value));
+        }
+        return { ...prev, [key]: value };
+      });
     }, []);
 
   const resetPrefs = useCallback(() => setPrefs(DEFAULT_PREFS), []);
