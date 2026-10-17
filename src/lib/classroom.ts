@@ -20,6 +20,7 @@ import {
   demoPatchStudent,
   demoRegisterStudent,
   demoResolveClass,
+  demoSetAllowStudentPhotos,
   demoSetDefaultStart,
   demoSetPlacement,
   demoSubscribe,
@@ -411,7 +412,10 @@ export const setClassAllowStudentObjectPhotos = async (
   classCode: string,
   enabled: boolean
 ): Promise<void> => {
-  if (isDemoMode()) return;
+  if (isDemoMode()) {
+    demoSetAllowStudentPhotos(enabled);
+    return;
+  }
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   await updateDoc(doc(db, 'classrooms', resolved), {
     allowStudentObjectPhotos: enabled,

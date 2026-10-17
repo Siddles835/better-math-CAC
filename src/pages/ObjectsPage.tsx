@@ -372,6 +372,7 @@ const ObjectsPage: React.FC = () => {
             <label className="block text-sm">
               <span className="mb-1 block font-medium">{tx('objects:nameOne')}</span>
               <input
+                data-testid="objects-name-one"
                 value={one}
                 onChange={(event) => {
                   setOne(event.target.value);
@@ -385,6 +386,7 @@ const ObjectsPage: React.FC = () => {
             <label className="block text-sm">
               <span className="mb-1 block font-medium">{tx('objects:nameMany')}</span>
               <input
+                data-testid="objects-name-many"
                 value={many}
                 onChange={(event) => setMany(event.target.value)}
                 className="w-full min-h-[48px] rounded-xl border border-border bg-background px-3"
@@ -394,7 +396,13 @@ const ObjectsPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <ReadAloudButton text={`${one}. ${many}`} />
             </div>
-            <Button type="button" className="min-h-[48px]" onClick={() => setStep('preview')} disabled={!one.trim()}>
+            <Button
+              type="button"
+              className="min-h-[48px]"
+              data-testid="objects-preview"
+              onClick={() => setStep('preview')}
+              disabled={!one.trim()}
+            >
               {tx('objects:preview')}
             </Button>
             <Button type="button" variant="ghost" className="min-h-[48px]" onClick={() => setStep('review')}>

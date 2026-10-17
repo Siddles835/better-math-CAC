@@ -2,6 +2,7 @@ import { tx } from '@/i18n/tx';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { enableDemo, isDemoMode } from '@/lib/demo/mode';
+import { seedDemoObjectPrefs } from '@/lib/demo/objects';
 import { resetDemoStore } from '@/lib/demo/store';
 
 export const DemoBadge = () => {
@@ -11,6 +12,7 @@ export const DemoBadge = () => {
   useEffect(() => {
     if (isDemoMode()) {
       enableDemo();
+      seedDemoObjectPrefs();
       setOn(true);
     }
   }, []);
@@ -19,6 +21,7 @@ export const DemoBadge = () => {
 
   const reset = () => {
     resetDemoStore();
+    seedDemoObjectPrefs();
     navigate('/?demo=1', { replace: true });
     window.location.reload();
   };

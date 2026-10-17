@@ -24,5 +24,8 @@
   "cookies": "Cookie 政策",
   "learnAlone": "自己学",
   "soloBadge": "本机自学",
-  "explore": "探索"
+  "explore": "探索",
+  "demoShortcutsLead": "演示已就绪——一键进入示例班级。",
+  "tryAsTeacher": "以演示老师身份试用",
+  "tryAsStudent": "以演示学生身份试用"
 }

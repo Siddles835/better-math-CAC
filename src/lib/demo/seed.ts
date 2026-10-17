@@ -1,6 +1,7 @@
 import { CURRICULUM_BASE_PATHS, PATHS, getPath } from '@/content/catalog';
-import type { Assignment, Curriculum, LearnerRecord, PilotGoals } from '@/content/types';
+import type { Assignment, Curriculum, LearnerRecord, PathProgress, PilotGoals } from '@/content/types';
 import type { Classroom, StudentState } from '@/lib/classroom';
+import { buildThreeTopicCurriculum } from '@/lib/curriculum/threeTopicBuild';
 import { duplicatePath, splitNode } from '@/lib/curriculum/logic';
 import { mulberry32 } from '@/lib/answers/rng';
 import { summarizeBands, bandsForPath } from '@/lib/placementBands';
@@ -9,6 +10,12 @@ import { seededUsername } from '@/lib/usernames';
 
 export const DEMO_CLASS_CODE = 'demo';
 export const DEMO_PIN = 'DEMO01';
+
+/** First seeded student (mulberry32(20261010)); used by one-tap demo login. */
+export const DEMO_STUDENT_NICKNAME = (() => {
+  const rng = mulberry32(20261010);
+  return seededUsername(rng);
+})();
 
 const keyOf = (name: string): string => name.trim().toLowerCase();
 
@@ -107,7 +114,48 @@ export const buildDemoWorld = (): DemoWorld => {
     status: 'published',
     nodes: curriculum.nodes.map((node) => ({ ...node, extraPractice: 2, masteryThreshold: 60 })),
   };
+
+  let threeTopic = buildThreeTopicCurriculum({
+    classCode: DEMO_CLASS_CODE,
+    topics: ['counting', 'addition', 'subtraction'],
+    grade: '1',
+    pace: 'standard',
+    name: 'Demo path: Count · Add · Subtract',
+    id: 'demo-three-topic',
+  });
+  threeTopic = { ...threeTopic, status: 'published', updatedAt: Date.UTC(2026, 8, 3) };
+
   const slowKey = keyOf(names[5] ?? names[0]);
+  const leadKey = keyOf(names[0] ?? DEMO_STUDENT_NICKNAME);
+  let leadThree: PathProgress = {
+    currentNodeId: threeTopic.nodes[0]?.id ?? 'sun',
+    completedNodeIds: [],
+    nodeMastery: {},
+    topicMastery: {},
+  };
+  const firstNode = threeTopic.nodes[0];
+  if (firstNode) {
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      leadThree = recordAttempt(
+        leadThree,
+        firstNode.id,
+        firstNode.topics,
+        attempt < 3,
+        firstNode.masteryThreshold,
+        3
+      );
+    }
+  }
+  if (learners[leadKey]) {
+    learners[leadKey] = {
+      ...learners[leadKey],
+      curriculumProgress: {
+        ...learners[leadKey].curriculumProgress,
+        [threeTopic.id]: leadThree,
+      },
+    };
+  }
+
   const assignments: Assignment[] = [
     {
       id: 'demo-class',
@@ -115,6 +163,13 @@ export const buildDemoWorld = (): DemoWorld => {
       scope: { kind: 'class' },
       mode: 'alongside',
       updatedAt: Date.UTC(2026, 8, 1),
+    },
+    {
+      id: 'demo-three-topic-class',
+      curriculumId: threeTopic.id,
+      scope: { kind: 'class' },
+      mode: 'alongside',
+      updatedAt: Date.UTC(2026, 8, 4),
     },
     {
       id: 'demo-student',
@@ -131,10 +186,11 @@ export const buildDemoWorld = (): DemoWorld => {
       teacherCode: DEMO_PIN,
       defaultStart: { planet: 'sun', lesson: 'counting', pathId: 'foundations' },
       usePlacementCheck: true,
+      allowStudentObjectPhotos: true,
       students,
     },
     learners,
-    curricula: [curriculum],
+    curricula: [curriculum, threeTopic],
     assignments,
     goals: {
       whereWeAre: 'Learners are spread across paths. A few need smaller steps.',

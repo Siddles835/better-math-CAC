@@ -40,5 +40,6 @@ test('demo mode covers a path, an assessment, a curriculum, a CSV, and a reset',
   await expect(page.getByTestId('demo-badge')).toBeVisible();
   await page.goto('/teacher/demo/curriculum');
   await expect(page.getByText('Smaller steps')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Edit' })).toHaveCount(1);
+  await expect(page.getByText('Demo path: Count · Add · Subtract')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Edit' })).toHaveCount(2);
 });

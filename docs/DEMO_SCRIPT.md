@@ -8,7 +8,7 @@ Class code `demo`. PIN `DEMO01`.
 
 | Beat | Time | Action |
 |------|------|--------|
-| Login | 0–5s | Open `/?demo=1`. Confirm DEMO DATA. Teacher: Manage Class → `demo` / `DEMO01` (or student join with code `demo`). |
+| Login | 0–5s | Open `/?demo=1`. Confirm DEMO DATA. One-tap **Try as demo teacher** or **Try as demo student** (or Manage Class → `demo` / `DEMO01`). |
 | 3-topic builder | ~15s | Curricula → Build from 3 topics → pick e.g. Counting, Addition, Subtraction → watch builder animation (or Skip) → save draft. |
 | Student photo pencil | ~15s | Student session → My Objects → pick/upload a pencil (or starter sticker) → set as active object. |
 | Counting | ~15s | Open SS1 Counting planet (Sun) → count with photo stickers / glyphs. |
