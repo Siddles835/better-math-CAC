@@ -45,15 +45,15 @@ export interface AccessibilityPrefs {
   /** Device-only preferred SpeechSynthesis voiceURI for the current language. */
   voiceURI: string | null;
   /**
-   * OpenAI gpt-4o-mini-tts voice id when Natural voice + cloud TTS are on.
-   * Examples: coral, sage, nova. Ignored when cloud speech is unavailable.
+   * OpenAI gpt-4o-mini-tts voice id. MathLift always uses Alloy when cloud TTS
+   * is available; other values are normalized away on load.
    */
   cloudVoice: string;
   /** Slow or normal speaking pace for kids. */
   speechRate: SpeechRatePref;
   /**
-   * Warm on-device neural voice for English (Kokoro, ~90 MB download once).
-   * Default on so read-aloud sounds like a real person when possible.
+   * Warm on-device Kokoro / OS neural fallback for English.
+   * Default OFF — cloud OpenAI Alloy is preferred when configured.
    */
   naturalVoice: boolean;
   biggerButtons: boolean;
@@ -84,9 +84,9 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   muteSounds: false,
   voiceEnabled: true,
   voiceURI: null,
-  cloudVoice: 'coral',
+  cloudVoice: 'alloy',
   speechRate: 'normal',
-  naturalVoice: true,
+  naturalVoice: false,
   biggerButtons: false,
   answerMethod: 'any',
   pacing: 'normal',
@@ -235,20 +235,10 @@ export const loadPrefs = (): AccessibilityPrefs => {
     if (merged.voiceURI != null && typeof merged.voiceURI !== 'string') {
       merged.voiceURI = null;
     }
-    {
-      const allowed = new Set([
-        'coral', 'sage', 'nova', 'shimmer', 'marin', 'cedar', 'ash',
-        'ballad', 'verse', 'alloy', 'echo', 'fable', 'onyx',
-      ]);
-      if (typeof merged.cloudVoice !== 'string' || !allowed.has(merged.cloudVoice)) {
-        merged.cloudVoice = 'coral';
-      }
-    }
-    if (!('naturalVoice' in parsed)) {
-      merged.naturalVoice = true;
-    } else {
-      merged.naturalVoice = !!parsed.naturalVoice;
-    }
+    // Always Alloy for cloud TTS — discard coral/sage/etc. from older sessions.
+    merged.cloudVoice = 'alloy';
+    // Always keep Natural voice (Kokoro) off for users; OpenAI Alloy is the path.
+    merged.naturalVoice = false;
     if (migratedSystemToDark) {
       try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));

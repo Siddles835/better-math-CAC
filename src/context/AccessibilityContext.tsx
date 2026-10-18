@@ -55,9 +55,10 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     // Voice off mutes TTS; muteSounds is SFX-only and does not stop speech.
     setSpeechMuted(!prefs.voiceEnabled);
     setPreferredVoiceURI(prefs.voiceURI);
-    setPreferredCloudVoice(prefs.cloudVoice);
+    // Product: Natural (Kokoro) stays off; cloud TTS is always OpenAI Alloy.
+    setPreferredCloudVoice('alloy');
     setSpeechRatePref(prefs.speechRate);
-    setNaturalVoicePref(!!prefs.naturalVoice);
+    setNaturalVoicePref(false);
     if (!prefs.voiceEnabled) stopSpeaking();
     savePrefs(prefs);
     if (prefs.colorTheme !== 'system' || typeof window.matchMedia !== 'function') return;

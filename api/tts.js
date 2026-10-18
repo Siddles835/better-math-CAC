@@ -64,7 +64,7 @@ export default async function handler(req, res) {
     res.status(200).json({
       available: true,
       model: 'gpt-4o-mini-tts',
-      defaultVoice: 'coral',
+      defaultVoice: 'alloy',
       disclosure: 'AI-generated voice',
     });
     return;
@@ -87,8 +87,9 @@ export default async function handler(req, res) {
       return;
     }
 
-    const voice =
-      typeof body.voice === 'string' && ALLOWED_VOICES.has(body.voice) ? body.voice : 'coral';
+    // MathLift always uses Alloy for classroom read-aloud.
+    const requested = typeof body.voice === 'string' ? body.voice : '';
+    const voice = ALLOWED_VOICES.has('alloy') ? 'alloy' : requested || 'alloy';
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
     // OpenAI speed: 0.25–4.0. Keep kid-friendly pacing near 1.0.
     const speed = ratePref === 'slow' ? 0.9 : 1.0;

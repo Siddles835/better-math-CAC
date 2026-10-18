@@ -33,9 +33,10 @@ describe('speechOpenAI', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/tts', { method: 'GET' });
   });
 
-  it('sends the preferred cloud voice in the POST body', async () => {
-    const { setPreferredCloudVoice } = await import('./speechOpenAI');
+  it('always sends OpenAI alloy in the POST body', async () => {
+    const { setPreferredCloudVoice, DEFAULT_CLOUD_VOICE } = await import('./speechOpenAI');
     setPreferredCloudVoice('sage');
+    expect(DEFAULT_CLOUD_VOICE).toBe('alloy');
 
     const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/mpeg' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
@@ -58,14 +59,15 @@ describe('speechOpenAI', () => {
     }
     vi.stubGlobal('Audio', FakeAudio);
     vi.stubGlobal('URL', {
-      createObjectURL: () => 'blob:sage',
+      createObjectURL: () => 'blob:alloy',
       revokeObjectURL: vi.fn(),
     });
 
-    const pending = speakWithOpenAI('Try sage.', {
+    const pending = speakWithOpenAI('Try alloy.', {
       token: 1,
       isCurrent: () => true,
       ratePref: 'normal',
+      voice: 'coral',
     });
     await vi.waitFor(() => expect(audioInstances.length).toBe(1));
     audioInstances[0]?.onended?.();
@@ -74,7 +76,7 @@ describe('speechOpenAI', () => {
     const postCall = fetchMock.mock.calls.find((call) => call[1]?.method === 'POST');
     expect(postCall).toBeTruthy();
     const body = JSON.parse(String(postCall?.[1]?.body ?? '{}')) as { voice?: string };
-    expect(body.voice).toBe('sage');
+    expect(body.voice).toBe('alloy');
   });
 
   it('plays mp3 audio from the proxy when current', async () => {
@@ -108,7 +110,7 @@ describe('speechOpenAI', () => {
       token: 1,
       isCurrent: () => true,
       ratePref: 'normal',
-      voice: DEFAULT_CLOUD_VOICE,
+      voice: 'coral',
       onEnd,
     });
     // Let the async fetch + Audio construction settle, then finish playback.

@@ -873,27 +873,27 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
       startDevice();
       return;
     }
-    if (naturalVoicePref) {
-      // Tier 1.5: OpenAI gpt-4o-mini-tts via /api/tts when the host has a key.
-      // Clearer than on-device Kokoro; falls back if unavailable.
-      try {
-        const { speakWithOpenAI, ensureCloudTtsAvailable } = await import('./speechOpenAI');
-        if (await ensureCloudTtsAvailable()) {
-          const playedCloud = await speakWithOpenAI(cleaned, {
-            token,
-            isCurrent: (value) => value === speechToken,
-            ratePref,
-            voice: options?.cloudVoice ?? undefined,
-            onEnd: options?.onEnd,
-            bindAudio: (audio) => {
-              activeAudio = audio;
-            },
-          });
-          if (playedCloud || token !== speechToken) return;
-        }
-      } catch {
-        // fall through
+    // OpenAI Alloy whenever the host has a key — independent of Natural voice
+    // (Natural voice only controls Kokoro / OS neural fallback).
+    try {
+      const { speakWithOpenAI, ensureCloudTtsAvailable, DEFAULT_CLOUD_VOICE } = await import(
+        './speechOpenAI'
+      );
+      if (await ensureCloudTtsAvailable()) {
+        const playedCloud = await speakWithOpenAI(cleaned, {
+          token,
+          isCurrent: (value) => value === speechToken,
+          ratePref,
+          voice: DEFAULT_CLOUD_VOICE,
+          onEnd: options?.onEnd,
+          bindAudio: (audio) => {
+            activeAudio = audio;
+          },
+        });
+        if (playedCloud || token !== speechToken) return;
       }
+    } catch {
+      // fall through
     }
     if (naturalVoicePref && lang === 'en') {
       // Prefer a real OS Natural/Neural voice when the browser has one.

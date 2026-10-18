@@ -79,7 +79,7 @@ export function openaiTtsDevPlugin(): Plugin {
             JSON.stringify({
               available: true,
               model: 'gpt-4o-mini-tts',
-              defaultVoice: 'coral',
+              defaultVoice: 'alloy',
               disclosure: 'AI-generated voice',
             })
           );
@@ -102,10 +102,8 @@ export function openaiTtsDevPlugin(): Plugin {
             response.end(JSON.stringify({ error: 'Invalid text' }));
             return;
           }
-          const voice =
-            typeof body.voice === 'string' && ALLOWED_VOICES.has(body.voice)
-              ? body.voice
-              : 'coral';
+          // MathLift always uses Alloy for classroom read-aloud.
+          const voice = 'alloy';
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
           const speed = ratePref === 'slow' ? 0.9 : 1.0;
 
