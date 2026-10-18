@@ -30,7 +30,7 @@ export const DemoBadge = () => {
     <div
       data-testid="demo-badge"
       role="status"
-      className="fixed bottom-3 start-3 z-50 flex max-w-xs flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-950 shadow"
+      className="fixed bottom-3 start-3 z-50 flex max-w-xs flex-wrap items-center gap-2 rounded-xl border border-sky-400/40 bg-card/95 px-3 py-2 text-sm font-semibold text-sky-100 shadow-md backdrop-blur-sm"
     >
       <span>{tx('paths:demoBadge')}</span>
       <button type="button" data-testid="demo-reset" className="underline" onClick={reset}>

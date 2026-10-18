@@ -6,7 +6,7 @@ const LegalLanguageNotice: React.FC = () => {
   const { t, i18n } = useTranslation('legal');
   if (!i18n.language || i18n.language === 'en') return null;
   return (
-    <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950" role="note">
+    <p className="rounded-xl border border-sky-400/40 bg-sky-500/10 px-4 py-3 text-sm text-sky-100" role="note">
       {t('notice')}
     </p>
   );

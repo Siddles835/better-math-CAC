@@ -54,7 +54,7 @@ const ExplorePage: React.FC = () => {
               <Link
                 to={`/explore/${activity.id}`}
                 data-testid={`explore-link-${activity.id}`}
-                className="block min-h-[7rem] rounded-2xl border border-border/80 bg-card/30 p-4 text-start transition hover:border-sky-400/50 hover:bg-card/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
+                className="block min-h-[7rem] rounded-2xl border border-border bg-card/90 p-4 text-start shadow-md backdrop-blur-sm transition hover:border-sky-400/50 hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
               >
                 <h2 className="text-lg font-semibold text-foreground mb-1">
                   {activity.id === 'make-ten' ? t(activity.titleKey, { goal: 10 }) : t(activity.titleKey)}
@@ -66,7 +66,7 @@ const ExplorePage: React.FC = () => {
           ))}
         </ul>
 
-        <section aria-labelledby="collection-heading" className="rounded-2xl border border-border/70 bg-card/20 p-4">
+        <section aria-labelledby="collection-heading" className="rounded-2xl border border-border bg-card/90 p-4 shadow-md backdrop-blur-sm">
           <h2 id="collection-heading" className="text-lg font-semibold mb-2">
             {t('collection_title')}
           </h2>

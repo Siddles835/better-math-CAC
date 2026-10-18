@@ -65,7 +65,8 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   easyReadSpacing: false,
   highContrast: false,
   lowVision: false,
-  colorTheme: 'system',
+  /** Classic MathLift blue space look (not OS light / cream). */
+  colorTheme: 'dark',
   dyslexiaFont: false,
   displayStyle: 'playful',
   planetTheme: '',
@@ -90,6 +91,8 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
 };
 
 const STORAGE_KEY = 'mathlift.learningPrefs.v1';
+/** One-shot: old default was "system" (cream on light OS) → restore classic dark blue. */
+const BLUE_THEME_MIGRATE_KEY = 'mathlift.restoredBlueTheme.v1';
 
 export const resolveColorTheme = (
   prefs: Pick<AccessibilityPrefs, 'colorTheme' | 'lowVision'>
@@ -99,13 +102,15 @@ export const resolveColorTheme = (
   if (prefs.colorTheme === 'light' || prefs.colorTheme === 'dark') {
     return prefs.colorTheme;
   }
-  // "contrast" without lowVision falls back to the system theme.
-  if (
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-color-scheme: light)').matches
-  ) {
-    return 'light';
+  // Explicit "system" follows the OS; anything else (incl. ungated contrast) → classic dark blue.
+  if (prefs.colorTheme === 'system') {
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-color-scheme: light)').matches
+    ) {
+      return 'light';
+    }
   }
   return 'dark';
 };
@@ -121,8 +126,8 @@ export const withLowVision = (prefs: AccessibilityPrefs, enabled: boolean): Acce
       ...prefs,
       lowVision: false,
       highContrast: false,
-      // Always leave contrast mode so Light/Dark/System can take effect.
-      colorTheme: prefs.colorTheme === 'contrast' ? 'system' : prefs.colorTheme,
+      // Leave contrast for the classic blue dark theme (Light/System remain opt-in).
+      colorTheme: prefs.colorTheme === 'contrast' ? 'dark' : prefs.colorTheme,
       textSize: prefs.textSize === 'xlarge' ? 'normal' : prefs.textSize,
       biggerButtons: false,
     };
@@ -158,7 +163,8 @@ export const loadPrefs = (): AccessibilityPrefs => {
     const parsed = JSON.parse(raw) as Partial<AccessibilityPrefs> & { voiceEnabled?: boolean };
     const merged: AccessibilityPrefs = { ...DEFAULT_PREFS, ...parsed };
     if (!('colorTheme' in parsed)) {
-      merged.colorTheme = parsed.highContrast ? 'contrast' : 'system';
+      // Pre-theme installs used the blue :root palette — restore that, not OS cream.
+      merged.colorTheme = parsed.highContrast ? 'contrast' : 'dark';
     }
     if (!('reduceMotion' in parsed) && typeof window.matchMedia === 'function') {
       merged.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -169,7 +175,25 @@ export const loadPrefs = (): AccessibilityPrefs => {
       merged.colorTheme !== 'contrast' &&
       merged.colorTheme !== 'system'
     ) {
-      merged.colorTheme = 'system';
+      merged.colorTheme = 'dark';
+    }
+    // One-shot: stored "system" from the old product default → classic dark blue.
+    // Persist the migration so the next load does not leave cream "system" in storage.
+    // After this runs once, Appearance → System can stick again.
+    let migratedSystemToDark = false;
+    try {
+      if (
+        merged.colorTheme === 'system' &&
+        window.localStorage.getItem(BLUE_THEME_MIGRATE_KEY) !== '1'
+      ) {
+        merged.colorTheme = 'dark';
+        migratedSystemToDark = true;
+        window.localStorage.setItem(BLUE_THEME_MIGRATE_KEY, '1');
+      } else if (window.localStorage.getItem(BLUE_THEME_MIGRATE_KEY) !== '1') {
+        window.localStorage.setItem(BLUE_THEME_MIGRATE_KEY, '1');
+      }
+    } catch {
+      /* storage blocked */
     }
     if (
       merged.displayStyle !== 'playful' &&
@@ -190,7 +214,7 @@ export const loadPrefs = (): AccessibilityPrefs => {
       merged.highContrast = true;
     } else {
       merged.highContrast = false;
-      if (merged.colorTheme === 'contrast') merged.colorTheme = 'system';
+      if (merged.colorTheme === 'contrast') merged.colorTheme = 'dark';
     }
 
     // PR #2 reused muteSounds as the voice toggle. Migrate once to voiceEnabled.
@@ -209,6 +233,13 @@ export const loadPrefs = (): AccessibilityPrefs => {
       merged.naturalVoice = true;
     } else {
       merged.naturalVoice = !!parsed.naturalVoice;
+    }
+    if (migratedSystemToDark) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      } catch {
+        /* storage blocked */
+      }
     }
     return merged;
   } catch {

@@ -106,10 +106,10 @@ const HomePage: React.FC = () => {
 
       {demoOn && (
         <div
-          className="w-full max-w-2xl mb-6 space-y-3 animate-fade-in rounded-2xl border border-amber-300/60 bg-amber-50/90 p-4 text-start shadow-sm"
+          className="w-full max-w-2xl mb-6 space-y-3 animate-fade-in rounded-2xl border border-sky-500/30 bg-sky-500/10 p-4 text-start shadow-sm backdrop-blur-sm"
           data-testid="demo-one-tap"
         >
-          <p className="text-sm font-medium text-amber-950">{t('demoShortcutsLead')}</p>
+          <p className="text-sm font-medium text-sky-100">{t('demoShortcutsLead')}</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="button"
@@ -207,7 +207,7 @@ const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/student-register')}
-            className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-emerald-100 text-emerald-900 hover:bg-emerald-200 active:scale-[0.98] transition-all duration-200 shadow-sm"
+            className="w-full px-6 py-3 text-lg font-semibold rounded-xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30 active:scale-[0.98] transition-all duration-200 shadow-sm"
           >
             {t('newStudent')}
           </button>
@@ -232,7 +232,7 @@ const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/teacher-login')}
-            className="w-full px-6 py-3 text-lg font-semibold rounded-xl bg-sky-100 text-sky-900 hover:bg-sky-200 active:scale-[0.98] transition-all duration-200 shadow-sm"
+            className="w-full px-6 py-3 text-lg font-semibold rounded-xl border border-sky-400/40 bg-sky-500/20 text-sky-100 hover:bg-sky-500/30 active:scale-[0.98] transition-all duration-200 shadow-sm"
           >
             {t('manageClass')}
           </button>
