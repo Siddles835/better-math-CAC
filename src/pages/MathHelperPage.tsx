@@ -26,7 +26,7 @@ const MathHelperPage: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen bg-background ${prefs.calmBackground ? '' : 'subtle-stars'} px-4 py-6`}
+      className={`min-h-screen ${prefs.calmBackground ? 'bg-background' : 'space-bg subtle-stars'} px-4 py-6`}
       data-testid="math-helper-page"
     >
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">

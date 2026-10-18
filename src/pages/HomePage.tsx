@@ -58,7 +58,7 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background subtle-stars flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen space-bg subtle-stars flex flex-col items-center justify-center p-8">
       <div className="animate-fade-in text-center">
         <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-sun/30 flex items-center justify-center animate-gentle-float">
           <div className="w-24 h-24 rounded-full bg-sun/50 flex items-center justify-center">

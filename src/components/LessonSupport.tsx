@@ -13,8 +13,8 @@ interface LessonSupportProps {
 }
 
 /**
- * Compact blue-space lesson aids (summary + worked example).
- * Keeps accommodation toggles; avoids the heavy stacked “form card” layout.
+ * Slim blue-space aid strip for summary / worked-example toggles.
+ * Does not replace the classic lesson body layout.
  */
 const LessonSupport: React.FC<LessonSupportProps> = ({ planet }) => {
   const { t } = useTranslation(['helper', 'ui']);
@@ -33,39 +33,27 @@ const LessonSupport: React.FC<LessonSupportProps> = ({ planet }) => {
 
   return (
     <div
-      className="mb-1 rounded-2xl border border-primary/25 bg-primary/10 px-3 py-2.5 backdrop-blur-sm"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2"
       data-testid="lesson-support"
     >
       {prefs.summaryFirst ? (
-        <div data-testid="lesson-summary">
-          <p className="text-xs font-semibold tracking-wide text-primary">
-            {t('helper:summary_heading')}
-          </p>
-          <p className="mt-0.5 text-sm text-foreground/95">{summary}</p>
-        </div>
+        <p className="min-w-0 flex-1 text-sm text-foreground/95" data-testid="lesson-summary">
+          <span className="font-semibold text-primary">{t('helper:summary_heading')}: </span>
+          {summary}
+        </p>
       ) : null}
 
       {prefs.workedExampleFirst ? (
-        <div
-          className={
-            prefs.summaryFirst
-              ? 'mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-primary/20 pt-2'
-              : 'flex flex-wrap items-center justify-between gap-2'
-          }
-          data-testid="lesson-worked-example-launch"
+        <Button
+          type="button"
+          size="sm"
+          className="min-h-10 shrink-0 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+          onClick={() => setOpenExample(true)}
+          data-testid="watch-worked-example"
         >
-          <p className="text-sm text-foreground/90">{t('helper:worked_example_prompt')}</p>
-          <Button
-            type="button"
-            size="sm"
-            className="min-h-11 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={() => setOpenExample(true)}
-            data-testid="watch-worked-example"
-          >
-            <Play className="h-4 w-4" aria-hidden />
-            {t('helper:worked_example_watch')}
-          </Button>
-        </div>
+          <Play className="h-4 w-4" aria-hidden />
+          {t('helper:worked_example_watch')}
+        </Button>
       ) : null}
 
       <WorkedExamplePlayer

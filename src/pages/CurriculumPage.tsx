@@ -127,8 +127,8 @@ const StatusChip = ({
   </span>
 );
 
-const workshopShellClass =
-  'curriculum-workshop-shell min-h-screen bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_55%),radial-gradient(circle,hsl(var(--foreground)/0.08)_1px,transparent_1px)] bg-[length:auto,22px_22px] bg-background';
+/** Classic MathLift blue space chrome (not the dotted workshop grid). */
+const workshopShellClass = 'curriculum-workshop-shell min-h-screen bg-background subtle-stars';
 
 const CurriculumPage = () => {
   const { classCode = '' } = useParams();
@@ -369,18 +369,14 @@ const CurriculumPage = () => {
 
   return (
     <div data-testid="curriculum-workshop" className={workshopShellClass}>
-      <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <Button type="button" variant="outline" className="min-h-[48px] gap-2 shrink-0" onClick={goBack}>
               <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden />
               {current ? tx('paths:currBackToList') : tx('paths:currBack')}
             </Button>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-                {tx('paths:currWorkshop')}
-              </p>
-            </div>
+            <h1 className="truncate text-2xl font-semibold sm:text-3xl">{tx('paths:currTitle')}</h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {statusChip}

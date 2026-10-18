@@ -37,8 +37,8 @@ interface LessonShellProps {
 }
 
 /**
- * Lesson chrome. Progress is shown as dots AND as words ("Step 3 of 6"),
- * so it never depends on colour or shape alone.
+ * Classic blue space lesson chrome. Progress dots + words; aid toggles sit in a
+ * slim strip under the header so the lesson body matches the pre-Phase-3 layout.
  */
 const LessonShell: React.FC<LessonShellProps> = ({
   children, planet, totalSteps, step, onBack, onNext,
@@ -47,6 +47,7 @@ const LessonShell: React.FC<LessonShellProps> = ({
   const dots = PLANET_DOT[planet];
   const { prefs } = useAccessibility();
   const stepLabel = tx('ui:stepOf', { step: Math.min(step + 1, totalSteps), total: totalSteps });
+  const showAids = prefs.summaryFirst || prefs.workedExampleFirst;
 
   return (
     <div className={`lesson-shell ${prefs.calmBackground ? 'bg-background' : 'space-bg subtle-stars'} flex flex-col overflow-hidden`}>
@@ -67,7 +68,6 @@ const LessonShell: React.FC<LessonShellProps> = ({
                 }`} />
             ))}
           </div>
-          {/* The words are the real progress label; the dots are decoration. */}
           <p className="text-xs font-medium text-muted-foreground">{stepLabel}</p>
         </div>
 
@@ -78,15 +78,22 @@ const LessonShell: React.FC<LessonShellProps> = ({
         </div>
       </header>
 
+      {showAids ? (
+        <div className="shrink-0 px-3 sm:px-8 pb-1">
+          <div className="mx-auto w-full max-w-4xl">
+            <LessonSupport planet={planet} />
+          </div>
+        </div>
+      ) : null}
+
       <main id="lesson-content" tabIndex={-1}
         className="lesson-shell-main flex-1 overflow-auto overscroll-contain px-3 sm:px-8 py-2">
-        <Zoomable resetKey={`${planet}-${step}`} className="flex flex-col w-full max-w-4xl mx-auto min-h-full pb-4 gap-2">
-          <LessonSupport planet={planet} />
+        <Zoomable resetKey={`${planet}-${step}`} className="flex flex-col w-full max-w-4xl mx-auto min-h-full pb-4">
           {children}
         </Zoomable>
       </main>
 
-      <footer className="shrink-0 z-30 bg-background border-t border-border">
+      <footer className="shrink-0 z-30 bg-background/90 border-t border-border backdrop-blur-sm">
         {prefs.breaks && (
           <div className="flex justify-center py-2">
             <BreakCard />
