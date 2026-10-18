@@ -33,6 +33,50 @@ describe('speechOpenAI', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/tts', { method: 'GET' });
   });
 
+  it('sends the preferred cloud voice in the POST body', async () => {
+    const { setPreferredCloudVoice } = await import('./speechOpenAI');
+    setPreferredCloudVoice('sage');
+
+    const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/mpeg' });
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
+      if (!init || init.method === 'GET') {
+        return { ok: true, json: async () => ({ available: true }) };
+      }
+      return { ok: true, blob: async () => blob };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const play = vi.fn().mockResolvedValue(undefined);
+    const audioInstances: Array<{ onended: (() => void) | null }> = [];
+    class FakeAudio {
+      onended: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      play = play;
+      constructor(_src?: string) {
+        audioInstances.push(this);
+      }
+    }
+    vi.stubGlobal('Audio', FakeAudio);
+    vi.stubGlobal('URL', {
+      createObjectURL: () => 'blob:sage',
+      revokeObjectURL: vi.fn(),
+    });
+
+    const pending = speakWithOpenAI('Try sage.', {
+      token: 1,
+      isCurrent: () => true,
+      ratePref: 'normal',
+    });
+    await vi.waitFor(() => expect(audioInstances.length).toBe(1));
+    audioInstances[0]?.onended?.();
+    await pending;
+
+    const postCall = fetchMock.mock.calls.find((call) => call[1]?.method === 'POST');
+    expect(postCall).toBeTruthy();
+    const body = JSON.parse(String(postCall?.[1]?.body ?? '{}')) as { voice?: string };
+    expect(body.voice).toBe('sage');
+  });
+
   it('plays mp3 audio from the proxy when current', async () => {
     const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/mpeg' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {

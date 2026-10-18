@@ -16,6 +16,7 @@ const statusListeners = new Set<(status: CloudTtsStatus) => void>();
 export const resetCloudTtsForTests = () => {
   status = 'unknown';
   probePromise = null;
+  preferredCloudVoice = DEFAULT_CLOUD_VOICE;
   for (const url of cache.values()) {
     try {
       URL.revokeObjectURL(url);
@@ -93,6 +94,53 @@ export interface SpeakWithOpenAIOptions {
  */
 export const DEFAULT_CLOUD_VOICE = 'coral';
 
+/** Voices the /api/tts proxy accepts (gpt-4o-mini-tts). */
+export const CLOUD_VOICE_IDS = [
+  'coral',
+  'sage',
+  'nova',
+  'shimmer',
+  'marin',
+  'cedar',
+  'ash',
+  'ballad',
+  'verse',
+  'alloy',
+  'echo',
+  'fable',
+  'onyx',
+] as const;
+
+export type CloudVoiceId = (typeof CLOUD_VOICE_IDS)[number];
+
+export const isCloudVoiceId = (value: string | null | undefined): value is CloudVoiceId =>
+  !!value && (CLOUD_VOICE_IDS as readonly string[]).includes(value);
+
+/** Kid-friendly labels for Settings. Order = clearest classroom voices first. */
+export const CLOUD_VOICE_OPTIONS: ReadonlyArray<{ id: CloudVoiceId; label: string }> = [
+  { id: 'coral', label: 'Coral' },
+  { id: 'sage', label: 'Sage' },
+  { id: 'nova', label: 'Nova' },
+  { id: 'shimmer', label: 'Shimmer' },
+  { id: 'marin', label: 'Marin' },
+  { id: 'cedar', label: 'Cedar' },
+  { id: 'ash', label: 'Ash' },
+  { id: 'ballad', label: 'Ballad' },
+  { id: 'verse', label: 'Verse' },
+  { id: 'alloy', label: 'Alloy' },
+  { id: 'echo', label: 'Echo' },
+  { id: 'fable', label: 'Fable' },
+  { id: 'onyx', label: 'Onyx' },
+];
+
+let preferredCloudVoice: CloudVoiceId = DEFAULT_CLOUD_VOICE;
+
+export const setPreferredCloudVoice = (voice: string | null | undefined) => {
+  preferredCloudVoice = isCloudVoiceId(voice) ? voice : DEFAULT_CLOUD_VOICE;
+};
+
+export const getPreferredCloudVoice = (): CloudVoiceId => preferredCloudVoice;
+
 export const speakWithOpenAI = async (
   text: string,
   options: SpeakWithOpenAIOptions
@@ -106,7 +154,9 @@ export const speakWithOpenAI = async (
   const available = await ensureCloudTtsAvailable();
   if (!available || !options.isCurrent(options.token)) return false;
 
-  const voice = options.voice || DEFAULT_CLOUD_VOICE;
+  const voice = isCloudVoiceId(options.voice)
+    ? options.voice
+    : preferredCloudVoice || DEFAULT_CLOUD_VOICE;
   const ratePref = options.ratePref === 'slow' ? 'slow' : 'normal';
   const key = cacheKey(cleaned, voice, ratePref);
 

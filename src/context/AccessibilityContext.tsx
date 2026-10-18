@@ -14,6 +14,7 @@ import {
   setSpeechRatePref,
   stopSpeaking,
 } from '@/lib/speech';
+import { setPreferredCloudVoice } from '@/lib/speechOpenAI';
 
 /** Visible "Nice work" captions clear after 3 seconds so Back stays usable. */
 export const ANNOUNCE_VISIBLE_MS = 3000;
@@ -54,6 +55,7 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     // Voice off mutes TTS; muteSounds is SFX-only and does not stop speech.
     setSpeechMuted(!prefs.voiceEnabled);
     setPreferredVoiceURI(prefs.voiceURI);
+    setPreferredCloudVoice(prefs.cloudVoice);
     setSpeechRatePref(prefs.speechRate);
     setNaturalVoicePref(!!prefs.naturalVoice);
     if (!prefs.voiceEnabled) stopSpeaking();

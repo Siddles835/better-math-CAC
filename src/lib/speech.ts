@@ -562,6 +562,13 @@ export interface SpeakOptions {
   /** Override persisted rate for one utterance (e.g. sample). */
   ratePref?: SpeechRatePref;
   voiceURI?: string | null;
+  /** Override cloud OpenAI voice for one utterance (e.g. Settings sample). */
+  cloudVoice?: string | null;
+  /**
+   * Force the device SpeechSynthesis path (skip OpenAI / Kokoro).
+   * Used when the user samples a specific installed voice in Settings.
+   */
+  preferDevice?: boolean;
 }
 
 const clearQueueTimers = () => {
@@ -861,6 +868,11 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
   const afterClip = async () => {
     if (token !== speechToken) return;
+    // Settings "Play sample" on a device voice must actually use that voice.
+    if (options?.preferDevice) {
+      startDevice();
+      return;
+    }
     if (naturalVoicePref) {
       // Tier 1.5: OpenAI gpt-4o-mini-tts via /api/tts when the host has a key.
       // Clearer than on-device Kokoro; falls back if unavailable.
@@ -871,6 +883,7 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
             token,
             isCurrent: (value) => value === speechToken,
             ratePref,
+            voice: options?.cloudVoice ?? undefined,
             onEnd: options?.onEnd,
             bindAudio: (audio) => {
               activeAudio = audio;
