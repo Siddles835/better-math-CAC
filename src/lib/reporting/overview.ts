@@ -38,14 +38,26 @@ export const totalTime = (record: LearnerRecord): number =>
   Object.values(record.timeByDay ?? {}).reduce((sum, value) => sum + value, 0);
 
 /** Harden incomplete learner docs so one bad record cannot crash the pilot panel. */
-export const normalizeLearnerRecord = (record: LearnerRecord): LearnerRecord => ({
-  ...record,
-  activePathId: record.activePathId || 'foundations',
-  paths: record.paths ?? {},
-  timeByDay: record.timeByDay ?? {},
-  assessments: Array.isArray(record.assessments) ? record.assessments : [],
-  curriculumProgress: record.curriculumProgress ?? {},
-});
+export const normalizeLearnerRecord = (record: LearnerRecord): LearnerRecord => {
+  const paths = record.paths ?? {};
+  const safePaths: LearnerRecord['paths'] = {};
+  for (const [pathId, progress] of Object.entries(paths)) {
+    safePaths[pathId] = {
+      currentNodeId: progress?.currentNodeId ?? '',
+      completedNodeIds: Array.isArray(progress?.completedNodeIds) ? progress.completedNodeIds : [],
+      nodeMastery: progress?.nodeMastery ?? {},
+      topicMastery: progress?.topicMastery ?? {},
+    };
+  }
+  return {
+    ...record,
+    activePathId: record.activePathId || 'foundations',
+    paths: safePaths,
+    timeByDay: record.timeByDay ?? {},
+    assessments: Array.isArray(record.assessments) ? record.assessments : [],
+    curriculumProgress: record.curriculumProgress ?? {},
+  };
+};
 
 export const studentReport = (
   spaceName: string,

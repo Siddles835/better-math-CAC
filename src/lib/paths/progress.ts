@@ -138,8 +138,8 @@ export const addTimeSeconds = (
 
 export const lowestTopics = (record: LearnerRecord, limit = 3): string[] => {
   const totals = new Map<string, { correct: number; attempts: number }>();
-  for (const progress of Object.values(record.paths)) {
-    for (const [topic, stat] of Object.entries(progress.topicMastery)) {
+  for (const progress of Object.values(record.paths ?? {})) {
+    for (const [topic, stat] of Object.entries(progress?.topicMastery ?? {})) {
       const prev = totals.get(topic) ?? { correct: 0, attempts: 0 };
       totals.set(topic, {
         correct: prev.correct + stat.correct,
