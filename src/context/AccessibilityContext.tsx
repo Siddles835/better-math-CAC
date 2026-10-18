@@ -1,6 +1,7 @@
 import React, {
-  createContext, useCallback, useContext, useEffect, useMemo, useState,
+  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   AccessibilityPrefs, DEFAULT_PREFS, applyPrefsToDocument, loadPrefs, savePrefs,
   withCalmMode, withColorTheme, withLowVision,
@@ -14,11 +15,15 @@ import {
   stopSpeaking,
 } from '@/lib/speech';
 
+/** Visible "Nice work" captions clear after 3 seconds so Back stays usable. */
+export const ANNOUNCE_VISIBLE_MS = 3000;
+
 interface AccessibilityValue {
   prefs: AccessibilityPrefs;
   setPref: <K extends keyof AccessibilityPrefs>(key: K, value: AccessibilityPrefs[K]) => void;
   /** Merge several prefs at once without locking. Calm mode still bundles when calmBackground is set. */
   patchPrefs: (patch: Partial<AccessibilityPrefs>) => void;
+  replacePrefs: (next: AccessibilityPrefs) => void;
   resetPrefs: () => void;
   announce: (message: string) => void;
 }
@@ -27,6 +32,7 @@ const AccessibilityContext = createContext<AccessibilityValue>({
   prefs: DEFAULT_PREFS,
   setPref: () => undefined,
   patchPrefs: () => undefined,
+  replacePrefs: () => undefined,
   resetPrefs: () => undefined,
   announce: () => undefined,
 });
@@ -34,6 +40,9 @@ const AccessibilityContext = createContext<AccessibilityValue>({
 export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [prefs, setPrefs] = useState<AccessibilityPrefs>(() => loadPrefs());
   const [message, setMessage] = useState('');
+  const clearTimer = useRef<number | null>(null);
+  const showTimer = useRef<number | null>(null);
+  const location = useLocation();
 
   useEffect(() => {
     prefetchSpeechManifest();
@@ -55,6 +64,31 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => media.removeEventListener?.('change', onChange);
   }, [prefs]);
 
+  const clearAnnounce = useCallback(() => {
+    if (showTimer.current) {
+      window.clearTimeout(showTimer.current);
+      showTimer.current = null;
+    }
+    if (clearTimer.current) {
+      window.clearTimeout(clearTimer.current);
+      clearTimer.current = null;
+    }
+    setMessage('');
+  }, []);
+
+  // Leaving a page must drop the caption so it cannot cover Back elsewhere.
+  useEffect(() => {
+    clearAnnounce();
+  }, [clearAnnounce, location.pathname]);
+
+  useEffect(
+    () => () => {
+      if (showTimer.current) window.clearTimeout(showTimer.current);
+      if (clearTimer.current) window.clearTimeout(clearTimer.current);
+    },
+    []
+  );
+
   const setPref = useCallback(
     <K extends keyof AccessibilityPrefs>(key: K, value: AccessibilityPrefs[K]) => {
       setPrefs((prev) => {
@@ -67,7 +101,6 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
         if (key === 'colorTheme') {
           return withColorTheme(prev, value as AccessibilityPrefs['colorTheme']);
         }
-        // Changing text size or button size away from the low-vision landscape unlocks it.
         if (key === 'textSize' && prev.lowVision && value !== 'xlarge') {
           return { ...withLowVision(prev, false), textSize: value as AccessibilityPrefs['textSize'] };
         }
@@ -82,7 +115,6 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const patchPrefs = useCallback((patch: Partial<AccessibilityPrefs>) => {
     setPrefs((prev) => {
-      // Explicit low-vision / theme helpers win so turning the mode OFF always sticks.
       if ('lowVision' in patch) {
         const base = withLowVision(prev, Boolean(patch.lowVision));
         const { lowVision: _lv, highContrast: _hc, colorTheme: themeFromPatch, ...rest } = patch;
@@ -120,29 +152,46 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, []);
 
+  const replacePrefs = useCallback((next: AccessibilityPrefs) => {
+    setPrefs(next);
+  }, []);
+
   const resetPrefs = useCallback(() => setPrefs(DEFAULT_PREFS), []);
+
   const announce = useCallback((next: string) => {
-    // Clear first so the same message is read out again if repeated
+    if (showTimer.current) window.clearTimeout(showTimer.current);
+    if (clearTimer.current) window.clearTimeout(clearTimer.current);
     setMessage('');
-    window.setTimeout(() => setMessage(next), 50);
+    showTimer.current = window.setTimeout(() => {
+      setMessage(next);
+      clearTimer.current = window.setTimeout(() => {
+        setMessage('');
+        clearTimer.current = null;
+      }, ANNOUNCE_VISIBLE_MS);
+      showTimer.current = null;
+    }, 50);
   }, []);
 
   const value = useMemo(
-    () => ({ prefs, setPref, patchPrefs, resetPrefs, announce }),
-    [prefs, setPref, patchPrefs, resetPrefs, announce]
+    () => ({ prefs, setPref, patchPrefs, replacePrefs, resetPrefs, announce }),
+    [prefs, setPref, patchPrefs, replacePrefs, resetPrefs, announce]
   );
 
   return (
     <AccessibilityContext.Provider value={value}>
       {children}
-      {/* Screen-reader live region; visible caption when soundAsText is on */}
+      {/*
+        Visible when sound-as-text is on. Sits ABOVE the lesson Back/Next footer
+        (footer ~4.5–5.5rem) and ignores pointer events so Back stays clickable.
+        Auto-clears after ANNOUNCE_VISIBLE_MS (3 seconds).
+      */}
       <div
         aria-live="polite"
         role="status"
         data-testid="a11y-announce"
         className={
           prefs.soundAsText && message
-            ? 'fixed bottom-3 inset-inline-start-3 inset-inline-end-3 z-[60] mx-auto max-w-lg rounded-xl border border-border bg-card px-4 py-2 text-center text-sm text-foreground shadow-md'
+            ? 'pointer-events-none fixed bottom-24 inset-inline-start-3 inset-inline-end-3 z-40 mx-auto max-w-md rounded-xl border border-primary/40 bg-card/95 px-4 py-2 text-center text-sm text-foreground shadow-md'
             : 'sr-only'
         }
       >

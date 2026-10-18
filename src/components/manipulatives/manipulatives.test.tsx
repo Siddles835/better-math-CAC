@@ -13,6 +13,7 @@ vi.mock('@/context/AccessibilityContext', () => ({
     prefs: { ...DEFAULT_PREFS, reduceMotion: true, muteSounds: true },
     setPref: () => undefined,
     patchPrefs: () => undefined,
+    replacePrefs: () => undefined,
     resetPrefs: () => undefined,
     announce: () => undefined,
   }),

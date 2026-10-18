@@ -78,5 +78,17 @@
   "checklist_step_of": "第 {{step}} 步，共 {{total}} 步",
   "summary_banner": "课程摘要：你将分短步骤练习本星球的技能。",
   "worked_example_banner": "先看例题：在动手前先看一个清楚的例子。",
+  "summary_heading": "课程摘要",
+  "summary_for_planet": "{{planet}} · {{topic}}。你将练习{{skill}}（{{range}}）。",
+  "topic_counting": "数数",
+  "topic_addition": "加法",
+  "topic_subtraction": "减法",
+  "worked_example_prompt": "先看本课的一个清楚例子，再自己试。",
+  "worked_example_watch": "观看例题",
+  "worked_example_title": "例题",
+  "worked_example_shows": "这个例子展示 {{equation}}。",
+  "worked_example_voice_note": "朗读会一步步读出例子。开启云端语音时为 AI 声音。",
+  "worked_example_close": "关闭例题",
+  "worked_example_done": "看完了",
   "announce_visible": "状态"
 }

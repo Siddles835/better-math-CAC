@@ -78,5 +78,17 @@
   "checklist_step_of": "Step {{step}} of {{total}}",
   "summary_banner": "Lesson summary: you will practice the skill for this planet in short steps.",
   "worked_example_banner": "Worked example first: watch one clear example before you try.",
+  "summary_heading": "Lesson summary",
+  "summary_for_planet": "{{planet}} · {{topic}}. You will practice {{skill}} ({{range}}).",
+  "topic_counting": "Counting",
+  "topic_addition": "Addition",
+  "topic_subtraction": "Subtraction",
+  "worked_example_prompt": "See one clear example for this lesson before you try.",
+  "worked_example_watch": "Watch worked example",
+  "worked_example_title": "Worked example",
+  "worked_example_shows": "This example shows {{equation}}.",
+  "worked_example_voice_note": "The speaking voice reads each step aloud. It is an AI voice when cloud speech is on.",
+  "worked_example_close": "Close worked example",
+  "worked_example_done": "Done watching",
   "announce_visible": "Status"
 }

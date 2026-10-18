@@ -78,5 +78,17 @@
   "checklist_step_of": "الخطوة {{step}} من {{total}}",
   "summary_banner": "ملخص الدرس: ستتمرن على مهارة هذا الكوكب بخطوات قصيرة.",
   "worked_example_banner": "مثال محلول أولًا: شاهد مثالًا واضحًا قبل أن تحاول.",
+  "summary_heading": "ملخص الدرس",
+  "summary_for_planet": "{{planet}} · {{topic}}. ستتمرن على {{skill}} ({{range}}).",
+  "topic_counting": "العد",
+  "topic_addition": "الجمع",
+  "topic_subtraction": "الطرح",
+  "worked_example_prompt": "شاهد مثالًا واضحًا لهذا الدرس قبل أن تحاول.",
+  "worked_example_watch": "شاهد مثالًا محلولًا",
+  "worked_example_title": "مثال محلول",
+  "worked_example_shows": "هذا المثال يعرض {{equation}}.",
+  "worked_example_voice_note": "الصوت يقرأ كل خطوة بصوت عالٍ. يكون صوت ذكاء اصطناعي عند تفعيل الصوت السحابي.",
+  "worked_example_close": "إغلاق المثال المحلول",
+  "worked_example_done": "انتهيت من المشاهدة",
   "announce_visible": "الحالة"
 }

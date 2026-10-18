@@ -78,5 +78,17 @@
   "checklist_step_of": "चरण {{step}} में से {{total}}",
   "summary_banner": "पाठ सार: आप इस ग्रह के कौशल का छोटे चरणों में अभ्यास करेंगे।",
   "worked_example_banner": "पहले हल उदाहरण: कोशिश से पहले एक स्पष्ट उदाहरण देखें।",
+  "summary_heading": "पाठ सारांश",
+  "summary_for_planet": "{{planet}} · {{topic}}. आप {{skill}} का अभ्यास करेंगे ({{range}}).",
+  "topic_counting": "गिनती",
+  "topic_addition": "जोड़",
+  "topic_subtraction": "घटाव",
+  "worked_example_prompt": "कोशिश से पहले इस पाठ का एक स्पष्ट उदाहरण देखें।",
+  "worked_example_watch": "हल उदाहरण देखें",
+  "worked_example_title": "हल उदाहरण",
+  "worked_example_shows": "यह उदाहरण दिखाता है {{equation}}.",
+  "worked_example_voice_note": "आवाज़ हर चरण ज़ोर से पढ़ती है। क्लाउड आवाज़ चालू हो तो यह AI आवाज़ है।",
+  "worked_example_close": "हल उदाहरण बंद करें",
+  "worked_example_done": "देख लिया",
   "announce_visible": "स्थिति"
 }

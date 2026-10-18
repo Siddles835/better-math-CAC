@@ -26,7 +26,7 @@ const ProgressChecklist: React.FC<ProgressChecklistProps> = ({
   className,
 }) => {
   const { t } = useTranslation('helper');
-  const { prefs, announce } = useAccessibility();
+  const { prefs } = useAccessibility();
   const student = getActiveStudent();
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [celebrate, setCelebrate] = useState(false);
@@ -45,14 +45,11 @@ const ProgressChecklist: React.FC<ProgressChecklistProps> = ({
       totalSteps
     );
     setCompletedIds((prev) => {
-      if (next.length > prev.length) {
-        setCelebrate(true);
-        if (!prefs.muteSounds) announce(t('checklist_celebrate'));
-        else if (prefs.soundAsText) announce(t('checklist_celebrate'));
-      }
+      // Checklist UI is retired from lessons; never sticky-announce over Back.
+      if (next.length > prev.length) setCelebrate(true);
       return next;
     });
-  }, [announce, planet, prefs.muteSounds, prefs.soundAsText, step, student, t, totalSteps]);
+  }, [planet, step, student, totalSteps]);
 
   useEffect(() => {
     if (!celebrate) return;

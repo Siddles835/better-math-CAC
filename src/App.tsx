@@ -69,13 +69,14 @@ const App = () => {
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AccessibilityProvider>
         <GameProvider>
           <Toaster />
           <Sonner />
           <RocketTransition />
           <ForegroundTime />
           <BrowserRouter>
+            {/* Inside the router so announce captions clear on navigation. */}
+            <AccessibilityProvider>
             <DemoBadge />
             <NativeShellBridge />
             <Routes>
@@ -147,9 +148,9 @@ const App = () => {
               <Route path="/lesson/subtraction/neptune" element={lesson(<SubtractionNeptune />)} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </AccessibilityProvider>
           </BrowserRouter>
         </GameProvider>
-       </AccessibilityProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
