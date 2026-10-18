@@ -23,6 +23,10 @@ interface AccessibilityValue {
   setPref: <K extends keyof AccessibilityPrefs>(key: K, value: AccessibilityPrefs[K]) => void;
   /** Merge several prefs at once without locking. Calm mode still bundles when calmBackground is set. */
   patchPrefs: (patch: Partial<AccessibilityPrefs>) => void;
+<<<<<<< HEAD
+=======
+  /** Replace the full preference object (used when turning accommodation needs off). */
+>>>>>>> 7a28b5b (Make every disability accommodation actually turn off.)
   replacePrefs: (next: AccessibilityPrefs) => void;
   resetPrefs: () => void;
   announce: (message: string) => void;

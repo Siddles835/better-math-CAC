@@ -1,5 +1,5 @@
 import type { AccessibilityPrefs } from '@/lib/accessibility';
-import { withLowVision } from '@/lib/accessibility';
+import { DEFAULT_PREFS, withCalmMode, withLowVision } from '@/lib/accessibility';
 
 /** Learner needs mapped to recommended preference patches and feature ids. */
 export type AccommodationNeed =
@@ -261,13 +261,46 @@ export const applyAccommodationPreset = (
   return { ...current, ...safe };
 };
 
-/** Clear low-vision colour/landscape overrides when that need is removed. */
+/**
+ * Turn a need off for real: reset the prefs that preset set, then re-apply any
+ * needs that should stay on so shared features (calm, breaks, etc.) remain.
+ */
 export const clearAccommodationNeed = (
   current: AccessibilityPrefs,
-  need: AccommodationNeed
+  need: AccommodationNeed,
+  remainingNeeds: AccommodationNeed[] = []
 ): AccessibilityPrefs => {
-  if (need === 'lowVision') return withLowVision(current, false);
-  return current;
+  let next: AccessibilityPrefs;
+  if (need === 'lowVision') {
+    next = {
+      ...withLowVision(current, false),
+      // withLowVision(false) clears landscape/contrast; also restore other LV preset keys.
+      autoReadAloud: DEFAULT_PREFS.autoReadAloud,
+      colorSafeLabels: DEFAULT_PREFS.colorSafeLabels,
+    };
+  } else {
+    const preset = ACCOMMODATION_MATRIX[need];
+    next = { ...current };
+    for (const key of Object.keys(preset.prefs) as (keyof AccessibilityPrefs)[]) {
+      if (key === 'lowVision' || key === 'highContrast' || key === 'colorTheme') continue;
+      if (key in DEFAULT_PREFS) {
+        (next as unknown as Record<string, unknown>)[key] = DEFAULT_PREFS[key];
+      }
+    }
+    // Calm was often bundled with ADHD / autism / anxiety / sensory.
+    if ('calmBackground' in preset.prefs) {
+      next = withCalmMode(next, false);
+    }
+  }
+
+  const keep = remainingNeeds.filter((n) => n !== need);
+  for (const keepNeed of keep) {
+    next = applyAccommodationPreset(next, keepNeed);
+    if (keepNeed !== 'lowVision' && ACCOMMODATION_MATRIX[keepNeed].prefs.calmBackground) {
+      next = withCalmMode(next, true);
+    }
+  }
+  return next;
 };
 
 /** Toggle one feature id on/off without locking other prefs. */
