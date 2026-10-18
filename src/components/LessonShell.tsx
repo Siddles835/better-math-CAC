@@ -49,7 +49,7 @@ const LessonShell: React.FC<LessonShellProps> = ({
   const stepLabel = tx('ui:stepOf', { step: Math.min(step + 1, totalSteps), total: totalSteps });
 
   return (
-    <div className={`lesson-shell bg-background ${prefs.calmBackground ? '' : 'subtle-stars'} flex flex-col overflow-hidden`}>
+    <div className={`lesson-shell ${prefs.calmBackground ? 'bg-background' : 'space-bg subtle-stars'} flex flex-col overflow-hidden`}>
       <a href="#lesson-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:start-2 focus:top-2 focus:rounded-lg focus:bg-card focus:px-4 focus:py-2 focus:ring-2 focus:ring-primary">{tx('ui:s_3a35b15820')}</a>
 

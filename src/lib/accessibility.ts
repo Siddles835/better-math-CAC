@@ -65,7 +65,8 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   easyReadSpacing: false,
   highContrast: false,
   lowVision: false,
-  colorTheme: 'system',
+  /** Classic MathLift blue space layout (not OS light cream). */
+  colorTheme: 'dark',
   dyslexiaFont: false,
   displayStyle: 'playful',
   planetTheme: '',
@@ -121,8 +122,8 @@ export const withLowVision = (prefs: AccessibilityPrefs, enabled: boolean): Acce
       ...prefs,
       lowVision: false,
       highContrast: false,
-      // Always leave contrast mode so Light/Dark/System can take effect.
-      colorTheme: prefs.colorTheme === 'contrast' ? 'system' : prefs.colorTheme,
+      // Leave contrast for the classic blue space layout (dark), not OS cream.
+      colorTheme: prefs.colorTheme === 'contrast' ? 'dark' : prefs.colorTheme,
       textSize: prefs.textSize === 'xlarge' ? 'normal' : prefs.textSize,
       biggerButtons: false,
     };
@@ -158,7 +159,11 @@ export const loadPrefs = (): AccessibilityPrefs => {
     const parsed = JSON.parse(raw) as Partial<AccessibilityPrefs> & { voiceEnabled?: boolean };
     const merged: AccessibilityPrefs = { ...DEFAULT_PREFS, ...parsed };
     if (!('colorTheme' in parsed)) {
-      merged.colorTheme = parsed.highContrast ? 'contrast' : 'system';
+      merged.colorTheme = parsed.highContrast ? 'contrast' : 'dark';
+    }
+    // Prefer the classic blue space layout over OS cream/light “system” chrome.
+    if (merged.colorTheme === 'system' && !merged.lowVision) {
+      merged.colorTheme = 'dark';
     }
     if (!('reduceMotion' in parsed) && typeof window.matchMedia === 'function') {
       merged.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -190,7 +195,7 @@ export const loadPrefs = (): AccessibilityPrefs => {
       merged.highContrast = true;
     } else {
       merged.highContrast = false;
-      if (merged.colorTheme === 'contrast') merged.colorTheme = 'system';
+      if (merged.colorTheme === 'contrast') merged.colorTheme = 'dark';
     }
 
     // PR #2 reused muteSounds as the voice toggle. Migrate once to voiceEnabled.

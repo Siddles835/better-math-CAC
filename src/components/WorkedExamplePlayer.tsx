@@ -49,13 +49,13 @@ const WorkedExamplePlayer: React.FC<WorkedExamplePlayerProps> = ({
       aria-labelledby="worked-example-title"
       data-testid="worked-example-player"
     >
-      <div className="flex w-full max-w-lg flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-lg sm:p-5">
+      <div className="flex w-full max-w-lg flex-col gap-3 rounded-2xl border border-primary/30 bg-card/95 p-4 shadow-lg backdrop-blur-md sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 id="worked-example-title" className="text-lg font-semibold text-foreground">
               {t('helper:worked_example_title')}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-primary/90">
               {t(`ui:${level.labelKey}`)} · {t(`helper:${topicLabelKey(example.topic)}`)}
             </p>
             <p className="mt-1 text-sm font-medium text-foreground" dir="ltr">
@@ -75,7 +75,7 @@ const WorkedExamplePlayer: React.FC<WorkedExamplePlayerProps> = ({
         </div>
 
         <div
-          className="overflow-hidden rounded-xl border border-primary/30 bg-background"
+          className="overflow-hidden rounded-xl border border-primary/25 bg-background/80"
           data-testid="worked-example-stage"
         >
           <GroupAnimation

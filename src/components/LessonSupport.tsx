@@ -13,8 +13,8 @@ interface LessonSupportProps {
 }
 
 /**
- * Planet-specific lesson summary + optional worked-example launcher.
- * Replaces the old generic banners and the progress checklist.
+ * Compact blue-space lesson aids (summary + worked example).
+ * Keeps accommodation toggles; avoids the heavy stacked “form card” layout.
  */
 const LessonSupport: React.FC<LessonSupportProps> = ({ planet }) => {
   const { t } = useTranslation(['helper', 'ui']);
@@ -32,29 +32,33 @@ const LessonSupport: React.FC<LessonSupportProps> = ({ planet }) => {
   });
 
   return (
-    <div className="space-y-2" data-testid="lesson-support">
+    <div
+      className="mb-1 rounded-2xl border border-primary/25 bg-primary/10 px-3 py-2.5 backdrop-blur-sm"
+      data-testid="lesson-support"
+    >
       {prefs.summaryFirst ? (
-        <div
-          className="rounded-xl border border-border/70 bg-card/60 px-3 py-2.5"
-          data-testid="lesson-summary"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <div data-testid="lesson-summary">
+          <p className="text-xs font-semibold tracking-wide text-primary">
             {t('helper:summary_heading')}
           </p>
-          <p className="mt-1 text-sm text-foreground">{summary}</p>
+          <p className="mt-0.5 text-sm text-foreground/95">{summary}</p>
         </div>
       ) : null}
 
       {prefs.workedExampleFirst ? (
         <div
-          className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/70 bg-card/60 px-3 py-2.5"
+          className={
+            prefs.summaryFirst
+              ? 'mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-primary/20 pt-2'
+              : 'flex flex-wrap items-center justify-between gap-2'
+          }
           data-testid="lesson-worked-example-launch"
         >
-          <p className="text-sm text-foreground">{t('helper:worked_example_prompt')}</p>
+          <p className="text-sm text-foreground/90">{t('helper:worked_example_prompt')}</p>
           <Button
             type="button"
             size="sm"
-            className="min-h-11 gap-2"
+            className="min-h-11 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => setOpenExample(true)}
             data-testid="watch-worked-example"
           >
