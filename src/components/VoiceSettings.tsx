@@ -20,10 +20,12 @@ import {
   type CloudTtsStatus,
 } from '@/lib/speechOpenAI';
 
+/** Pref key: null / empty voiceURI means OpenAI Alloy is selected. */
+const ALLOY_SELECTED_URI = null;
+
 /**
- * Voice speed + sample controls.
- * Speaking uses OpenAI Alloy via /api/tts when configured.
- * Natural / Kokoro voice stays off for users.
+ * Voice list with OpenAI Alloy first (always visible), then device backups.
+ * Natural / Kokoro stays off. Lessons use Alloy when /api/tts is available.
  */
 const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { t, i18n } = useTranslation(['settings']);
@@ -45,16 +47,16 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
     void ensureCloudTtsAvailable();
   }, []);
 
-  // Keep Natural voice forced off even if older prefs had it on.
   useEffect(() => {
     if (prefs.naturalVoice) setPref('naturalVoice', false);
     if (prefs.cloudVoice !== DEFAULT_CLOUD_VOICE) setPref('cloudVoice', DEFAULT_CLOUD_VOICE);
-  }, [prefs.naturalVoice, prefs.cloudVoice, setPref]);
+    // Keep OpenAI Alloy selected in the list (voiceURI null = Alloy).
+    if (prefs.voiceURI) setPref('voiceURI', null);
+  }, [prefs.naturalVoice, prefs.cloudVoice, prefs.voiceURI, setPref]);
 
   const ranked = useMemo(() => listVoicesForLang(lang, voices), [lang, voices]);
-  const best = ranked[0] ?? null;
-  const onlyLowQuality = ranked.length > 0 && ranked.every((voice) => voiceQuality(voice) === 'standard');
   const cloudReady = cloudStatus === 'available';
+  const alloySelected = !prefs.voiceURI;
 
   const playAlloySample = () => {
     if (!prefs.voiceEnabled) {
@@ -83,39 +85,22 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
     });
   };
 
+  const selectAlloy = () => {
+    setPref('voiceURI', ALLOY_SELECTED_URI);
+    setPref('cloudVoice', DEFAULT_CLOUD_VOICE);
+    announce(t('settings:voiceAlloyName'));
+    playAlloySample();
+  };
+
+  const alloyHint =
+    cloudStatus === 'unknown'
+      ? t('settings:voiceAlloyChecking')
+      : cloudReady
+        ? t('settings:voiceAlloyListHint')
+        : t('settings:voiceAlloyFallback');
+
   return (
     <div className={`space-y-4 ${className}`}>
-      <div className="rounded-2xl border border-border bg-card p-4" data-testid="openai-alloy-voice-card">
-        <h3 className="mb-1 text-base font-semibold">{t('settings:voiceAlloyTitle')}</h3>
-        <p className="text-sm text-muted-foreground">
-          {cloudReady
-            ? t('settings:voiceAlloyReady')
-            : cloudStatus === 'unknown'
-              ? t('settings:voiceAlloyChecking')
-              : t('settings:voiceAlloyFallback')}
-        </p>
-        {cloudReady ? (
-          <p className="mt-2 text-sm text-muted-foreground" data-testid="ai-voice-disclosure">
-            {t('settings:voiceAiDisclosure')}
-          </p>
-        ) : null}
-        {cloudStatus === 'unknown' ? (
-          <Loader2 className="mt-2 h-4 w-4 animate-spin text-muted-foreground" aria-hidden />
-        ) : null}
-        <div className="mt-3">
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-[48px]"
-            disabled={!prefs.voiceEnabled}
-            onClick={playAlloySample}
-            data-testid="alloy-voice-sample"
-          >
-            {t('settings:voiceSample')}
-          </Button>
-        </div>
-      </div>
-
       <div>
         <h3 className="mb-1 text-base font-semibold">{t('settings:voiceSpeed')}</h3>
         <p className="mb-3 text-sm text-muted-foreground">{t('settings:voiceSpeedHelp')}</p>
@@ -139,86 +124,100 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
         </div>
       </div>
 
-      {!cloudReady ? (
-        <div>
-          <h3 className="mb-1 text-base font-semibold">{t('settings:voicePicker')}</h3>
-          <p className="mb-3 text-sm text-muted-foreground">{t('settings:voicePickerHelp')}</p>
-          {best && (
-            <p className="mb-3 text-sm">
-              <span className="font-medium">{t('settings:voiceBestFound')}: </span>
-              <span>{best.name}</span>
-            </p>
-          )}
-          {onlyLowQuality && (
-            <p className="mb-3 text-sm text-muted-foreground">{t('settings:voiceLowQualityTip')}</p>
-          )}
-          {ranked.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t('settings:voiceNone')}</p>
-          ) : (
-            <ul className="space-y-2" data-testid="device-voice-picker">
-              <li>
-                <button
-                  type="button"
-                  aria-pressed={!prefs.voiceURI}
-                  onClick={() => {
-                    setPref('voiceURI', null);
-                    announce(t('settings:voiceAuto'));
-                    playDeviceSample(null);
-                  }}
-                  className="flex min-h-[56px] w-full items-start gap-3 rounded-2xl border border-border bg-card p-4 text-start hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <span className="flex-1">
-                    <span className="font-medium">{t('settings:voiceAuto')}</span>
-                    <span className="block text-sm text-muted-foreground">{t('settings:voiceAutoHint')}</span>
+      <div>
+        <h3 className="mb-1 text-base font-semibold">{t('settings:voicePicker')}</h3>
+        <p className="mb-3 text-sm text-muted-foreground">{t('settings:voicePickerHelp')}</p>
+
+        <ul className="space-y-2" data-testid="voice-picker-list">
+          {/* OpenAI Alloy — always first so users can find it in the list */}
+          <li>
+            <div className="flex items-stretch gap-2">
+              <button
+                type="button"
+                aria-pressed={alloySelected}
+                data-testid="openai-alloy-voice-option"
+                onClick={selectAlloy}
+                className="flex min-h-[56px] flex-1 items-start gap-3 rounded-2xl border border-border bg-card p-4 text-start hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <span className="flex-1">
+                  <span className="font-medium">{t('settings:voiceAlloyName')}</span>
+                  <span className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                    <span className="rounded-full border border-border px-2 py-0.5 text-xs">
+                      {t('settings:voiceQualityNatural')}
+                    </span>
+                    {cloudStatus === 'unknown' ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                    ) : null}
+                    <span>{alloyHint}</span>
                   </span>
-                  {!prefs.voiceURI ? <Check className="h-4 w-4 text-primary" aria-hidden /> : null}
-                </button>
-              </li>
-              {ranked.map((voice) => {
-                const selected = prefs.voiceURI === voice.voiceURI;
-                const quality = voiceQuality(voice);
-                return (
-                  <li key={voice.voiceURI}>
-                    <div className="flex items-stretch gap-2">
-                      <button
-                        type="button"
-                        aria-pressed={selected}
-                        onClick={() => {
-                          setPref('voiceURI', voice.voiceURI);
-                          announce(voice.name);
-                          playDeviceSample(voice.voiceURI);
-                        }}
-                        className="flex min-h-[56px] flex-1 items-start gap-3 rounded-2xl border border-border bg-card p-4 text-start hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <span className="flex-1">
-                          <span className="font-medium">{voice.name}</span>
-                          <span className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                            <span>{voice.lang}</span>
-                            <span className="rounded-full border border-border px-2 py-0.5 text-xs">
-                              {quality === 'natural'
-                                ? t('settings:voiceQualityNatural')
-                                : t('settings:voiceQualityStandard')}
-                            </span>
-                          </span>
+                  {cloudReady ? (
+                    <span
+                      className="mt-2 block text-sm text-muted-foreground"
+                      data-testid="ai-voice-disclosure"
+                    >
+                      {t('settings:voiceAiDisclosure')}
+                    </span>
+                  ) : null}
+                </span>
+                {alloySelected ? <Check className="h-4 w-4 text-primary" aria-hidden /> : null}
+              </button>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-[56px] shrink-0"
+                disabled={!prefs.voiceEnabled}
+                onClick={playAlloySample}
+                data-testid="alloy-voice-sample"
+              >
+                {t('settings:voiceSample')}
+              </Button>
+            </div>
+          </li>
+
+          {ranked.map((voice) => {
+            const selected = prefs.voiceURI === voice.voiceURI;
+            const quality = voiceQuality(voice);
+            return (
+              <li key={voice.voiceURI}>
+                <div className="flex items-stretch gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      setPref('voiceURI', voice.voiceURI);
+                      announce(voice.name);
+                      playDeviceSample(voice.voiceURI);
+                    }}
+                    className="flex min-h-[56px] flex-1 items-start gap-3 rounded-2xl border border-border bg-card p-4 text-start hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <span className="flex-1">
+                      <span className="font-medium">{voice.name}</span>
+                      <span className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                        <span>{voice.lang}</span>
+                        <span className="rounded-full border border-border px-2 py-0.5 text-xs">
+                          {quality === 'natural'
+                            ? t('settings:voiceQualityNatural')
+                            : t('settings:voiceQualityStandard')}
                         </span>
-                        {selected ? <Check className="h-4 w-4 text-primary" aria-hidden /> : null}
-                      </button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="min-h-[56px] shrink-0"
-                        onClick={() => playDeviceSample(voice.voiceURI)}
-                      >
-                        {t('settings:voiceSample')}
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      ) : null}
+                        <span className="text-xs">{t('settings:voiceDeviceBackup')}</span>
+                      </span>
+                    </span>
+                    {selected ? <Check className="h-4 w-4 text-primary" aria-hidden /> : null}
+                  </button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-[56px] shrink-0"
+                    onClick={() => playDeviceSample(voice.voiceURI)}
+                  >
+                    {t('settings:voiceSample')}
+                  </Button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 };

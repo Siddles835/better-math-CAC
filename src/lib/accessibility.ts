@@ -239,6 +239,8 @@ export const loadPrefs = (): AccessibilityPrefs => {
     merged.cloudVoice = 'alloy';
     // Always keep Natural voice (Kokoro) off for users; OpenAI Alloy is the path.
     merged.naturalVoice = false;
+    // Default selection in Settings is OpenAI Alloy (shown when voiceURI is null).
+    merged.voiceURI = null;
     if (migratedSystemToDark) {
       try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
