@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { useAccessibility } from '@/context/AccessibilityContext';
@@ -30,11 +30,21 @@ const ProgressChecklist: React.FC<ProgressChecklistProps> = ({
   const student = getActiveStudent();
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [celebrate, setCelebrate] = useState(false);
+  /** Skip celebrate on the first hydrate from storage so reopening a lesson is quiet. */
+  const hydratedRef = useRef(false);
   const reduceMotion = prefs.reduceMotion || prefs.calmBackground;
+
+  // New planet = fresh hydrate; do not treat saved progress as a brand-new completion.
+  useEffect(() => {
+    hydratedRef.current = false;
+    setCelebrate(false);
+  }, [planet]);
 
   useEffect(() => {
     if (!student) {
       setCompletedIds([]);
+      hydratedRef.current = false;
+      setCelebrate(false);
       return;
     }
     const next = syncChecklistWithPlanetStep(
@@ -45,11 +55,15 @@ const ProgressChecklist: React.FC<ProgressChecklistProps> = ({
       totalSteps
     );
     setCompletedIds((prev) => {
-      if (next.length > prev.length) {
+      const advanced = hydratedRef.current && next.length > prev.length;
+      if (advanced) {
         setCelebrate(true);
-        if (!prefs.muteSounds) announce(t('checklist_celebrate'));
-        else if (prefs.soundAsText) announce(t('checklist_celebrate'));
+        // Sound-as-text / live region only — inline celebrate already shows on-screen.
+        if (prefs.soundAsText || !prefs.muteSounds) {
+          announce(t('checklist_celebrate'));
+        }
       }
+      hydratedRef.current = true;
       return next;
     });
   }, [announce, planet, prefs.muteSounds, prefs.soundAsText, step, student, t, totalSteps]);
@@ -60,6 +74,13 @@ const ProgressChecklist: React.FC<ProgressChecklistProps> = ({
     const timer = window.setTimeout(() => setCelebrate(false), ms);
     return () => window.clearTimeout(timer);
   }, [celebrate, reduceMotion]);
+
+  useEffect(
+    () => () => {
+      setCelebrate(false);
+    },
+    []
+  );
 
   const state = useMemo(
     () => buildChecklistState(planet, totalSteps, step, completedIds),
