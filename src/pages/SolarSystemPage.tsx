@@ -134,13 +134,13 @@ const SolarSystemPage: React.FC = () => {
     setPosition(planetId, lesson);
     void markPlanetVisited(planetId);
     setShowRocketTransition(true);
+    // Navigate mid-flight; RocketTransition clears itself after the full 5.5s fly.
     setTimeout(() => {
       navigate(getLessonRoute(planetId), {
         state: { initialStep: savedStep, replay: isCompleted },
       });
-      setShowRocketTransition(false);
       setSelecting(false);
-    }, 1400);
+    }, 1200);
   };
 
   const orbitPlanets = PLANET_ORDER.filter((id) => id !== 'sun');
