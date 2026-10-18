@@ -51,7 +51,7 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
   persistClassDefaults = true,
 }) => {
   const { t } = useTranslation('teacher');
-  const { prefs, patchPrefs, announce } = useAccessibility();
+  const { prefs, replacePrefs, announce } = useAccessibility();
   const [selectedNeeds, setSelectedNeeds] = useState<AccommodationNeed[]>(() => {
     return loadClassAccommodations(classCode)?.needs ?? [];
   });
@@ -69,7 +69,7 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
 
     let next = applyAccommodationPreset(prefs, need);
     if (next.calmBackground) next = withCalmMode(next, true);
-    patchPrefs(next);
+    replacePrefs(next);
     setNote(t('acc_applied', { need: t(ACCOMMODATION_MATRIX[need].labelKey) }));
     announce(t('acc_applied', { need: t(ACCOMMODATION_MATRIX[need].labelKey) }));
   };
@@ -78,16 +78,16 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
     const nextNeeds = selectedNeeds.filter((n) => n !== need);
     setSelectedNeeds(nextNeeds);
     if (persistClassDefaults) setClassNeeds(classCode, nextNeeds);
-    // Low vision must actually restore normal colours/landscape when turned off.
-    patchPrefs(clearAccommodationNeed(prefs, need));
+    // Every need must actually clear its prefs (not only low vision).
+    replacePrefs(clearAccommodationNeed(prefs, need, nextNeeds));
     setNote(t('acc_unlocked'));
     announce(t('acc_unlocked'));
   };
 
   const onToggleFeature = (featureId: AccommodationFeatureId, enabled: boolean) => {
     const next = toggleAccommodationFeature(prefs, featureId, enabled);
-    patchPrefs(next);
-    // Keep the Low vision need chip in sync with the high-contrast / low-vision switch.
+    replacePrefs(next);
+    // Keep need chips in sync when the matching feature is turned off/on.
     if (featureId === 'highContrast') {
       const nextNeeds = enabled
         ? selectedNeeds.includes('lowVision')
