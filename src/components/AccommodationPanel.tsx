@@ -58,9 +58,12 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
   const [note, setNote] = useState('');
 
   const applyNeed = (need: AccommodationNeed) => {
-    const nextNeeds = selectedNeeds.includes(need)
-      ? selectedNeeds
-      : [...selectedNeeds, need];
+    // Clicking an already-selected need turns it off (especially important for low vision).
+    if (selectedNeeds.includes(need)) {
+      removeNeed(need);
+      return;
+    }
+    const nextNeeds = [...selectedNeeds, need];
     setSelectedNeeds(nextNeeds);
     if (persistClassDefaults) setClassNeeds(classCode, nextNeeds);
 
@@ -76,8 +79,7 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
     setSelectedNeeds(nextNeeds);
     if (persistClassDefaults) setClassNeeds(classCode, nextNeeds);
     // Low vision must actually restore normal colours/landscape when turned off.
-    const cleared = clearAccommodationNeed(prefs, need);
-    if (cleared !== prefs) patchPrefs(cleared);
+    patchPrefs(clearAccommodationNeed(prefs, need));
     setNote(t('acc_unlocked'));
     announce(t('acc_unlocked'));
   };
@@ -85,6 +87,16 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
   const onToggleFeature = (featureId: AccommodationFeatureId, enabled: boolean) => {
     const next = toggleAccommodationFeature(prefs, featureId, enabled);
     patchPrefs(next);
+    // Keep the Low vision need chip in sync with the high-contrast / low-vision switch.
+    if (featureId === 'highContrast') {
+      const nextNeeds = enabled
+        ? selectedNeeds.includes('lowVision')
+          ? selectedNeeds
+          : [...selectedNeeds, 'lowVision' as AccommodationNeed]
+        : selectedNeeds.filter((n) => n !== 'lowVision');
+      setSelectedNeeds(nextNeeds);
+      if (persistClassDefaults) setClassNeeds(classCode, nextNeeds);
+    }
     announce(
       `${t(ACCOMMODATION_FEATURES[featureId].labelKey)} ${enabled ? t('acc_on') : t('acc_off')}`
     );

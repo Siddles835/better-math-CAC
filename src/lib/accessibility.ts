@@ -100,15 +100,20 @@ export const resolveColorTheme = (
     return prefs.colorTheme;
   }
   // "contrast" without lowVision falls back to the system theme.
-  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: light)').matches) {
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: light)').matches
+  ) {
     return 'light';
   }
   return 'dark';
 };
 
 /**
- * Turn low-vision mode on or off. On → contrast colours + roomier landscape.
- * Off → restore a normal theme and clear the low-vision landscape overrides.
+ * Turn low-vision mode on or off.
+ * On → contrast colours + roomier landscape.
+ * Off → always clears the low-vision flags so the normal theme/size can apply again.
  */
 export const withLowVision = (prefs: AccessibilityPrefs, enabled: boolean): AccessibilityPrefs => {
   if (!enabled) {
@@ -116,6 +121,7 @@ export const withLowVision = (prefs: AccessibilityPrefs, enabled: boolean): Acce
       ...prefs,
       lowVision: false,
       highContrast: false,
+      // Always leave contrast mode so Light/Dark/System can take effect.
       colorTheme: prefs.colorTheme === 'contrast' ? 'system' : prefs.colorTheme,
       textSize: prefs.textSize === 'xlarge' ? 'normal' : prefs.textSize,
       biggerButtons: false,
@@ -133,6 +139,17 @@ export const withLowVision = (prefs: AccessibilityPrefs, enabled: boolean): Acce
   };
 };
 
+/** Pick a normal (non-contrast) theme and guarantee low-vision overrides are cleared. */
+export const withColorTheme = (prefs: AccessibilityPrefs, theme: ColorTheme): AccessibilityPrefs => {
+  if (theme === 'contrast') return withLowVision(prefs, true);
+  return {
+    ...withLowVision(prefs, false),
+    colorTheme: theme,
+    highContrast: false,
+    lowVision: false,
+  };
+};
+
 export const loadPrefs = (): AccessibilityPrefs => {
   if (typeof window === 'undefined') return DEFAULT_PREFS;
   try {
@@ -146,10 +163,19 @@ export const loadPrefs = (): AccessibilityPrefs => {
     if (!('reduceMotion' in parsed) && typeof window.matchMedia === 'function') {
       merged.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
-    if (merged.colorTheme !== 'light' && merged.colorTheme !== 'dark' && merged.colorTheme !== 'contrast' && merged.colorTheme !== 'system') {
+    if (
+      merged.colorTheme !== 'light' &&
+      merged.colorTheme !== 'dark' &&
+      merged.colorTheme !== 'contrast' &&
+      merged.colorTheme !== 'system'
+    ) {
       merged.colorTheme = 'system';
     }
-    if (merged.displayStyle !== 'playful' && merged.displayStyle !== 'standard' && merged.displayStyle !== 'minimal') {
+    if (
+      merged.displayStyle !== 'playful' &&
+      merged.displayStyle !== 'standard' &&
+      merged.displayStyle !== 'minimal'
+    ) {
       merged.displayStyle = 'playful';
     }
     if (typeof merged.planetTheme !== 'string') merged.planetTheme = '';

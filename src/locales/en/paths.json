@@ -427,5 +427,7 @@
   "rebuildPlanet": "Rebuild this planet",
   "rebuildAll": "Rebuild all planets",
   "rebuildConfirm": "Replace generated problems? Your edits on this planet will be lost.",
-  "rebuildAllConfirm": "Rebuild every planet from your three topics? Edits will be lost."
+  "rebuildAllConfirm": "Rebuild every planet from your three topics? Edits will be lost.",
+  "lowVisionHelp": "High-contrast colours and a roomier layout. Turn this off anytime to return to the normal look.",
+  "lowVisionThemeHint": "Pick Light, Dark, or System after turning high contrast off."
 }

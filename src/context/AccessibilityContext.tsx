@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import {
   AccessibilityPrefs, DEFAULT_PREFS, applyPrefsToDocument, loadPrefs, savePrefs,
-  withCalmMode, withLowVision,
+  withCalmMode, withColorTheme, withLowVision,
 } from '@/lib/accessibility';
 import {
   prefetchSpeechManifest,
@@ -64,30 +64,57 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
         if (key === 'lowVision') {
           return withLowVision(prev, Boolean(value));
         }
-        if (key === 'colorTheme' && value === 'contrast') {
-          return withLowVision(prev, true);
+        if (key === 'colorTheme') {
+          return withColorTheme(prev, value as AccessibilityPrefs['colorTheme']);
         }
-        if (key === 'colorTheme' && value !== 'contrast' && prev.lowVision) {
-          return { ...withLowVision(prev, false), colorTheme: value as AccessibilityPrefs['colorTheme'] };
+        // Changing text size or button size away from the low-vision landscape unlocks it.
+        if (key === 'textSize' && prev.lowVision && value !== 'xlarge') {
+          return { ...withLowVision(prev, false), textSize: value as AccessibilityPrefs['textSize'] };
+        }
+        if (key === 'biggerButtons' && prev.lowVision && value === false) {
+          return { ...withLowVision(prev, false), biggerButtons: false };
         }
         return { ...prev, [key]: value };
       });
-    }, []);
+    },
+    []
+  );
 
   const patchPrefs = useCallback((patch: Partial<AccessibilityPrefs>) => {
     setPrefs((prev) => {
+      // Explicit low-vision / theme helpers win so turning the mode OFF always sticks.
+      if ('lowVision' in patch) {
+        const base = withLowVision(prev, Boolean(patch.lowVision));
+        const { lowVision: _lv, highContrast: _hc, colorTheme: themeFromPatch, ...rest } = patch;
+        void _lv;
+        void _hc;
+        let next = { ...base, ...rest, lowVision: base.lowVision, highContrast: base.highContrast };
+        if (themeFromPatch && themeFromPatch !== 'contrast') {
+          next = withColorTheme(next, themeFromPatch);
+        }
+        if ('calmBackground' in patch) {
+          next = { ...withCalmMode(next, Boolean(patch.calmBackground)), ...rest, lowVision: next.lowVision };
+          next.calmBackground = Boolean(patch.calmBackground);
+        }
+        return next;
+      }
+      if (patch.colorTheme) {
+        let next = withColorTheme(prev, patch.colorTheme);
+        const { colorTheme: _ct, lowVision: _lv, highContrast: _hc, ...rest } = patch;
+        void _ct;
+        void _lv;
+        void _hc;
+        next = { ...next, ...rest, lowVision: next.lowVision, highContrast: next.highContrast, colorTheme: next.colorTheme };
+        if ('calmBackground' in patch) {
+          next = withCalmMode(next, Boolean(patch.calmBackground));
+          next.calmBackground = Boolean(patch.calmBackground);
+        }
+        return next;
+      }
       let next = { ...prev, ...patch };
       if ('calmBackground' in patch) {
         const withCalm = withCalmMode(prev, Boolean(patch.calmBackground));
         next = { ...withCalm, ...patch, calmBackground: Boolean(patch.calmBackground) };
-      }
-      if ('lowVision' in patch) {
-        next = withLowVision(next, Boolean(patch.lowVision));
-      } else if (patch.colorTheme === 'contrast') {
-        next = withLowVision(next, true);
-      } else if (patch.colorTheme && next.lowVision) {
-        // Any non-contrast theme clears low-vision colour/landscape overrides.
-        next = { ...withLowVision(next, false), colorTheme: patch.colorTheme };
       }
       return next;
     });

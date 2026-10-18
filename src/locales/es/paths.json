@@ -427,5 +427,7 @@
   "rebuildPlanet": "Rehacer este planeta",
   "rebuildAll": "Rehacer todos los planetas",
   "rebuildConfirm": "¿Reemplazar los problemas generados? Se perderán tus ediciones en este planeta.",
-  "rebuildAllConfirm": "¿Rehacer todos los planetas desde tus tres temas? Se perderán las ediciones."
+  "rebuildAllConfirm": "¿Rehacer todos los planetas desde tus tres temas? Se perderán las ediciones.",
+  "lowVisionHelp": "Colores de alto contraste y un diseño más amplio. Apágalo en cualquier momento para volver al aspecto normal.",
+  "lowVisionThemeHint": "Elige Claro, Oscuro o Sistema después de apagar el alto contraste."
 }

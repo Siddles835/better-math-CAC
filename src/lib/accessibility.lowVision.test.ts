@@ -4,6 +4,7 @@ import {
   DEFAULT_PREFS,
   applyPrefsToDocument,
   resolveColorTheme,
+  withColorTheme,
   withLowVision,
 } from '@/lib/accessibility';
 import {
@@ -38,7 +39,28 @@ describe('low vision colour and landscape gate', () => {
     expect(document.documentElement.getAttribute('data-theme')).not.toBe('contrast');
   });
 
-  it('turns low-vision landscape off when the need is cleared', () => {
+  it('lets you turn low vision off and pick a normal theme again', () => {
+    const on = withLowVision(DEFAULT_PREFS, true);
+    expect(on.lowVision).toBe(true);
+
+    const off = withLowVision(on, false);
+    expect(off.lowVision).toBe(false);
+    expect(off.highContrast).toBe(false);
+    expect(off.colorTheme).not.toBe('contrast');
+
+    const light = withColorTheme(on, 'light');
+    expect(light.lowVision).toBe(false);
+    expect(light.colorTheme).toBe('light');
+    applyPrefsToDocument(light);
+    expect(document.documentElement.getAttribute('data-low-vision')).toBeNull();
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+
+    const dark = withColorTheme(on, 'dark');
+    expect(dark.lowVision).toBe(false);
+    expect(dark.colorTheme).toBe('dark');
+  });
+
+  it('turns low-vision landscape off when the need or feature is cleared', () => {
     const on = applyAccommodationPreset(DEFAULT_PREFS, 'lowVision');
     expect(on.lowVision).toBe(true);
     expect(isFeatureEnabled(on, 'highContrast')).toBe(true);
