@@ -78,5 +78,17 @@
   "checklist_step_of": "Paso {{step}} de {{total}}",
   "summary_banner": "Resumen: practicarás la habilidad de este planeta en pasos cortos.",
   "worked_example_banner": "Ejemplo resuelto primero: mira un ejemplo claro antes de intentar.",
+  "summary_heading": "Resumen de la lección",
+  "summary_for_planet": "{{planet}} · {{topic}}. Practicarás {{skill}} ({{range}}).",
+  "topic_counting": "Conteo",
+  "topic_addition": "Suma",
+  "topic_subtraction": "Resta",
+  "worked_example_prompt": "Mira un ejemplo claro de esta lección antes de intentar.",
+  "worked_example_watch": "Ver ejemplo resuelto",
+  "worked_example_title": "Ejemplo resuelto",
+  "worked_example_shows": "Este ejemplo muestra {{equation}}.",
+  "worked_example_voice_note": "La voz lee cada paso en voz alta. Es una voz de IA si la voz en la nube está activa.",
+  "worked_example_close": "Cerrar ejemplo resuelto",
+  "worked_example_done": "Listo",
   "announce_visible": "Estado"
 }

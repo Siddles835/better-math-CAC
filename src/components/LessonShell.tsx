@@ -1,13 +1,12 @@
 import { tx } from '@/i18n/tx';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import HomeButton from '@/components/HomeButton';
 import NavigationArrows from '@/components/NavigationArrows';
 import Zoomable from '@/components/Zoomable';
 import AccessibilityQuickButton from '@/components/AccessibilityQuickButton';
 import VoiceQuickButton from '@/components/VoiceQuickButton';
 import MathHelperButton from '@/components/MathHelperButton';
-import ProgressChecklist from '@/components/ProgressChecklist';
+import LessonSupport from '@/components/LessonSupport';
 import BreakCard from '@/components/BreakCard';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import type { PlanetId } from '@/lib/planets';
@@ -47,7 +46,6 @@ const LessonShell: React.FC<LessonShellProps> = ({
 }) => {
   const dots = PLANET_DOT[planet];
   const { prefs } = useAccessibility();
-  const { t } = useTranslation('helper');
   const stepLabel = tx('ui:stepOf', { step: Math.min(step + 1, totalSteps), total: totalSteps });
 
   return (
@@ -83,21 +81,7 @@ const LessonShell: React.FC<LessonShellProps> = ({
       <main id="lesson-content" tabIndex={-1}
         className="lesson-shell-main flex-1 overflow-auto overscroll-contain px-3 sm:px-8 py-2">
         <Zoomable resetKey={`${planet}-${step}`} className="flex flex-col w-full max-w-4xl mx-auto min-h-full pb-4 gap-2">
-          {(prefs.summaryFirst || prefs.workedExampleFirst) && (
-            <div className="space-y-2" data-testid="lesson-a11y-banners">
-              {prefs.summaryFirst ? (
-                <p className="rounded-xl border border-border/70 bg-card/50 px-3 py-2 text-sm text-foreground">
-                  {t('summary_banner')}
-                </p>
-              ) : null}
-              {prefs.workedExampleFirst ? (
-                <p className="rounded-xl border border-border/70 bg-card/50 px-3 py-2 text-sm text-foreground">
-                  {t('worked_example_banner')}
-                </p>
-              ) : null}
-            </div>
-          )}
-          <ProgressChecklist planet={planet} totalSteps={totalSteps} step={step} compact />
+          <LessonSupport planet={planet} />
           {children}
         </Zoomable>
       </main>
