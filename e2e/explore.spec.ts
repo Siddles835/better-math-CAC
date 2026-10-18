@@ -9,6 +9,7 @@ const ACTIVITIES = [
   'number-line',
   'build-story',
   'pattern-skip',
+  'manipulatives',
 ] as const;
 
 test.beforeEach(async ({ page }) => {
