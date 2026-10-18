@@ -380,20 +380,21 @@ html[data-easy-read] body {
   line-height: 1.75;
 }
 
+/* Opt-in light theme — cool blue-gray (not warm cream) so it still feels like MathLift. */
 html[data-theme='light'] {
-  --background: 40 33% 97%;
-  --foreground: 230 25% 12%;
-  --card: 0 0% 100%;
-  --card-foreground: 230 25% 12%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 230 25% 12%;
-  --primary: 200 55% 28%;
+  --background: 220 28% 96%;
+  --foreground: 230 25% 14%;
+  --card: 220 35% 99%;
+  --card-foreground: 230 25% 14%;
+  --popover: 220 35% 99%;
+  --popover-foreground: 230 25% 14%;
+  --primary: 200 55% 32%;
   --primary-foreground: 0 0% 100%;
-  --muted: 40 20% 92%;
-  --muted-foreground: 220 12% 28%;
-  --border: 220 12% 70%;
-  --input: 220 12% 70%;
-  --ring: 200 55% 28%;
+  --muted: 220 22% 91%;
+  --muted-foreground: 220 14% 32%;
+  --border: 215 18% 72%;
+  --input: 215 18% 72%;
+  --ring: 200 55% 32%;
 }
 
 html[data-theme='dark'] {
