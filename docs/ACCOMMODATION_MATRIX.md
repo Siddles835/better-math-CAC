@@ -12,7 +12,7 @@ Teacher-facing presets live in `src/lib/accommodations/matrix.ts`. Class default
 | Dyslexia | `dyslexiaFont`, `easyReadSpacing`, `textSize: large`, `summaryFirst`, `workedExampleFirst`, `autoReadAloud` | dyslexiaFont, easyReadSpacing, textSizeLarge, summaryFirst, workedExampleFirst, autoReadAloud |
 | Speech | `speechRate: slow`, `autoReadAloud: false`, `soundAsText`, `answerMethod: choose` | slowSpeech, soundAsText |
 | Hearing | `soundAsText`, `muteSounds`, `voiceEnabled: false`, `colorSafeLabels` | soundAsText, muteSounds, colorSafeLabels |
-| Low vision | `textSize: xlarge`, `colorTheme: contrast`, `biggerButtons`, `colorSafeLabels`, `autoReadAloud` | textSizeLarge, highContrast, biggerButtons, colorSafeLabels, autoReadAloud |
+| Low vision | `lowVision: true` (gates contrast colours + roomier landscape: xlarge text, bigger targets), `colorSafeLabels`, `autoReadAloud` | textSizeLarge, highContrast, biggerButtons, colorSafeLabels, autoReadAloud |
 | Intellectual | `summaryFirst`, `workedExampleFirst`, `pacing: relaxed`, `textSize: large`, `biggerButtons`, `breaks` | summaryFirst, workedExampleFirst, relaxedPacing, textSizeLarge, biggerButtons, breaks |
 | Anxiety | `calmBackground`, `reduceMotion`, `muteSounds`, `breaks`, `pacing: relaxed`, `workedExampleFirst` | calmBackground, reduceMotion, muteSounds, breaks, relaxedPacing, workedExampleFirst |
 | Sensory | `calmBackground`, `reduceMotion`, `muteSounds`, `focusMode`, `displayStyle: minimal` | calmBackground, reduceMotion, muteSounds, focusMode |
@@ -26,6 +26,7 @@ Teacher-facing presets live in `src/lib/accommodations/matrix.ts`. Class default
 | `soundAsText` | `AccessibilityContext` announce region becomes a visible caption when a message is set |
 | `colorSafeLabels` | `NumberDraw` check verdicts prefix ✓ / ✗ / ? with the text label |
 | Calm / reduce motion / mute / focus / fonts / etc. | Existing `applyPrefsToDocument` + lesson chrome |
+| Low vision colour + landscape | Only when `prefs.lowVision` is true (`data-low-vision` on `<html>`). Turning the need/feature off restores the normal theme. |
 
 ## UI entry points
 

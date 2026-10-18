@@ -1,4 +1,5 @@
 import type { AccessibilityPrefs } from '@/lib/accessibility';
+import { withLowVision } from '@/lib/accessibility';
 
 /** Learner needs mapped to recommended preference patches and feature ids. */
 export type AccommodationNeed =
@@ -181,7 +182,9 @@ export const ACCOMMODATION_MATRIX: Record<AccommodationNeed, AccommodationPreset
     need: 'lowVision',
     labelKey: 'acc_need_lowVision',
     explainKey: 'acc_need_lowVision_help',
+    // Visual colour + landscape overrides are gated by `lowVision` in applyPrefsToDocument.
     prefs: {
+      lowVision: true,
       textSize: 'xlarge',
       colorTheme: 'contrast',
       highContrast: true,
@@ -247,7 +250,24 @@ export const applyAccommodationPreset = (
   need: AccommodationNeed
 ): AccessibilityPrefs => {
   const preset = ACCOMMODATION_MATRIX[need];
-  return { ...current, ...preset.prefs };
+  if (need === 'lowVision') return withLowVision(current, true);
+  // Other presets must not turn on low-vision contrast/landscape.
+  const { lowVision: _ignored, highContrast: _hc, colorTheme: _theme, ...safe } = preset.prefs as Partial<AccessibilityPrefs> & {
+    lowVision?: boolean;
+  };
+  void _ignored;
+  void _hc;
+  void _theme;
+  return { ...current, ...safe };
+};
+
+/** Clear low-vision colour/landscape overrides when that need is removed. */
+export const clearAccommodationNeed = (
+  current: AccessibilityPrefs,
+  need: AccommodationNeed
+): AccessibilityPrefs => {
+  if (need === 'lowVision') return withLowVision(current, false);
+  return current;
 };
 
 /** Toggle one feature id on/off without locking other prefs. */
@@ -268,9 +288,7 @@ export const toggleAccommodationFeature = (
       next.speechRate = enabled ? 'slow' : 'normal';
       break;
     case 'highContrast':
-      next.colorTheme = enabled ? 'contrast' : 'system';
-      next.highContrast = enabled;
-      break;
+      return withLowVision(next, enabled);
     default: {
       const meta = ACCOMMODATION_FEATURES[featureId];
       if (meta.prefKey) {
@@ -294,7 +312,7 @@ export const isFeatureEnabled = (
     case 'slowSpeech':
       return prefs.speechRate === 'slow';
     case 'highContrast':
-      return prefs.colorTheme === 'contrast' || prefs.highContrast;
+      return !!prefs.lowVision;
     default: {
       const meta = ACCOMMODATION_FEATURES[featureId];
       if (!meta.prefKey) return false;

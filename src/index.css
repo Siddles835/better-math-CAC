@@ -412,8 +412,9 @@ html[data-theme='dark'] {
   --ring: 200 70% 62%;
 }
 
-html[data-theme='contrast'],
-html[data-high-contrast] {
+/* High-contrast colours only while low-vision mode is active. */
+html[data-low-vision][data-theme='contrast'],
+html[data-low-vision][data-high-contrast] {
   --background: 0 0% 0%;
   --foreground: 0 0% 100%;
   --card: 0 0% 0%;
@@ -427,6 +428,17 @@ html[data-high-contrast] {
   --primary: 55 100% 50%;
   --primary-foreground: 0 0% 0%;
   --ring: 55 100% 50%;
+}
+
+/* Roomier landscape (spacing) only for low vision — not the default UI. */
+html[data-low-vision] body {
+  line-height: 1.7;
+}
+
+html[data-low-vision] .lesson-shell-main,
+html[data-low-vision] [data-testid='pilot-overview'],
+html[data-low-vision] [data-testid='accommodation-panel'] {
+  letter-spacing: 0.01em;
 }
 
 html[data-dyslexia-font] body {

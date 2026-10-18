@@ -37,7 +37,7 @@
   "acc_need_hearing": "Audición",
   "acc_need_hearing_help": "Muestra sonidos como texto, silencia efectos y une el estado con palabras y símbolos.",
   "acc_need_lowVision": "Baja visión",
-  "acc_need_lowVision_help": "Texto muy grande, alto contraste, botones grandes y lectura en voz alta.",
+  "acc_need_lowVision_help": "Activado: colores de alto contraste y un diseño más amplio (texto extragrande, botones más grandes). Desactivado, se mantiene el aspecto normal de la app.",
   "acc_need_intellectual": "Discapacidad intelectual",
   "acc_need_intellectual_help": "Resúmenes cortos, ejemplos resueltos, botones grandes y pausas.",
   "acc_need_anxiety": "Ansiedad",

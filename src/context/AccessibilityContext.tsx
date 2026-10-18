@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import {
   AccessibilityPrefs, DEFAULT_PREFS, applyPrefsToDocument, loadPrefs, savePrefs,
-  withCalmMode,
+  withCalmMode, withLowVision,
 } from '@/lib/accessibility';
 import {
   prefetchSpeechManifest,
@@ -61,17 +61,34 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
         if (key === 'calmBackground') {
           return withCalmMode(prev, Boolean(value));
         }
+        if (key === 'lowVision') {
+          return withLowVision(prev, Boolean(value));
+        }
+        if (key === 'colorTheme' && value === 'contrast') {
+          return withLowVision(prev, true);
+        }
+        if (key === 'colorTheme' && value !== 'contrast' && prev.lowVision) {
+          return { ...withLowVision(prev, false), colorTheme: value as AccessibilityPrefs['colorTheme'] };
+        }
         return { ...prev, [key]: value };
       });
     }, []);
 
   const patchPrefs = useCallback((patch: Partial<AccessibilityPrefs>) => {
     setPrefs((prev) => {
+      let next = { ...prev, ...patch };
       if ('calmBackground' in patch) {
         const withCalm = withCalmMode(prev, Boolean(patch.calmBackground));
-        return { ...withCalm, ...patch, calmBackground: Boolean(patch.calmBackground) };
+        next = { ...withCalm, ...patch, calmBackground: Boolean(patch.calmBackground) };
       }
-      return { ...prev, ...patch };
+      if ('lowVision' in patch) {
+        next = withLowVision(next, Boolean(patch.lowVision));
+      } else if (patch.colorTheme === 'contrast') {
+        next = withLowVision(next, true);
+      } else if (patch.colorTheme && patch.colorTheme !== 'contrast' && next.lowVision) {
+        next = { ...withLowVision(next, false), colorTheme: patch.colorTheme };
+      }
+      return next;
     });
   }, []);
 

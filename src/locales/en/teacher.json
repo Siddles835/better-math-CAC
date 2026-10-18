@@ -37,7 +37,7 @@
   "acc_need_hearing": "Hearing",
   "acc_need_hearing_help": "Show sounds as text, mute SFX, and pair status with words and symbols.",
   "acc_need_lowVision": "Low vision",
-  "acc_need_lowVision_help": "Extra-large text, high contrast, bigger targets, and read-aloud.",
+  "acc_need_lowVision_help": "When on: high-contrast colours and a roomier layout (extra-large text, bigger targets). When off, the normal app look stays.",
   "acc_need_intellectual": "Intellectual disability",
   "acc_need_intellectual_help": "Short summaries, worked examples, larger targets, and breaks.",
   "acc_need_anxiety": "Anxiety",

@@ -17,6 +17,12 @@ export interface AccessibilityPrefs {
   textSize: TextSize;
   easyReadSpacing: boolean;
   highContrast: boolean;
+  /**
+   * Low-vision mode. When true, the app uses high-contrast colours and a
+   * roomier landscape (extra-large type, bigger targets). When false, those
+   * overrides are never applied — even if colorTheme was previously "contrast".
+   */
+  lowVision: boolean;
   /** Light, dark, high contrast, or follow the OS. High contrast replaces the old toggle. */
   colorTheme: ColorTheme;
   dyslexiaFont: boolean;
@@ -58,6 +64,7 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   textSize: 'normal',
   easyReadSpacing: false,
   highContrast: false,
+  lowVision: false,
   colorTheme: 'system',
   dyslexiaFont: false,
   displayStyle: 'playful',
@@ -84,14 +91,46 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
 
 const STORAGE_KEY = 'mathlift.learningPrefs.v1';
 
-export const resolveColorTheme = (prefs: Pick<AccessibilityPrefs, 'colorTheme'>): 'light' | 'dark' | 'contrast' => {
-  if (prefs.colorTheme === 'light' || prefs.colorTheme === 'dark' || prefs.colorTheme === 'contrast') {
+export const resolveColorTheme = (
+  prefs: Pick<AccessibilityPrefs, 'colorTheme' | 'lowVision'>
+): 'light' | 'dark' | 'contrast' => {
+  // High-contrast colours are reserved for low-vision mode.
+  if (prefs.lowVision) return 'contrast';
+  if (prefs.colorTheme === 'light' || prefs.colorTheme === 'dark') {
     return prefs.colorTheme;
   }
+  // "contrast" without lowVision falls back to the system theme.
   if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: light)').matches) {
     return 'light';
   }
   return 'dark';
+};
+
+/**
+ * Turn low-vision mode on or off. On → contrast colours + roomier landscape.
+ * Off → restore a normal theme and clear the low-vision landscape overrides.
+ */
+export const withLowVision = (prefs: AccessibilityPrefs, enabled: boolean): AccessibilityPrefs => {
+  if (!enabled) {
+    return {
+      ...prefs,
+      lowVision: false,
+      highContrast: false,
+      colorTheme: prefs.colorTheme === 'contrast' ? 'system' : prefs.colorTheme,
+      textSize: prefs.textSize === 'xlarge' ? 'normal' : prefs.textSize,
+      biggerButtons: false,
+    };
+  }
+  return {
+    ...prefs,
+    lowVision: true,
+    highContrast: true,
+    colorTheme: 'contrast',
+    textSize: 'xlarge',
+    biggerButtons: true,
+    colorSafeLabels: true,
+    autoReadAloud: true,
+  };
 };
 
 export const loadPrefs = (): AccessibilityPrefs => {
@@ -114,7 +153,19 @@ export const loadPrefs = (): AccessibilityPrefs => {
       merged.displayStyle = 'playful';
     }
     if (typeof merged.planetTheme !== 'string') merged.planetTheme = '';
-    merged.highContrast = merged.colorTheme === 'contrast' || (merged.colorTheme === 'system' && !!parsed.highContrast && !('colorTheme' in parsed));
+    // Migrate older contrast/highContrast choices into the lowVision gate.
+    if (!('lowVision' in parsed)) {
+      merged.lowVision = merged.colorTheme === 'contrast' || !!parsed.highContrast;
+    } else {
+      merged.lowVision = !!parsed.lowVision;
+    }
+    if (merged.lowVision) {
+      merged.colorTheme = 'contrast';
+      merged.highContrast = true;
+    } else {
+      merged.highContrast = false;
+      if (merged.colorTheme === 'contrast') merged.colorTheme = 'system';
+    }
 
     // PR #2 reused muteSounds as the voice toggle. Migrate once to voiceEnabled.
     if (!('voiceEnabled' in parsed)) {
@@ -169,11 +220,14 @@ export const withCalmMode = (
 export const applyPrefsToDocument = (prefs: AccessibilityPrefs) => {
   if (typeof document === 'undefined') return;
   const el = document.documentElement;
-  el.setAttribute('data-text-size', prefs.textSize);
+  const lowVision = !!prefs.lowVision;
+  // Landscape (type size + hit targets) enlarges only while low vision is on.
+  el.setAttribute('data-text-size', lowVision ? 'xlarge' : prefs.textSize);
   el.toggleAttribute('data-easy-read', prefs.easyReadSpacing);
   const theme = resolveColorTheme(prefs);
   el.setAttribute('data-theme', theme);
-  el.toggleAttribute('data-high-contrast', theme === 'contrast');
+  el.toggleAttribute('data-high-contrast', lowVision && theme === 'contrast');
+  el.toggleAttribute('data-low-vision', lowVision);
   el.toggleAttribute('data-dyslexia-font', prefs.dyslexiaFont);
   el.setAttribute('data-display', prefs.displayStyle);
   if (prefs.planetTheme) el.setAttribute('data-planet-theme', prefs.planetTheme);
@@ -183,7 +237,7 @@ export const applyPrefsToDocument = (prefs: AccessibilityPrefs) => {
   el.toggleAttribute('data-calm', prefs.calmBackground);
   el.toggleAttribute('data-focus-mode', prefs.focusMode);
   el.toggleAttribute('data-reduce-motion', reduceMotion);
-  el.toggleAttribute('data-big-targets', prefs.biggerButtons);
+  el.toggleAttribute('data-big-targets', lowVision ? true : prefs.biggerButtons);
   el.toggleAttribute('data-relaxed-pacing', prefs.pacing === 'relaxed');
   el.toggleAttribute('data-voice-off', !prefs.voiceEnabled);
 };

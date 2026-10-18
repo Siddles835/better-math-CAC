@@ -12,6 +12,7 @@ import {
   ACCOMMODATION_MATRIX,
   ACCOMMODATION_NEEDS,
   applyAccommodationPreset,
+  clearAccommodationNeed,
   isFeatureEnabled,
   toggleAccommodationFeature,
   type AccommodationFeatureId,
@@ -74,7 +75,11 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
     const nextNeeds = selectedNeeds.filter((n) => n !== need);
     setSelectedNeeds(nextNeeds);
     if (persistClassDefaults) setClassNeeds(classCode, nextNeeds);
+    // Low vision must actually restore normal colours/landscape when turned off.
+    const cleared = clearAccommodationNeed(prefs, need);
+    if (cleared !== prefs) patchPrefs(cleared);
     setNote(t('acc_unlocked'));
+    announce(t('acc_unlocked'));
   };
 
   const onToggleFeature = (featureId: AccommodationFeatureId, enabled: boolean) => {

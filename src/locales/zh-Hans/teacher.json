@@ -35,7 +35,7 @@
   "acc_need_hearing": "听力",
   "acc_need_hearing_help": "将声音显示为文字、静音特效，并用文字与符号标示状态。",
   "acc_need_lowVision": "低视力",
-  "acc_need_lowVision_help": "超大文字、高对比、更大按钮，并朗读。",
+  "acc_need_lowVision_help": "开启后：高对比度颜色和更宽松的界面（超大文字、更大按钮）。关闭后保持应用的正常外观。",
   "acc_need_intellectual": "智力障碍",
   "acc_need_intellectual_help": "简短摘要、例题、更大按钮与休息。",
   "acc_need_anxiety": "焦虑",

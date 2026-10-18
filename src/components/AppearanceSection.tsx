@@ -2,12 +2,20 @@ import { tx } from '@/i18n/tx';
 import { PATHS } from '@/content/catalog';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import type { ColorTheme, DisplayStyle } from '@/lib/accessibility';
+import { withLowVision } from '@/lib/accessibility';
 
 const AppearanceSection = () => {
-  const { prefs, setPref } = useAccessibility();
+  const { prefs, patchPrefs, setPref } = useAccessibility();
   const setTheme = (theme: ColorTheme) => {
-    setPref('colorTheme', theme);
-    setPref('highContrast', theme === 'contrast');
+    // High contrast is the low-vision colour landscape — only apply while that mode is on.
+    if (theme === 'contrast') {
+      patchPrefs(withLowVision(prefs, true));
+      return;
+    }
+    patchPrefs({
+      ...withLowVision(prefs, false),
+      colorTheme: theme,
+    });
   };
 
   return (
@@ -20,7 +28,7 @@ const AppearanceSection = () => {
             <button
               key={theme}
               type="button"
-              aria-pressed={prefs.colorTheme === theme}
+              aria-pressed={theme === 'contrast' ? prefs.lowVision : prefs.colorTheme === theme && !prefs.lowVision}
               className="min-h-[48px] rounded-xl border border-border px-3"
               onClick={() => setTheme(theme)}
             >
