@@ -154,14 +154,28 @@ const CurriculumPage = () => {
     setLoading(true);
     try {
       const port = getPort(classCode, false);
-      const [curricula, assigned, cls] = await Promise.all([
+      const settled = await Promise.allSettled([
         port.listCurricula(classCode),
         port.listAssignments(classCode),
         getClass(classCode),
       ]);
+      const curricula = settled[0].status === 'fulfilled' ? settled[0].value : [];
+      const assigned = settled[1].status === 'fulfilled' ? settled[1].value : [];
+      const cls = settled[2].status === 'fulfilled' ? settled[2].value : null;
       setList(curricula);
       setAssignments(assigned);
       setStudents(Object.keys(cls?.students ?? {}));
+
+      const failed = settled.filter((result) => result.status === 'rejected');
+      if (failed.length === settled.length) {
+        const first = failed[0] as PromiseRejectedResult;
+        const message =
+          first.reason instanceof Error ? first.reason.message : tx('paths:currError');
+        setError(message);
+      } else if (failed.length > 0) {
+        // Workshop stays usable; surface a soft warning if one source failed.
+        setError(tx('paths:currLoadPartial'));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : tx('paths:currError'));
     } finally {
@@ -570,9 +584,15 @@ const ListView = ({
         {!loading && error && list.length === 0 && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-center">
             <p className="text-sm text-destructive">{tx('paths:currError')}</p>
-            <Button type="button" variant="outline" className="mt-4 min-h-[48px]" onClick={onRetry}>
-              {tx('paths:currRetry')}
-            </Button>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <Button type="button" variant="outline" className="min-h-[48px]" onClick={onRetry}>
+                {tx('paths:currRetry')}
+              </Button>
+              <Button type="button" className="min-h-[48px] gap-2" onClick={onCreate}>
+                <Plus className="h-4 w-4" aria-hidden />
+                {tx('paths:currCreate')}
+              </Button>
+            </div>
           </div>
         )}
         {!loading && list.length > 0 && (

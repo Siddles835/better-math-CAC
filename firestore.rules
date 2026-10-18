@@ -2,12 +2,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Pilot rules. A teacher PIN checked in the app is not access control.
-    // These rules stay open so the current pilot can read and write class data,
-    // including learner, curriculum, assignment, and goals documents.
+    // Classroom docs AND every nested path under them must be readable/writable.
+    // (Firestore rules do not inherit — omitting subcollections causes
+    // "Missing or insufficient permissions" on curricula / learners / pilot.)
     // Deploying this file does not add security. Replace it with authenticated
     // rules before treating the database as private.
     match /classrooms/{classCode} {
       allow read, write: if true;
+
+      // Explicit subcollections used by the app.
       match /learners/{studentKey} {
         allow read, write: if true;
       }
@@ -18,6 +21,11 @@ service cloud.firestore {
         allow read, write: if true;
       }
       match /meta/{docId} {
+        allow read, write: if true;
+      }
+
+      // Catch-all for any other nested docs under a class.
+      match /{document=**} {
         allow read, write: if true;
       }
     }

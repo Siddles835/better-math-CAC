@@ -28,6 +28,20 @@ import { stripUndefined } from '@/lib/data/stripUndefined';
 import { isSoloClassCode, loadSoloProgress, saveSoloProgress } from '@/lib/solo';
 import { patchStudentFields } from '@/lib/classroom';
 import { withTimeout } from '@/lib/asyncTimeout';
+import { isPermissionDenied } from '@/lib/data/firebaseErrors';
+import {
+  mirrorDeleteAssignment,
+  mirrorDeleteCurriculum,
+  mirrorGetGoals,
+  mirrorGetLearner,
+  mirrorListAssignments,
+  mirrorListCurricula,
+  mirrorListLearners,
+  mirrorSaveAssignment,
+  mirrorSaveCurriculum,
+  mirrorSaveGoals,
+  mirrorSaveLearner,
+} from '@/lib/data/classMirror';
 
 export interface DataPort {
   kind: 'firestore' | 'solo' | 'demo';
@@ -50,108 +64,167 @@ const learnerDoc = (classCode: string, studentKey: string) =>
 
 const asRecord = <T,>(value: unknown): T | null => (value ? (value as T) : null);
 
+/** Prefer subcollections; if rules deny them, use the classroom parent mirror. */
+const withMirrorFallback = async <T>(
+  primary: () => Promise<T>,
+  fallback: () => Promise<T>
+): Promise<T> => {
+  try {
+    return await primary();
+  } catch (error) {
+    if (!isPermissionDenied(error)) throw error;
+    return fallback();
+  }
+};
+
 const firestorePort: DataPort = {
   kind: 'firestore',
   async patchStudent(classCode, studentKey, fields) {
     await patchStudentFields(classCode, studentKey, stripUndefined(fields));
   },
   async getLearner(classCode, studentKey) {
-    const snap = await withTimeout(getDoc(learnerDoc(classCode, studentKey)), 5000, 'firestore.getLearner');
-    return snap.exists() ? (snap.data() as LearnerRecord) : null;
+    return withMirrorFallback(
+      async () => {
+        const snap = await withTimeout(
+          getDoc(learnerDoc(classCode, studentKey)),
+          5000,
+          'firestore.getLearner'
+        );
+        return snap.exists() ? (snap.data() as LearnerRecord) : null;
+      },
+      () => mirrorGetLearner(classCode, studentKey)
+    );
   },
   async saveLearner(classCode, studentKey, record) {
-    // Do not hang forever when offline; local UX must keep moving.
-    await withTimeout(
-      setDoc(learnerDoc(classCode, studentKey), stripUndefined(record)),
-      4000,
-      'firestore.saveLearner'
+    await withMirrorFallback(
+      async () => {
+        await withTimeout(
+          setDoc(learnerDoc(classCode, studentKey), stripUndefined(record)),
+          4000,
+          'firestore.saveLearner'
+        );
+      },
+      () => mirrorSaveLearner(classCode, studentKey, record)
     );
   },
   async listLearners(classCode) {
-    const snap = await withTimeout(
-      getDocs(collection(db, 'classrooms', classCode, 'learners')),
-      8000,
-      'firestore.listLearners'
-    );
-    const out: Record<string, LearnerRecord> = {};
-    snap.forEach((item) => {
-      out[item.id] = item.data() as LearnerRecord;
-    });
-    return out;
+    return withMirrorFallback(async () => {
+      const snap = await withTimeout(
+        getDocs(collection(db, 'classrooms', classCode, 'learners')),
+        8000,
+        'firestore.listLearners'
+      );
+      const out: Record<string, LearnerRecord> = {};
+      snap.forEach((item) => {
+        out[item.id] = item.data() as LearnerRecord;
+      });
+      return out;
+    }, () => mirrorListLearners(classCode));
   },
   async listCurricula(classCode) {
-    const snap = await withTimeout(
-      getDocs(collection(db, 'classrooms', classCode, 'curricula')),
-      8000,
-      'firestore.listCurricula'
-    );
-    return snap.docs.map((item) => item.data() as Curriculum);
+    return withMirrorFallback(async () => {
+      const snap = await withTimeout(
+        getDocs(collection(db, 'classrooms', classCode, 'curricula')),
+        8000,
+        'firestore.listCurricula'
+      );
+      return snap.docs.map((item) => item.data() as Curriculum);
+    }, () => mirrorListCurricula(classCode));
   },
   async saveCurriculum(curriculum) {
-    await withTimeout(
-      setDoc(
-        doc(db, 'classrooms', curriculum.classCode, 'curricula', curriculum.id),
-        stripUndefined(curriculum)
-      ),
-      5000,
-      'firestore.saveCurriculum'
+    await withMirrorFallback(
+      async () => {
+        await withTimeout(
+          setDoc(
+            doc(db, 'classrooms', curriculum.classCode, 'curricula', curriculum.id),
+            stripUndefined(curriculum)
+          ),
+          5000,
+          'firestore.saveCurriculum'
+        );
+      },
+      () => mirrorSaveCurriculum(curriculum)
     );
   },
   async deleteCurriculum(classCode, curriculumId) {
-    await withTimeout(
-      deleteDoc(doc(db, 'classrooms', classCode, 'curricula', curriculumId)),
-      5000,
-      'firestore.deleteCurriculum'
-    );
-    const assigned = await withTimeout(
-      getDocs(collection(db, 'classrooms', classCode, 'assignments')),
-      8000,
-      'firestore.listAssignmentsForDelete'
-    );
-    await Promise.all(
-      assigned.docs
-        .filter((item) => (item.data() as Assignment).curriculumId === curriculumId)
-        .map((item) => deleteDoc(item.ref))
+    await withMirrorFallback(
+      async () => {
+        await withTimeout(
+          deleteDoc(doc(db, 'classrooms', classCode, 'curricula', curriculumId)),
+          5000,
+          'firestore.deleteCurriculum'
+        );
+        const assigned = await withTimeout(
+          getDocs(collection(db, 'classrooms', classCode, 'assignments')),
+          8000,
+          'firestore.listAssignmentsForDelete'
+        );
+        await Promise.all(
+          assigned.docs
+            .filter((item) => (item.data() as Assignment).curriculumId === curriculumId)
+            .map((item) => deleteDoc(item.ref))
+        );
+      },
+      () => mirrorDeleteCurriculum(classCode, curriculumId)
     );
   },
   async listAssignments(classCode) {
-    const snap = await withTimeout(
-      getDocs(collection(db, 'classrooms', classCode, 'assignments')),
-      8000,
-      'firestore.listAssignments'
-    );
-    return snap.docs.map((item) => item.data() as Assignment);
+    return withMirrorFallback(async () => {
+      const snap = await withTimeout(
+        getDocs(collection(db, 'classrooms', classCode, 'assignments')),
+        8000,
+        'firestore.listAssignments'
+      );
+      return snap.docs.map((item) => item.data() as Assignment);
+    }, () => mirrorListAssignments(classCode));
   },
   async saveAssignment(classCode, assignment) {
-    await withTimeout(
-      setDoc(
-        doc(db, 'classrooms', classCode, 'assignments', assignment.id),
-        stripUndefined(assignment)
-      ),
-      5000,
-      'firestore.saveAssignment'
+    await withMirrorFallback(
+      async () => {
+        await withTimeout(
+          setDoc(
+            doc(db, 'classrooms', classCode, 'assignments', assignment.id),
+            stripUndefined(assignment)
+          ),
+          5000,
+          'firestore.saveAssignment'
+        );
+      },
+      () => mirrorSaveAssignment(classCode, assignment)
     );
   },
   async deleteAssignment(classCode, assignmentId) {
-    await withTimeout(
-      deleteDoc(doc(db, 'classrooms', classCode, 'assignments', assignmentId)),
-      5000,
-      'firestore.deleteAssignment'
+    await withMirrorFallback(
+      async () => {
+        await withTimeout(
+          deleteDoc(doc(db, 'classrooms', classCode, 'assignments', assignmentId)),
+          5000,
+          'firestore.deleteAssignment'
+        );
+      },
+      () => mirrorDeleteAssignment(classCode, assignmentId)
     );
   },
   async getGoals(classCode) {
-    const snap = await withTimeout(
-      getDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot')),
-      5000,
-      'firestore.getGoals'
-    );
-    return snap.exists() ? (snap.data() as PilotGoals) : null;
+    return withMirrorFallback(async () => {
+      const snap = await withTimeout(
+        getDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot')),
+        5000,
+        'firestore.getGoals'
+      );
+      return snap.exists() ? (snap.data() as PilotGoals) : null;
+    }, () => mirrorGetGoals(classCode));
   },
   async saveGoals(classCode, goals) {
-    await withTimeout(
-      setDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot'), stripUndefined(goals)),
-      5000,
-      'firestore.saveGoals'
+    await withMirrorFallback(
+      async () => {
+        await withTimeout(
+          setDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot'), stripUndefined(goals)),
+          5000,
+          'firestore.saveGoals'
+        );
+      },
+      () => mirrorSaveGoals(classCode, goals)
     );
   },
 };

@@ -100,25 +100,47 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
       );
       setLearnersFailed(!learnersOk);
 
-      if (anyFailed && reports.length === 0) {
+      if (reports.length > 0) {
+        // Roster is enough to show a useful pilot table; never hard-fail over it.
+        if (anyFailed) {
+          setLoadState('partial');
+          setError(learnersOk ? tx('paths:pilotLoadPartial') : tx('paths:pilotLegacyOnly'));
+        } else {
+          setLoadState('ready');
+          setError('');
+        }
+      } else if (anyFailed) {
         setLoadState('failed');
         setError(tx('paths:pilotLoadFail'));
-      } else if (anyFailed) {
-        setLoadState('partial');
-        setError(tx('paths:pilotLoadPartial'));
-      } else if (reports.length === 0) {
+      } else {
         setLoadState('empty');
         setError('');
-      } else {
-        setLoadState('ready');
-        setError('');
       }
-    } catch {
-      setRows([]);
-      setProgress([]);
-      setLearnersFailed(true);
-      setLoadState('failed');
-      setError(tx('paths:pilotLoadFail'));
+    } catch (err) {
+      // Last resort: still show roster metrics from the classroom document.
+      const roster = Object.entries(classroom.students ?? {});
+      if (roster.length > 0) {
+        const reports = roster.map(([key, student]) =>
+          studentReport(
+            student.nickname || key,
+            learnerFromLegacy(student),
+            null,
+            student.lastDiagnosis?.primary ?? null,
+            true
+          )
+        );
+        setRows(reports);
+        setProgress(roster.map(([, student]) => progressRatio(learnerFromLegacy(student))));
+        setLearnersFailed(true);
+        setLoadState('partial');
+        setError(tx('paths:pilotLegacyOnly'));
+      } else {
+        setRows([]);
+        setProgress([]);
+        setLearnersFailed(true);
+        setLoadState('failed');
+        setError(err instanceof Error ? err.message : tx('paths:pilotLoadFail'));
+      }
     }
   }, [classCode, classroom]);
 
