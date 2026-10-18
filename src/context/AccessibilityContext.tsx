@@ -85,7 +85,8 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
         next = withLowVision(next, Boolean(patch.lowVision));
       } else if (patch.colorTheme === 'contrast') {
         next = withLowVision(next, true);
-      } else if (patch.colorTheme && patch.colorTheme !== 'contrast' && next.lowVision) {
+      } else if (patch.colorTheme && next.lowVision) {
+        // Any non-contrast theme clears low-vision colour/landscape overrides.
         next = { ...withLowVision(next, false), colorTheme: patch.colorTheme };
       }
       return next;
