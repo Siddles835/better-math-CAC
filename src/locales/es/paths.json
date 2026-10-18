@@ -214,6 +214,7 @@
   "issue_hint": "Una pista incluye la respuesta. Escríbela de nuevo.",
   "issue_example": "Un ejemplo resuelto debe usar números distintos a los del problema.",
   "issue_size": "Este currículo es demasiado grande para guardar.",
+  "dashStudent": "Estudiante",
   "dashCurriculum": "Currículo",
   "dashPlanet": "Planeta actual",
   "dashAssessment": "Última revisión",

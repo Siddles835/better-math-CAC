@@ -214,6 +214,7 @@
   "issue_hint": "A hint includes the answer. Rewrite it.",
   "issue_example": "A worked example must use different numbers from the problem.",
   "issue_size": "This curriculum is too large to save.",
+  "dashStudent": "Student",
   "dashCurriculum": "Curriculum",
   "dashPlanet": "Current planet",
   "dashAssessment": "Latest check",

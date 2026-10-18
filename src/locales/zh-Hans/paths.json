@@ -214,6 +214,7 @@
   "issue_hint": "有一条提示写出了答案。请改写。",
   "issue_example": "例题必须使用和题目不同的数字。",
   "issue_size": "这份课程太大，无法保存。",
+  "dashStudent": "学生",
   "dashCurriculum": "课程",
   "dashPlanet": "当前星球",
   "dashAssessment": "最近一次检查",

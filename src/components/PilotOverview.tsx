@@ -264,8 +264,9 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
           <table className="w-full text-start text-sm">
             <thead className="bg-muted/40">
               <tr>
-                <th className="px-3 py-3 font-medium">{tx('paths:dashPlanet')}</th>
+                <th className="px-3 py-3 font-medium">{tx('paths:dashStudent')}</th>
                 <th className="px-3 py-3 font-medium">{tx('paths:dashCurriculum')}</th>
+                <th className="px-3 py-3 font-medium">{tx('paths:dashPlanet')}</th>
                 <th className="px-3 py-3 font-medium">{tx('paths:dashAssessment')}</th>
                 <th className="px-3 py-3 font-medium">{tx('paths:dashAccuracy')}</th>
                 <th className="px-3 py-3 font-medium">{tx('paths:dashTime')}</th>
@@ -284,6 +285,7 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
                     ) : null}
                   </th>
                   <td className="px-3 py-3">{row.curriculumId || tx('paths:noneYet')}</td>
+                  <td className="px-3 py-3">{row.currentNodeId || tx('paths:noneYet')}</td>
                   <td className="px-3 py-3">
                     {row.latestAssessment ? row.latestAssessment.recommendedNodeId : tx('paths:noneYet')}
                   </td>

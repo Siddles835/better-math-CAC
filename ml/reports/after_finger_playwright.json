@@ -1,7 +1,7 @@
 {
   "summary": {
     "phase": "after_model_change",
-    "generatedAt": "2026-10-04T05:48:03.860Z",
+    "generatedAt": "2026-10-18T22:09:03.659Z",
     "singleDigitGateRate": 0.996875,
     "silentWrongTotal": 0,
     "perDigit": {
@@ -91,19 +91,19 @@
       },
       "45": {
         "n": 12,
-        "exact": 8,
+        "exact": 11,
         "rate": 1,
         "silentWrong": 0
       },
       "99": {
         "n": 12,
-        "exact": 9,
+        "exact": 11,
         "rate": 1,
         "silentWrong": 0
       },
       "100": {
         "n": 12,
-        "exact": 8,
+        "exact": 10,
         "rate": 1,
         "silentWrong": 0
       }
@@ -3584,9 +3584,9 @@
       "target": 45,
       "variant": "v3",
       "status": "ok",
-      "digit": 6,
-      "confidence": 0.9999992959865791,
-      "exact": false,
+      "digit": 45,
+      "confidence": 0.9999986213001862,
+      "exact": true,
       "successOrConfirm": true,
       "silentWrong": false
     },
@@ -3594,9 +3594,9 @@
       "target": 45,
       "variant": "v4",
       "status": "ok",
-      "digit": 6,
-      "confidence": 0.9999949534126965,
-      "exact": false,
+      "digit": 45,
+      "confidence": 0.999999987663939,
+      "exact": true,
       "successOrConfirm": true,
       "silentWrong": false
     },
@@ -3664,9 +3664,9 @@
       "target": 45,
       "variant": "v11",
       "status": "ok",
-      "digit": 6,
-      "confidence": 0.999953456211573,
-      "exact": false,
+      "digit": 45,
+      "confidence": 0.9999993804185583,
+      "exact": true,
       "successOrConfirm": true,
       "silentWrong": false
     },
@@ -3714,9 +3714,9 @@
       "target": 99,
       "variant": "v4",
       "status": "ok",
-      "digit": 6,
-      "confidence": 0.9910098628877795,
-      "exact": false,
+      "digit": 99,
+      "confidence": 0.9991952614026409,
+      "exact": true,
       "successOrConfirm": true,
       "silentWrong": false
     },
@@ -3784,9 +3784,9 @@
       "target": 99,
       "variant": "v11",
       "status": "ok",
-      "digit": 6,
-      "confidence": 0.9988193201973953,
-      "exact": false,
+      "digit": 99,
+      "confidence": 0.9999990073792094,
+      "exact": true,
       "successOrConfirm": true,
       "silentWrong": false
     },
@@ -3824,9 +3824,9 @@
       "target": 100,
       "variant": "v3",
       "status": "ok",
-      "digit": 10,
-      "confidence": 0.9999651990857551,
-      "exact": false,
+      "digit": 100,
+      "confidence": 0.9999855996841751,
+      "exact": true,
       "successOrConfirm": true,
       "silentWrong": false
     },
@@ -3904,9 +3904,9 @@
       "target": 100,
       "variant": "v11",
       "status": "ok",
-      "digit": 10,
-      "confidence": 0.9998279179932215,
-      "exact": false,
+      "digit": 100,
+      "confidence": 0.999976643993849,
+      "exact": true,
       "successOrConfirm": true,
       "silentWrong": false
     }
