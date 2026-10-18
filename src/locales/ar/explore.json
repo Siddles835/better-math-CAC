@@ -84,6 +84,8 @@
   "line_compare": "قارن مع {{n}}",
   "line_hop": "اقفز بمقدار {{n}}",
   "line_jump_ten": "اقفز بمقدار 10",
+  "line_jump_back_ten": "ارجع 10",
+  "line_jump_forward_ten": "تقدم 10",
   "line_left": "تحرّك يساراً",
   "line_right": "تحرّك يميناً",
   "line_smaller": "أصغر من {{n}}",
@@ -108,5 +110,18 @@
   "ways_list": "الطرق التي وجدتها",
   "no_score": "بلا درجة — فقط تفكير",
   "solar_moon": "محطة القمر",
-  "pick_picture": "اختر صورة"
+  "pick_picture": "اختر صورة",
+  "act_manipulatives": "عدادات ومصفوفات",
+  "act_manipulatives_blurb": "أضف وأزل العدادات وابنِ مصفوفات واستخدم إطار العشرة. الرقم يطابق دائمًا ما تراه.",
+  "principle_manipulatives": "نماذج ملموسة قبل الرموز",
+  "manip_prompt": "ابنِ كميات بالعدادات والمصفوفات وإطار العشرة.",
+  "manip_board_title": "لوحة العدادات",
+  "manip_array_title": "باني المصفوفة",
+  "manip_frame_title": "إطار العشرة",
+  "manip_undo": "تراجع",
+  "manip_add_row": "أضف صفًا",
+  "manip_remove_row": "أزل صفًا",
+  "manip_add_col": "أضف عمودًا",
+  "manip_remove_col": "أزل عمودًا",
+  "manip_array_product": "{{rows}} في {{cols}} يساوي {{total}}"
 }

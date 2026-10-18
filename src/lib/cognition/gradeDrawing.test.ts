@@ -20,6 +20,19 @@ describe('gradeDrawnAnswer', () => {
   it('does not call an ordinary miss a reversal', () => {
     expect(gradeDrawnAnswer(4, false, 6)).toEqual({ correct: false, reversal: false });
     expect(gradeDrawnAnswer(6, false, 9)).toEqual({ correct: false, reversal: false });
-    expect(gradeDrawnAnswer(14, false, 14)).toEqual({ correct: false, reversal: false });
+  });
+
+  it('grades multi-digit values by assembled number', () => {
+    expect(gradeDrawnAnswer(14, false, 14)).toEqual({ correct: true, reversal: false });
+    expect(gradeDrawnAnswer(10, false, 10)).toEqual({ correct: true, reversal: false });
+    expect(gradeDrawnAnswer(99, false, 99)).toEqual({ correct: true, reversal: false });
+    expect(gradeDrawnAnswer(100, false, 100)).toEqual({ correct: true, reversal: false });
+    expect(gradeDrawnAnswer(12, false, 21)).toEqual({ correct: false, reversal: false });
+    expect(gradeDrawnAnswer(14, true, 14)).toEqual({ correct: true, reversal: false });
+  });
+
+  it('rejects values outside 0–999', () => {
+    expect(gradeDrawnAnswer(1000, false, 1000)).toEqual({ correct: false, reversal: false });
+    expect(gradeDrawnAnswer(5, false, -1)).toEqual({ correct: false, reversal: false });
   });
 });

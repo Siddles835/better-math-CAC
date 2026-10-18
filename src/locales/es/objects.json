@@ -55,5 +55,11 @@
   "showPictures": "Mostrar imágenes con los problemas",
   "showPicturesHelp": "Si hay un objeto activo, los problemas de conteo pueden mostrar calcomanías.",
   "deleteAll": "Borrar todos mis objetos con foto",
-  "deleteAllConfirm": "¿Borrar todas las calcomanías con foto de este dispositivo? Los objetos incluidos se quedan."
+  "deleteAllConfirm": "¿Borrar todas las calcomanías con foto de este dispositivo? Los objetos incluidos se quedan.",
+  "rep_title": "Imágenes de números",
+  "rep_lead": "Elige manzanas, estrellas, bloques o planetas para contar. Tus objetos con foto se conservan.",
+  "rep_apples": "Manzanas",
+  "rep_stars": "Estrellas",
+  "rep_blocks": "Bloques",
+  "rep_planets": "Planetas"
 }

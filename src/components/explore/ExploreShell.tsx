@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AccessibilityQuickButton from '@/components/AccessibilityQuickButton';
+import MathHelperButton from '@/components/MathHelperButton';
 import VoiceQuickButton from '@/components/VoiceQuickButton';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,7 @@ const ExploreShell: React.FC<ExploreShellProps> = ({ title, speakText, children,
           </Button>
         </div>
         <div className="flex items-center gap-2">
+          <MathHelperButton />
           <ReadAloudButton text={speakText} />
           <VoiceQuickButton />
           <AccessibilityQuickButton />

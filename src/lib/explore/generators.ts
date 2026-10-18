@@ -8,6 +8,7 @@ import type {
   MakeTenPrompt,
   NumberLinePrompt,
   NumberTalkPrompt,
+  ManipulativesPrompt,
   PatternSkipPrompt,
   QuickLookPrompt,
   ShowMePrompt,
@@ -56,6 +57,8 @@ const signatureOf = (prompt: ExplorePrompt): string => {
       return `build-story:${prompt.op}:${prompt.a}:${prompt.b}:${prompt.objectKey}`;
     case 'pattern-skip':
       return `pattern-skip:${prompt.mode}:${prompt.step}:${prompt.start}:${prompt.sequence.join(',')}`;
+    case 'manipulatives':
+      return `manipulatives:${prompt.startCount}`;
     default:
       return 'unknown';
   }
@@ -168,14 +171,19 @@ export const generatePatternSkip = (band: ExploreBand, seed: number): PatternSki
   while (sequence.length < 5) {
     sequence.push((sequence[sequence.length - 1] ?? start) + step);
   }
-  const mode = rng() < 0.5 ? 'extend' : 'break';
+  const mode = rng() < 0.5 ? 'extend' : 'fix';
   let breakIndex = -1;
-  if (mode === 'break') {
+  if (mode === 'fix') {
     breakIndex = pickInt(rng, 1, 3);
     const bump = pickOne(rng, [1, -1, step + 1] as const);
     sequence[breakIndex] = Math.max(0, sequence[breakIndex] + bump);
   }
   return { kind: 'pattern-skip', step, start, sequence: sequence.slice(0, 5), breakIndex, mode, seed };
+};
+
+export const generateManipulatives = (_band: ExploreBand, seed: number): ManipulativesPrompt => {
+  const rng = mulberry32(seed);
+  return { kind: 'manipulatives', startCount: pickInt(rng, 0, 5), seed };
 };
 
 const GENERATORS: Record<ExploreActivityId, (band: ExploreBand, seed: number) => ExplorePrompt> = {
@@ -187,6 +195,7 @@ const GENERATORS: Record<ExploreActivityId, (band: ExploreBand, seed: number) =>
   'number-line': generateNumberLine,
   'build-story': generateBuildStory,
   'pattern-skip': generatePatternSkip,
+  manipulatives: generateManipulatives,
 };
 
 /**
@@ -240,7 +249,7 @@ export const patternExpectedNext = (prompt: PatternSkipPrompt): number =>
   prompt.start + prompt.sequence.length * prompt.step;
 
 export const patternBrokenValue = (prompt: PatternSkipPrompt): number | null => {
-  if (prompt.mode !== 'break' || prompt.breakIndex < 0) return null;
+  if (prompt.mode !== 'fix' || prompt.breakIndex < 0) return null;
   return prompt.sequence[prompt.breakIndex] ?? null;
 };
 

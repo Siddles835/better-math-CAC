@@ -47,6 +47,7 @@ import { DemoBadge } from "./components/DemoChrome";
 import ForegroundTime from "./components/ForegroundTime";
 import ExplorePage from "./pages/ExplorePage";
 import ExploreActivityPage from "./pages/ExploreActivityPage";
+import MathHelperPage from "./pages/MathHelperPage";
 
 const ObjectsPage = lazy(() => import("./pages/ObjectsPage"));
 
@@ -109,6 +110,7 @@ const App = () => {
               <Route path="/practice" element={lesson(<PersonalPracticePage />)} />
               <Route path="/explore" element={lesson(<ExplorePage />)} />
               <Route path="/explore/:activityId" element={lesson(<ExploreActivityPage />)} />
+              <Route path="/math-helper" element={<MathHelperPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route
                 path="/objects"

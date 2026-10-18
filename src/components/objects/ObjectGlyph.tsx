@@ -28,7 +28,9 @@ const resolveBuiltin = (objectId?: string): BuiltinObjectId | 'dot' | null => {
   if (!objectId || objectId === 'dot') return objectId === 'dot' ? 'dot' : 'apple';
   if (objectId.startsWith('builtin:')) return objectId.slice('builtin:'.length) as BuiltinObjectId;
   if (
-    ['apple', 'pencil', 'crayon', 'die', 'block', 'button', 'ball', 'coin'].includes(objectId)
+    ['apple', 'pencil', 'crayon', 'die', 'block', 'button', 'ball', 'coin', 'star', 'planet'].includes(
+      objectId
+    )
   ) {
     return objectId as BuiltinObjectId;
   }
@@ -122,6 +124,33 @@ const BuiltinSvg: React.FC<{ id: BuiltinObjectId | 'dot'; diePips?: number }> = 
   if (id === 'ball') {
     return <circle cx="12" cy="12" r="8" className="fill-orange-400 stroke-orange-700" strokeWidth="1.2" />;
   }
+  if (id === 'star') {
+    return (
+      <polygon
+        points="12,2 14.5,8.5 21.5,9 16,13.5 17.5,20.5 12,16.5 6.5,20.5 8,13.5 2.5,9 9.5,8.5"
+        className="fill-amber-300 stroke-amber-700"
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+      />
+    );
+  }
+  if (id === 'planet') {
+    return (
+      <>
+        <circle cx="12" cy="12" r="6.5" className="fill-sky-500 stroke-sky-800" strokeWidth="1.2" />
+        <ellipse
+          cx="12"
+          cy="12"
+          rx="10"
+          ry="3.5"
+          className="fill-none stroke-violet-400"
+          strokeWidth="1.4"
+          transform="rotate(-20 12 12)"
+        />
+        <circle cx="10" cy="10" r="1.2" className="fill-sky-200/80" />
+      </>
+    );
+  }
   return <circle cx="12" cy="12" r="7" className="fill-yellow-400 stroke-yellow-700" strokeWidth="1.2" />;
 };
 
@@ -165,35 +194,45 @@ const ObjectGlyph: React.FC<ObjectGlyphProps> = ({
     : undefined;
 
   const aria = label ?? tx('objects:glyphLabel');
+  const media = photoUrl ? (
+    <img
+      src={photoUrl}
+      alt=""
+      className={cn(SIZE[size], 'object-contain rounded-md ring-2 ring-card')}
+      draggable={false}
+    />
+  ) : (
+    <svg viewBox="0 0 24 24" fill="none" className={cn(SIZE[size], 'max-w-full max-h-full')}>
+      <BuiltinSvg id={builtin ?? 'apple'} diePips={diePips} />
+    </svg>
+  );
+
+  const shellClass = cn(
+    'inline-flex items-center justify-center min-h-[48px] min-w-[48px] rounded-xl transition-transform duration-200',
+    onClick && 'hover:scale-110 active:scale-95 cursor-pointer',
+    !onClick && 'pointer-events-none',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+    'drop-shadow-sm',
+    className
+  );
+
+  if (!onClick) {
+    return (
+      <span data-testid={testId} className={shellClass} aria-label={aria} role="img">
+        {media}
+      </span>
+    );
+  }
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      disabled={!onClick}
       data-testid={testId}
-      className={cn(
-        'inline-flex items-center justify-center min-h-[48px] min-w-[48px] rounded-xl transition-transform duration-200',
-        onClick && 'hover:scale-110 active:scale-95 cursor-pointer',
-        !onClick && 'pointer-events-none',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        'drop-shadow-sm',
-        className
-      )}
+      className={shellClass}
       aria-label={aria}
     >
-      {photoUrl ? (
-        <img
-          src={photoUrl}
-          alt=""
-          className={cn(SIZE[size], 'object-contain rounded-md ring-2 ring-card')}
-          draggable={false}
-        />
-      ) : (
-        <svg viewBox="0 0 24 24" fill="none" className={cn(SIZE[size], 'max-w-full max-h-full')}>
-          <BuiltinSvg id={builtin ?? 'apple'} diePips={diePips} />
-        </svg>
-      )}
+      {media}
     </button>
   );
 };

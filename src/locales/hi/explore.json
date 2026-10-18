@@ -84,6 +84,8 @@
   "line_compare": "{{n}} से तुलना करें",
   "line_hop": "{{n}} की छलाँग",
   "line_jump_ten": "10 की छलाँग",
+  "line_jump_back_ten": "10 पीछे जाएँ",
+  "line_jump_forward_ten": "10 आगे जाएँ",
   "line_left": "बाएँ जाएँ",
   "line_right": "दाएँ जाएँ",
   "line_smaller": "{{n}} से छोटा",
@@ -108,5 +110,18 @@
   "ways_list": "आपके मिले तरीके",
   "no_score": "कोई अंक नहीं — केवल सोच",
   "solar_moon": "चंद्र स्टेशन",
-  "pick_picture": "एक चित्र चुनें"
+  "pick_picture": "एक चित्र चुनें",
+  "act_manipulatives": "काउंटर और सारणी",
+  "act_manipulatives_blurb": "काउंटर जोड़ें-हटाएँ, सारणी बनाएँ और टेन-फ्रेम इस्तेमाल करें। संख्या हमेशा दिखने से मेल खाती है।",
+  "principle_manipulatives": "प्रतीकों से पहले ठोस मॉडल",
+  "manip_prompt": "काउंटर, सारणी और टेन-फ्रेम से राशियाँ बनाएँ।",
+  "manip_board_title": "काउंटर बोर्ड",
+  "manip_array_title": "सारणी निर्माता",
+  "manip_frame_title": "टेन-फ्रेम",
+  "manip_undo": "पूर्ववत",
+  "manip_add_row": "पंक्ति जोड़ें",
+  "manip_remove_row": "पंक्ति हटाएँ",
+  "manip_add_col": "स्तंभ जोड़ें",
+  "manip_remove_col": "स्तंभ हटाएँ",
+  "manip_array_product": "{{rows}} गुणा {{cols}} बराबर {{total}}"
 }

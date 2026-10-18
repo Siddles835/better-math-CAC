@@ -1,16 +1,24 @@
 import { tx } from '@/i18n/tx';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Classroom } from '@/lib/classroom';
 import type { PilotGoals } from '@/content/types';
 import { getPort } from '@/lib/data/port';
 import { resolveAssignment } from '@/lib/curriculum/logic';
 import { learnerFromLegacy } from '@/lib/paths/progress';
-import { classAverages, progressRatio, reportsToCsv, studentReport } from '@/lib/reporting/overview';
+import {
+  classAverages,
+  formatPercent,
+  progressRatio,
+  reportsToCsv,
+  studentReport,
+} from '@/lib/reporting/overview';
 import { csvFilename } from '@/lib/reporting/csv';
 import { formatCsvNumber } from '@/lib/reporting/csv';
 import { isDemoMode } from '@/lib/demo/mode';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/sonner';
+
+type LoadState = 'idle' | 'loading' | 'ready' | 'empty' | 'partial' | 'failed';
 
 const Metric = ({
   label,
@@ -40,11 +48,17 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
   const [progress, setProgress] = useState<number[]>([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadState, setLoadState] = useState<LoadState>('idle');
+  const [learnersFailed, setLearnersFailed] = useState(false);
   const [reloadToken, setReloadToken] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const objectUrlRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     if (!classroom) return;
+    setLoadState('loading');
+    setError('');
+    setMessage('');
     try {
       const port = getPort(classCode, false);
       const settled = await Promise.allSettled([
@@ -53,58 +67,106 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
         port.listCurricula(classCode),
         port.getGoals(classCode),
       ]);
-      const learners = settled[0].status === 'fulfilled' ? settled[0].value : {};
+      const learnersResult = settled[0];
+      const learnersOk = learnersResult.status === 'fulfilled';
+      const learners = learnersResult.status === 'fulfilled' ? learnersResult.value : {};
       const assignments = settled[1].status === 'fulfilled' ? settled[1].value : [];
       const curricula = settled[2].status === 'fulfilled' ? settled[2].value : [];
       const storedGoals = settled[3].status === 'fulfilled' ? settled[3].value : null;
       const anyFailed = settled.some((result) => result.status === 'rejected');
+      const roster = Object.entries(classroom.students ?? {});
 
       if (storedGoals) setGoals(storedGoals);
-      const reports = Object.entries(classroom.students ?? {}).map(([key, student]) => {
-        const record = learners[key] ?? learnerFromLegacy(student);
+
+      const reports = roster.map(([key, student]) => {
+        const hasLearner = learnersOk && Boolean(learners[key]);
+        const record = hasLearner ? learners[key]! : learnerFromLegacy(student);
         const assignment = resolveAssignment(assignments, key, false);
         const curriculum = curricula.find((item) => item.id === assignment?.curriculumId);
         return studentReport(
           student.nickname || key,
           record,
           curriculum?.name ?? null,
-          student.lastDiagnosis?.primary ?? null
+          student.lastDiagnosis?.primary ?? null,
+          !hasLearner
         );
       });
       setRows(reports);
       setProgress(
-        Object.entries(classroom.students ?? {}).map(([key, student]) =>
-          progressRatio(learners[key] ?? learnerFromLegacy(student))
-        )
+        roster.map(([key, student]) => {
+          const hasLearner = learnersOk && Boolean(learners[key]);
+          return progressRatio(hasLearner ? learners[key]! : learnerFromLegacy(student));
+        })
       );
-      setLoadFailed(anyFailed);
-      setError(anyFailed ? tx('paths:pilotLoadPartial') : '');
+      setLearnersFailed(!learnersOk);
+
+      if (anyFailed && reports.length === 0) {
+        setLoadState('failed');
+        setError(tx('paths:pilotLoadFail'));
+      } else if (anyFailed) {
+        setLoadState('partial');
+        setError(tx('paths:pilotLoadPartial'));
+      } else if (reports.length === 0) {
+        setLoadState('empty');
+        setError('');
+      } else {
+        setLoadState('ready');
+        setError('');
+      }
     } catch {
-      setLoadFailed(true);
       setRows([]);
       setProgress([]);
+      setLearnersFailed(true);
+      setLoadState('failed');
       setError(tx('paths:pilotLoadFail'));
     }
   }, [classCode, classroom]);
 
   useEffect(() => {
-    if (!classroom) return;
+    if (!classroom) {
+      setLoadState('idle');
+      return;
+    }
     let cancel = false;
     void (async () => {
-      if (cancel) return;
       await load();
+      if (cancel) return;
     })();
     return () => {
       cancel = true;
     };
   }, [classroom, load, reloadToken]);
 
+  useEffect(
+    () => () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    },
+    []
+  );
+
+  if (!classroom) {
+    return (
+      <section data-testid="pilot-overview" className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+        <h2 className="text-xl font-semibold">{tx('paths:pilotTitle')}</h2>
+        <p className="mt-3 text-sm text-muted-foreground" data-testid="pilot-waiting">
+          {tx('paths:pilotLoading')}
+        </p>
+      </section>
+    );
+  }
+
   const averages = classAverages(rows, progress);
   const totalSeconds = rows.reduce((sum, row) => sum + row.timeSeconds, 0);
-  // Pilot classes currently have one owner teacher; classroom presence is the source of truth.
-  const teacherCount = classroom ? 1 : averages.teachers;
+  const teacherCount = 1;
+  const metricsUnavailable = loadState === 'failed' || loadState === 'loading';
+  const progressUnavailable = metricsUnavailable || (learnersFailed && rows.every((row) => row.legacyOnly));
 
   const saveGoals = async () => {
+    setSaving(true);
+    setMessage('');
     try {
       const next = { ...goals, updatedAt: Date.now() };
       await getPort(classCode, false).saveGoals(classCode, next);
@@ -115,17 +177,24 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
       setMessage('');
       setError(tx('paths:pilotSaveFail'));
       toast.error(tx('paths:pilotSaveFail'));
+    } finally {
+      setSaving(false);
     }
   };
 
   const exportCsv = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
     const csv = reportsToCsv(rows);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    objectUrlRef.current = url;
+    link.href = url;
     link.download = csvFilename(isDemoMode());
     link.click();
-    URL.revokeObjectURL(link.href);
   };
 
   return (
@@ -135,6 +204,12 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
         <p className="mt-1 text-sm text-muted-foreground">{tx('paths:pilotTeacherNote')}</p>
       </div>
 
+      {loadState === 'loading' && (
+        <p className="mb-4 text-sm text-muted-foreground" data-testid="pilot-loading" role="status">
+          {tx('paths:pilotLoading')}
+        </p>
+      )}
+
       {error && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           <p className="flex-1">{error}</p>
@@ -142,6 +217,7 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
             type="button"
             variant="outline"
             className="min-h-[48px]"
+            data-testid="pilot-retry"
             onClick={() => setReloadToken((token) => token + 1)}
           >
             {tx('paths:pilotRetry')}
@@ -149,27 +225,41 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
         </div>
       )}
 
+      {learnersFailed && loadState === 'partial' && (
+        <p className="mb-3 text-sm text-muted-foreground" data-testid="pilot-legacy-note">
+          {tx('paths:pilotLegacyOnly')}
+        </p>
+      )}
+
       <dl className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <Metric label={tx('paths:pilotStudents')} value={averages.students} unavailable={loadFailed && rows.length === 0} />
-        <Metric label={tx('paths:pilotTeachers')} value={teacherCount} unavailable={loadFailed && !classroom} />
+        <Metric
+          label={tx('paths:pilotStudents')}
+          value={averages.students}
+          unavailable={metricsUnavailable}
+        />
+        <Metric label={tx('paths:pilotTeachers')} value={teacherCount} unavailable={metricsUnavailable} />
         <Metric
           label={tx('paths:pilotProgress')}
-          value={formatCsvNumber(averages.averageProgress)}
-          unavailable={loadFailed && rows.length === 0}
+          value={formatPercent(averages.averageProgress)}
+          unavailable={progressUnavailable}
         />
         <Metric
           label={tx('paths:pilotImprovement')}
-          value={formatCsvNumber(averages.averageImprovement)}
-          unavailable={loadFailed && rows.length === 0}
+          value={
+            averages.averageImprovement === null
+              ? tx('paths:pilotNotAvailable')
+              : formatCsvNumber(averages.averageImprovement)
+          }
+          unavailable={progressUnavailable || averages.averageImprovement === null}
         />
         <Metric
           label={tx('paths:pilotEngagement')}
           value={formatMinutes(totalSeconds)}
-          unavailable={loadFailed && rows.length === 0}
+          unavailable={progressUnavailable}
         />
       </dl>
 
-      {rows.length > 0 ? (
+      {loadState !== 'loading' && rows.length > 0 ? (
         <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-start text-sm">
             <thead className="bg-muted/40">
@@ -187,16 +277,21 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
                 <tr key={row.spaceName} className="border-t border-border">
                   <th className="px-3 py-3 font-medium" scope="row">
                     {row.spaceName}
+                    {row.legacyOnly ? (
+                      <span className="ms-2 text-xs font-normal text-muted-foreground">
+                        ({tx('paths:pilotLegacyTag')})
+                      </span>
+                    ) : null}
                   </th>
                   <td className="px-3 py-3">{row.curriculumId || tx('paths:noneYet')}</td>
                   <td className="px-3 py-3">
                     {row.latestAssessment ? row.latestAssessment.recommendedNodeId : tx('paths:noneYet')}
                   </td>
                   <td className="px-3 py-3" dir="ltr">
-                    {formatCsvNumber(row.accuracy)}
+                    {row.legacyOnly ? tx('paths:pilotNotAvailable') : formatPercent(row.accuracy)}
                   </td>
                   <td className="px-3 py-3" dir="ltr">
-                    {formatMinutes(row.timeSeconds)}
+                    {row.legacyOnly ? tx('paths:pilotNotAvailable') : formatMinutes(row.timeSeconds)}
                   </td>
                   <td className="px-3 py-3">{row.struggling.join(', ') || tx('paths:noneYet')}</td>
                 </tr>
@@ -205,8 +300,11 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
           </table>
         </div>
       ) : (
-        !error && (
-          <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+        loadState === 'empty' && (
+          <p
+            className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground"
+            data-testid="pilot-empty"
+          >
             {tx('paths:noneYet')}
           </p>
         )
@@ -231,7 +329,13 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
         </label>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" className="min-h-[48px]" onClick={() => void saveGoals()}>
+        <Button
+          type="button"
+          className="min-h-[48px]"
+          disabled={saving}
+          data-testid="pilot-save-goals"
+          onClick={() => void saveGoals()}
+        >
           {tx('paths:pilotSave')}
         </Button>
         <Button
@@ -239,6 +343,7 @@ const PilotOverview = ({ classCode, classroom }: { classCode: string; classroom:
           variant="outline"
           className="min-h-[48px]"
           data-testid="export-csv"
+          disabled={rows.length === 0}
           onClick={exportCsv}
         >
           {tx('paths:exportCsv')}

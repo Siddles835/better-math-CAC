@@ -55,5 +55,11 @@
   "showPictures": "Show pictures with problems",
   "showPicturesHelp": "When an object is active, counting-style problems can show stickers.",
   "deleteAll": "Delete all my photo objects",
-  "deleteAllConfirm": "Delete every photo sticker on this device? Built-in objects stay."
+  "deleteAllConfirm": "Delete every photo sticker on this device? Built-in objects stay.",
+  "rep_title": "Number pictures",
+  "rep_lead": "Choose apples, stars, blocks, or planets for counting pictures. Your photo objects stay saved.",
+  "rep_apples": "Apples",
+  "rep_stars": "Stars",
+  "rep_blocks": "Blocks",
+  "rep_planets": "Planets"
 }

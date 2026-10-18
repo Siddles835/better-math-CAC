@@ -55,5 +55,11 @@
   "showPictures": "题目旁显示图片",
   "showPicturesHelp": "启用物体后，计数类题目可以显示贴纸。",
   "deleteAll": "删除我的全部照片物体",
-  "deleteAllConfirm": "删除本设备上的全部照片贴纸？内置物体会保留。"
+  "deleteAllConfirm": "删除本设备上的全部照片贴纸？内置物体会保留。",
+  "rep_title": "数的图画",
+  "rep_lead": "选择苹果、星星、积木或行星作为计数图画。你的拍照物品会保留。",
+  "rep_apples": "苹果",
+  "rep_stars": "星星",
+  "rep_blocks": "积木",
+  "rep_planets": "行星"
 }

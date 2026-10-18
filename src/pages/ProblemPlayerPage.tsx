@@ -20,7 +20,13 @@ import { recordAttempt } from '@/lib/paths/progress';
 import { getActiveStudent } from '@/lib/session';
 import { nicknameKey } from '@/lib/classroom';
 import { formatPathText, formatProblemPrompt } from '@/lib/paths/text';
-import { getNextPlanet, isSolarPathId, normalizePlanetId, type PlanetId } from '@/lib/planets';
+import {
+  getLessonRoute,
+  getNextPlanet,
+  isSolarPathId,
+  normalizePlanetId,
+  type PlanetId,
+} from '@/lib/planets';
 import { STUDENT_HUB_PATH } from '@/lib/studentHub';
 import { isSoloClassCode } from '@/lib/solo';
 
@@ -167,7 +173,7 @@ const ProblemPlayerPage = () => {
           void completePlanet(planet);
           const nextPlanet = getNextPlanet(planet as PlanetId);
           window.setTimeout(() => {
-            navigate(nextPlanet ? `/play/operations/${nextPlanet}` : STUDENT_HUB_PATH);
+            navigate(nextPlanet ? getLessonRoute(nextPlanet) : STUDENT_HUB_PATH);
           }, 900);
         }
       }

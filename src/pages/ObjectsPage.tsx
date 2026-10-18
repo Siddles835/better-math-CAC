@@ -5,6 +5,7 @@ import { Camera, Trash2 } from 'lucide-react';
 import GroupAnimation from '@/components/animations/GroupAnimation';
 import CaptureFlow from '@/components/objects/CaptureFlow';
 import ObjectGlyph from '@/components/objects/ObjectGlyph';
+import RepresentationPicker from '@/components/RepresentationPicker';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
 import { prepareStickerFromBlob, likelyContainsFaceHeuristic } from '@/lib/objects/cutout';
@@ -231,6 +232,11 @@ const ObjectsPage: React.FC = () => {
 
         {step === 'library' && (
           <section>
+            <div className="mb-6">
+              <RepresentationPicker
+                onChange={() => setPrefs(loadObjectPrefs())}
+              />
+            </div>
             <div className="mb-4 flex flex-wrap gap-2">
               <Button type="button" className="min-h-[48px]" onClick={startCapture} data-testid="objects-add">
                 <Camera className="me-2 h-5 w-5" aria-hidden />

@@ -68,7 +68,11 @@ const firestorePort: DataPort = {
     );
   },
   async listLearners(classCode) {
-    const snap = await getDocs(collection(db, 'classrooms', classCode, 'learners'));
+    const snap = await withTimeout(
+      getDocs(collection(db, 'classrooms', classCode, 'learners')),
+      8000,
+      'firestore.listLearners'
+    );
     const out: Record<string, LearnerRecord> = {};
     snap.forEach((item) => {
       out[item.id] = item.data() as LearnerRecord;
@@ -76,18 +80,34 @@ const firestorePort: DataPort = {
     return out;
   },
   async listCurricula(classCode) {
-    const snap = await getDocs(collection(db, 'classrooms', classCode, 'curricula'));
+    const snap = await withTimeout(
+      getDocs(collection(db, 'classrooms', classCode, 'curricula')),
+      8000,
+      'firestore.listCurricula'
+    );
     return snap.docs.map((item) => item.data() as Curriculum);
   },
   async saveCurriculum(curriculum) {
-    await setDoc(
-      doc(db, 'classrooms', curriculum.classCode, 'curricula', curriculum.id),
-      stripUndefined(curriculum)
+    await withTimeout(
+      setDoc(
+        doc(db, 'classrooms', curriculum.classCode, 'curricula', curriculum.id),
+        stripUndefined(curriculum)
+      ),
+      5000,
+      'firestore.saveCurriculum'
     );
   },
   async deleteCurriculum(classCode, curriculumId) {
-    await deleteDoc(doc(db, 'classrooms', classCode, 'curricula', curriculumId));
-    const assigned = await getDocs(collection(db, 'classrooms', classCode, 'assignments'));
+    await withTimeout(
+      deleteDoc(doc(db, 'classrooms', classCode, 'curricula', curriculumId)),
+      5000,
+      'firestore.deleteCurriculum'
+    );
+    const assigned = await withTimeout(
+      getDocs(collection(db, 'classrooms', classCode, 'assignments')),
+      8000,
+      'firestore.listAssignmentsForDelete'
+    );
     await Promise.all(
       assigned.docs
         .filter((item) => (item.data() as Assignment).curriculumId === curriculumId)
@@ -95,24 +115,44 @@ const firestorePort: DataPort = {
     );
   },
   async listAssignments(classCode) {
-    const snap = await getDocs(collection(db, 'classrooms', classCode, 'assignments'));
+    const snap = await withTimeout(
+      getDocs(collection(db, 'classrooms', classCode, 'assignments')),
+      8000,
+      'firestore.listAssignments'
+    );
     return snap.docs.map((item) => item.data() as Assignment);
   },
   async saveAssignment(classCode, assignment) {
-    await setDoc(
-      doc(db, 'classrooms', classCode, 'assignments', assignment.id),
-      stripUndefined(assignment)
+    await withTimeout(
+      setDoc(
+        doc(db, 'classrooms', classCode, 'assignments', assignment.id),
+        stripUndefined(assignment)
+      ),
+      5000,
+      'firestore.saveAssignment'
     );
   },
   async deleteAssignment(classCode, assignmentId) {
-    await deleteDoc(doc(db, 'classrooms', classCode, 'assignments', assignmentId));
+    await withTimeout(
+      deleteDoc(doc(db, 'classrooms', classCode, 'assignments', assignmentId)),
+      5000,
+      'firestore.deleteAssignment'
+    );
   },
   async getGoals(classCode) {
-    const snap = await getDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot'));
+    const snap = await withTimeout(
+      getDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot')),
+      5000,
+      'firestore.getGoals'
+    );
     return snap.exists() ? (snap.data() as PilotGoals) : null;
   },
   async saveGoals(classCode, goals) {
-    await setDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot'), stripUndefined(goals));
+    await withTimeout(
+      setDoc(doc(db, 'classrooms', classCode, 'meta', 'pilot'), stripUndefined(goals)),
+      5000,
+      'firestore.saveGoals'
+    );
   },
 };
 

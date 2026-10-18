@@ -30,6 +30,7 @@ import { misconceptionLabel, teacherLineFor } from '@/lib/cognition';
 import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
 import { isTopicStartPlanet } from '@/content/solarSystems';
 import PilotOverview from '@/components/PilotOverview';
+import AccommodationPanel from '@/components/AccommodationPanel';
 import { isDemoMode } from '@/lib/demo/mode';
 import { cn } from '@/lib/utils';
 
@@ -374,6 +375,8 @@ const TeacherDashboard: React.FC = () => {
         {isDemoMode() && !sample && (
           <p className="text-sm text-muted-foreground">{tx('paths:demoPin')}</p>
         )}
+
+        <AccommodationPanel classCode={classCode} persistClassDefaults={!sample} />
 
         <ClassTrends students={roster} sample={sample} />
 

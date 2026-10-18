@@ -57,6 +57,12 @@ export const EXPLORE_CATALOG: ExploreActivityMeta[] = [
     blurbKey: 'act_pattern_skip_blurb',
     principleKey: 'principle_pattern',
   },
+  {
+    id: 'manipulatives',
+    titleKey: 'act_manipulatives',
+    blurbKey: 'act_manipulatives_blurb',
+    principleKey: 'principle_manipulatives',
+  },
 ];
 
 export const isExploreActivityId = (value: string): value is ExploreActivityId =>

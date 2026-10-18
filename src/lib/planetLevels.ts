@@ -101,98 +101,22 @@ export const PLANET_LEVELS: Record<PlanetId, PlanetLevelInfo> = {
   },
 };
 
-/** Operations pathway: multiplication → division → algebra across the same planets. */
-export const OPERATIONS_PLANET_LEVELS: Record<PlanetId, PlanetLevelInfo> = {
-  sun: {
-    id: 'sun',
-    topic: 'multiplication',
-    rangeMax: 10,
-    rangeKey: 'pl_range_to10',
-    skillKey: 'pl_skill_ops_sun',
-    labelKey: 'pl_label_ops_sun',
-  },
-  mercury: {
-    id: 'mercury',
-    topic: 'multiplication',
-    rangeMax: 12,
-    rangeKey: 'pl_range_to12',
-    skillKey: 'pl_skill_ops_mercury',
-    labelKey: 'pl_label_ops_mercury',
-  },
-  venus: {
-    id: 'venus',
-    topic: 'multiplication',
-    rangeMax: 20,
-    rangeKey: 'pl_range_add20',
-    skillKey: 'pl_skill_ops_venus',
-    labelKey: 'pl_label_ops_venus',
-  },
-  earth: {
-    id: 'earth',
-    topic: 'division',
-    rangeMax: 12,
-    rangeKey: 'pl_range_add12',
-    skillKey: 'pl_skill_ops_earth',
-    labelKey: 'pl_label_ops_earth',
-  },
-  mars: {
-    id: 'mars',
-    topic: 'division',
-    rangeMax: 20,
-    rangeKey: 'pl_range_add20',
-    skillKey: 'pl_skill_ops_mars',
-    labelKey: 'pl_label_ops_mars',
-  },
-  jupiter: {
-    id: 'jupiter',
-    topic: 'division',
-    rangeMax: 100,
-    rangeKey: 'pl_range_to100',
-    skillKey: 'pl_skill_ops_jupiter',
-    labelKey: 'pl_label_ops_jupiter',
-  },
-  saturn: {
-    id: 'saturn',
-    topic: 'algebra',
-    rangeMax: 12,
-    rangeKey: 'pl_range_sub12',
-    skillKey: 'pl_skill_ops_saturn',
-    labelKey: 'pl_label_ops_saturn',
-  },
-  uranus: {
-    id: 'uranus',
-    topic: 'algebra',
-    rangeMax: 20,
-    rangeKey: 'pl_range_sub20',
-    skillKey: 'pl_skill_ops_uranus',
-    labelKey: 'pl_label_ops_uranus',
-  },
-  neptune: {
-    id: 'neptune',
-    topic: 'algebra',
-    rangeMax: 20,
-    rangeKey: 'pl_range_sub20',
-    skillKey: 'pl_skill_ops_neptune',
-    labelKey: 'pl_label_ops_neptune',
-  },
-};
-
+/**
+ * Only the foundations solar system is live. Operations metadata was retired so
+ * teachers never see mul/div/algebra labels for planets that teach count/add/sub.
+ */
 export const PLANET_LEVEL_LIST: PlanetLevelInfo[] = PLANET_ORDER.map(
   (id) => PLANET_LEVELS[id]
 );
 
-export const planetLevelsForPath = (pathId: string | null | undefined): PlanetLevelInfo[] => {
-  const table = pathId === 'operations' ? OPERATIONS_PLANET_LEVELS : PLANET_LEVELS;
-  return PLANET_ORDER.map((id) => table[id]);
-};
+export const planetLevelsForPath = (_pathId?: string | null): PlanetLevelInfo[] => PLANET_LEVEL_LIST;
 
 export const getPlanetLevel = (
   planetId: string | null | undefined,
-  pathId: string | null | undefined = 'foundations'
+  _pathId: string | null | undefined = 'foundations'
 ): PlanetLevelInfo => {
   const key = (planetId ?? 'sun').toLowerCase() as PlanetId;
-  const table = pathId === 'operations' ? OPERATIONS_PLANET_LEVELS : PLANET_LEVELS;
-  return table[key] ?? table.sun;
+  return PLANET_LEVELS[key] ?? PLANET_LEVELS.sun;
 };
 
 /** Dropdown / list option text keys: planet name is separate; use labelKey. */

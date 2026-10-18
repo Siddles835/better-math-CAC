@@ -84,6 +84,8 @@
   "line_compare": "Compare with {{n}}",
   "line_hop": "Hop by {{n}}",
   "line_jump_ten": "Jump by 10",
+  "line_jump_back_ten": "Jump back 10",
+  "line_jump_forward_ten": "Jump forward 10",
   "line_left": "Move left",
   "line_right": "Move right",
   "line_smaller": "Smaller than {{n}}",
@@ -108,5 +110,18 @@
   "ways_list": "Ways you found",
   "no_score": "No score — only thinking",
   "solar_moon": "Moon station",
-  "pick_picture": "Pick one picture"
+  "pick_picture": "Pick one picture",
+  "act_manipulatives": "Counters and arrays",
+  "act_manipulatives_blurb": "Add and remove counters, build arrays, and use a ten-frame. The number always matches what you see.",
+  "principle_manipulatives": "Concrete models before symbols",
+  "manip_prompt": "Build amounts with counters, arrays, and a ten-frame.",
+  "manip_board_title": "Counter board",
+  "manip_array_title": "Array builder",
+  "manip_frame_title": "Ten-frame",
+  "manip_undo": "Undo",
+  "manip_add_row": "Add row",
+  "manip_remove_row": "Remove row",
+  "manip_add_col": "Add column",
+  "manip_remove_col": "Remove column",
+  "manip_array_product": "{{rows}} × {{cols}} = {{total}}"
 }

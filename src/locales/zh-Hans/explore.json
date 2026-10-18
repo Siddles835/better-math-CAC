@@ -84,6 +84,8 @@
   "line_compare": "和 {{n}} 比较",
   "line_hop": "每次跳 {{n}}",
   "line_jump_ten": "一次跳 10",
+  "line_jump_back_ten": "向后跳 10",
+  "line_jump_forward_ten": "向前跳 10",
   "line_left": "向左移",
   "line_right": "向右移",
   "line_smaller": "比 {{n}} 小",
@@ -108,5 +110,18 @@
   "ways_list": "你找到的做法",
   "no_score": "没有分数——只有思考",
   "solar_moon": "卫星站",
-  "pick_picture": "选一张图"
+  "pick_picture": "选一张图",
+  "act_manipulatives": "计数物与阵列",
+  "act_manipulatives_blurb": "增减计数物、搭阵列并用十格板。数字始终与所见一致。",
+  "principle_manipulatives": "先具体模型再抽象符号",
+  "manip_prompt": "用计数物、阵列和十格板表示数量。",
+  "manip_board_title": "计数板",
+  "manip_array_title": "阵列搭建",
+  "manip_frame_title": "十格板",
+  "manip_undo": "撤销",
+  "manip_add_row": "加一行",
+  "manip_remove_row": "减一行",
+  "manip_add_col": "加一列",
+  "manip_remove_col": "减一列",
+  "manip_array_product": "{{rows}} 乘 {{cols}} 等于 {{total}}"
 }

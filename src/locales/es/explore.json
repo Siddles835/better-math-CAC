@@ -84,6 +84,8 @@
   "line_compare": "Compara con {{n}}",
   "line_hop": "Salta de a {{n}}",
   "line_jump_ten": "Saltar de 10 en 10",
+  "line_jump_back_ten": "Retroceder 10",
+  "line_jump_forward_ten": "Avanzar 10",
   "line_left": "Mover a la izquierda",
   "line_right": "Mover a la derecha",
   "line_smaller": "Menor que {{n}}",
@@ -108,5 +110,18 @@
   "ways_list": "Formas que encontraste",
   "no_score": "Sin puntaje — solo pensamiento",
   "solar_moon": "Estación lunar",
-  "pick_picture": "Elige una imagen"
+  "pick_picture": "Elige una imagen",
+  "act_manipulatives": "Contadores y matrices",
+  "act_manipulatives_blurb": "Añade y quita contadores, arma matrices y usa un marco de diez. El número siempre coincide con lo que ves.",
+  "principle_manipulatives": "Modelos concretos antes que símbolos",
+  "manip_prompt": "Construye cantidades con contadores, matrices y un marco de diez.",
+  "manip_board_title": "Tablero de contadores",
+  "manip_array_title": "Constructor de matrices",
+  "manip_frame_title": "Marco de diez",
+  "manip_undo": "Deshacer",
+  "manip_add_row": "Añadir fila",
+  "manip_remove_row": "Quitar fila",
+  "manip_add_col": "Añadir columna",
+  "manip_remove_col": "Quitar columna",
+  "manip_array_product": "{{rows}} por {{cols}} dan {{total}}"
 }

@@ -37,10 +37,11 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
   onTyped,
 }) => {
   const { t } = useTranslation(['common', 'lessons']);
-  const { announce } = useAccessibility();
+  const { announce, prefs } = useAccessibility();
   const hintFor = (reason: UnreadableReason | null | undefined): string => {
     if (reason === 'too_few_points') return t('lessons:tooFew');
-    if (reason === 'too_many_parts' || reason === 'ambiguous') return t('lessons:oneAtATime');
+    if (reason === 'too_many_parts') return t('lessons:tooManyParts');
+    if (reason === 'ambiguous') return t('lessons:oneAtATime');
     return t('lessons:tooSmall');
   };
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -238,11 +239,17 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
 
   const message =
     result === 'correct'
-      ? t('common:great')
+      ? prefs.colorSafeLabels
+        ? `✓ ${t('common:great')}`
+        : t('common:great')
       : result === 'incorrect'
-        ? t('common:notQuite')
+        ? prefs.colorSafeLabels
+          ? `✗ ${t('common:notQuite')}`
+          : t('common:notQuite')
         : result === 'unreadable'
-          ? hintFor(unreadableReason)
+          ? prefs.colorSafeLabels
+            ? `? ${hintFor(unreadableReason)}`
+            : hintFor(unreadableReason)
           : '';
 
   useEffect(() => {
@@ -257,7 +264,7 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
         : '';
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-sm mx-auto">
+    <div className="flex flex-col items-center gap-3 w-full max-w-md mx-auto">
       {prompt ? <p className="text-base text-muted-foreground">{prompt}</p> : null}
       <canvas
         ref={canvasRef}
@@ -269,7 +276,7 @@ const NumberDraw: React.FC<NumberDrawProps> = ({
         onPointerLeave={(event) => {
           if (drawing.current) finishStroke(event);
         }}
-        className="w-[220px] h-[220px] max-w-full rounded-2xl bg-card border-2 border-border touch-none cursor-crosshair"
+        className="w-full max-w-[360px] aspect-[3/2] h-auto min-h-[180px] rounded-2xl bg-card border-2 border-border touch-none cursor-crosshair"
         style={{ touchAction: 'none' }}
         role="img"
         tabIndex={0}

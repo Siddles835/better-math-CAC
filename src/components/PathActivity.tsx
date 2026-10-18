@@ -1,7 +1,6 @@
 import { tx } from '@/i18n/tx';
 import React, { useEffect } from 'react';
 import NumberDraw from '@/components/NumberDraw';
-import NumberPad from '@/components/NumberPad';
 import ReadAloudButton from '@/components/ReadAloudButton';
 import { Button } from '@/components/ui/button';
 import { useAnswerCheck } from '@/hooks/useAnswerCheck';
@@ -40,19 +39,16 @@ const PathActivity: React.FC<PathActivityProps> = ({
   const check = useAnswerCheck();
   const resetCheck = check.reset;
   const [reason, setReason] = React.useState<UnreadableReason | null>(null);
-  const [typed, setTyped] = React.useState('');
   const initial =
     item.kind === 'count_on' || item.kind === 'take_away' || item.kind === 'tens_ones' ? item.start : 0;
   const [count, setCount] = React.useState(initial);
   const answer = expectedFor(item);
-  const multiDigit = (item.kind === 'write_digit' || item.kind === 'neighbor') && answer >= 10;
-  const usesDrawing = (item.kind === 'write_digit' || item.kind === 'neighbor') && !multiDigit;
+  const usesDrawing = item.kind === 'write_digit' || item.kind === 'neighbor';
 
   useEffect(() => {
     setCount(
       item.kind === 'count_on' || item.kind === 'take_away' || item.kind === 'tens_ones' ? item.start : 0
     );
-    setTyped('');
     resetCheck();
   }, [item.id, item.kind, item.start, resetCheck]);
 
@@ -160,30 +156,6 @@ const PathActivity: React.FC<PathActivityProps> = ({
               {choice}
             </Button>
           ))}
-        </div>
-      ) : multiDigit ? (
-        <div className="flex flex-col items-center gap-4">
-          <NumberPad
-            value={typed}
-            maxLength={3}
-            disabled={locked}
-            onChange={(value) => {
-              setTyped(value);
-              check.noteChange();
-            }}
-          />
-          <Button
-            type="button"
-            size="lg"
-            disabled={locked || typed.length === 0}
-            onClick={() => {
-              const value = Number.parseInt(typed, 10);
-              if (!Number.isFinite(value)) return;
-              finish(value);
-            }}
-          >
-            {tx('ui:s_4b5e84be0e')}
-          </Button>
         </div>
       ) : item.kind === 'neighbor' || item.kind === 'write_digit' ? (
         <NumberDraw

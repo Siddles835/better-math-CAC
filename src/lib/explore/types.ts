@@ -7,7 +7,8 @@ export type ExploreActivityId =
   | 'make-ten'
   | 'number-line'
   | 'build-story'
-  | 'pattern-skip';
+  | 'pattern-skip'
+  | 'manipulatives';
 
 export const EXPLORE_ACTIVITY_IDS: ExploreActivityId[] = [
   'show-me',
@@ -18,6 +19,7 @@ export const EXPLORE_ACTIVITY_IDS: ExploreActivityId[] = [
   'number-line',
   'build-story',
   'pattern-skip',
+  'manipulatives',
 ];
 
 /** Coarse on-device signal only — no free text, no drawings. */
@@ -73,7 +75,7 @@ export interface WodbOption {
 export interface WodbPrompt {
   kind: 'wodb';
   options: WodbOption[];
-  /** Every option id that can be a valid “doesn’t belong” with some reason. */
+  /** Every option id that can be a valid “doesn't belong” with some reason. */
   validOptionIds: string[];
   seed: number;
 }
@@ -110,7 +112,13 @@ export interface PatternSkipPrompt {
   sequence: number[];
   /** Index in sequence that is broken (or -1 if extend mode). */
   breakIndex: number;
-  mode: 'extend' | 'break';
+  mode: 'extend' | 'fix';
+  seed: number;
+}
+
+export interface ManipulativesPrompt {
+  kind: 'manipulatives';
+  startCount: number;
   seed: number;
 }
 
@@ -122,4 +130,5 @@ export type ExplorePrompt =
   | MakeTenPrompt
   | NumberLinePrompt
   | BuildStoryPrompt
-  | PatternSkipPrompt;
+  | PatternSkipPrompt
+  | ManipulativesPrompt;

@@ -2,6 +2,7 @@
   "tooSmall": "No pude leer ese. Intenta dibujarlo un poco más grande.",
   "tooFew": "No pude leer ese. Prueba más despacio y con el número completo.",
   "oneAtATime": "No pude leer ese. Prueba un número a la vez.",
+  "tooManyParts": "Vi demasiadas marcas separadas. Deja un poco de espacio entre cada dígito.",
   "countAgain": "Cuéntalos otra vez, de uno en uno.",
   "tryAdding": "Prueba a agregar uno más.",
   "lookStory": "Mira la historia otra vez.",

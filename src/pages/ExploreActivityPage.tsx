@@ -11,6 +11,7 @@ import MakeTenActivity from '@/pages/explore/MakeTenActivity';
 import NumberLineActivity from '@/pages/explore/NumberLineActivity';
 import BuildStoryActivity from '@/pages/explore/BuildStoryActivity';
 import PatternSkipActivity from '@/pages/explore/PatternSkipActivity';
+import ManipulativesActivity from '@/pages/explore/ManipulativesActivity';
 
 const ExploreActivityPage: React.FC = () => {
   const { activityId = '' } = useParams();
@@ -46,6 +47,8 @@ const ExploreActivityPage: React.FC = () => {
       return <BuildStoryActivity band={band} />;
     case 'pattern-skip':
       return <PatternSkipActivity band={band} />;
+    case 'manipulatives':
+      return <ManipulativesActivity />;
     default:
       return null;
   }

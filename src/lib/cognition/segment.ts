@@ -35,7 +35,9 @@ export const segmentIntoDigits = (
 
   const heights = items.map((item) => item.height).sort((a, b) => a - b);
   const medianHeight = heights[Math.floor(heights.length / 2)] ?? 1;
-  const gapThreshold = Math.max(18, medianHeight * 0.45);
+  // Prefer splitting close digits over merging them — multi-digit answers need
+  // a lower threshold than single-digit multi-stroke glyphs (4, 5, 7).
+  const gapThreshold = Math.max(10, medianHeight * 0.28);
 
   const clustered: (typeof items)[] = [[items[0]]];
   for (let i = 1; i < items.length; i++) {

@@ -8,7 +8,9 @@ export type BuiltinObjectId =
   | 'block'
   | 'button'
   | 'ball'
-  | 'coin';
+  | 'coin'
+  | 'star'
+  | 'planet';
 
 export type SegmentationKind = 'ml' | 'classic' | 'manual' | 'none';
 
@@ -56,4 +58,6 @@ export const BUILTIN_OBJECTS: Array<{
   { id: 'button', name: { one: 'button', many: 'buttons' } },
   { id: 'ball', name: { one: 'ball', many: 'balls' } },
   { id: 'coin', name: { one: 'coin', many: 'coins' } },
+  { id: 'star', name: { one: 'star', many: 'stars' } },
+  { id: 'planet', name: { one: 'planet', many: 'planets' } },
 ];
