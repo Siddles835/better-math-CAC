@@ -139,19 +139,13 @@ export const demoDeleteClass = (): boolean => {
   return true;
 };
 
-export const demoSetDefaultStart = (planet: string, pathId?: string): void => {
-  const pathway =
-    pathId === 'operations' ||
-    (!pathId && world.classroom.defaultStart?.pathId === 'operations')
-      ? 'operations'
-      : 'foundations';
-  const resolved = pathId === 'foundations' || pathId === 'operations' ? pathId : pathway;
+export const demoSetDefaultStart = (planet: string, _pathId?: string): void => {
   world.classroom = {
     ...world.classroom,
     defaultStart: {
       planet,
-      lesson: getLessonForPlanet(planet, resolved),
-      pathId: resolved,
+      lesson: getLessonForPlanet(planet, 'foundations'),
+      pathId: 'foundations',
     },
     defaultPlanet: planet,
   };

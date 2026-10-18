@@ -18,8 +18,8 @@ import { isSoloClassCode } from '@/lib/solo';
 import { getActiveStudent } from '@/lib/session';
 
 /**
- * Solo / practice only. Classroom students never pick a topic —
- * the teacher sets foundations vs operations and the starting planet.
+ * Solo / practice only. Classroom students never pick a path —
+ * there is one solar system; the teacher sets the starting planet.
  */
 const PickPathPage = () => {
   const navigate = useNavigate();

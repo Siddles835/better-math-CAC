@@ -30,14 +30,12 @@ export const clearPendingPath = (): void => {
 };
 
 /**
- * Classroom students only use the two solar pathways.
- * Legacy topic ids (addition, multiplication, …) map onto those pathways.
+ * Classroom / solo progress uses the single foundations solar system.
+ * Legacy topic ids (addition, multiplication, …) map onto it.
  */
 export const normalizePathId = (pathId: string | null | undefined): string => {
   if (!pathId || pathId === 'all') return 'foundations';
-  if (getPath(pathId)?.id === pathId && (pathId === 'foundations' || pathId === 'operations')) {
-    return pathId;
-  }
+  if (getPath(pathId)?.id === 'foundations') return 'foundations';
   return resolveClassroomPathId(pathId);
 };
 

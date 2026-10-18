@@ -40,31 +40,10 @@ const foundationsNodes = (): PathNode[] =>
     source: { kind: 'legacy' as const, planetId: planetId as PlanetId },
   }));
 
-/** Operations pathway: same nine planets, multiplication → division → algebra. */
-const operationsNodes = (): PathNode[] =>
-  PLANET_ORDER.map((planetId, index) => {
-    const lesson = getLessonForPlanet(planetId, 'operations');
-    const tier = ((index % 3) + 1) as 1 | 2 | 3;
-    return {
-      id: planetId,
-      order: index + 1,
-      titleKey: `ui:planet_${planetId}`,
-      prerequisites: index === 0 ? [] : [PLANET_ORDER[index - 1]],
-      topics: [lesson],
-      masteryThreshold: 80,
-      source: {
-        kind: 'generated' as const,
-        generatorId: lesson as GeneratorId,
-        tiers: [tier],
-        perTier: 4,
-      },
-    };
-  });
-
 /**
- * The only two student/classroom pathways. Each is a full solar system.
- * - foundations: Counting, Addition, Subtraction
- * - operations: Multiplication, Division, Algebra
+ * The one classroom / student solar system:
+ * Counting, Addition, Subtraction across Sun → Neptune.
+ * Teachers only choose the starting planet.
  */
 export const PATHS: Path[] = [
   {
@@ -73,13 +52,6 @@ export const PATHS: Path[] = [
     summaryKey: 'paths:path_foundations_lead',
     theme: theme('foundations', '45 80% 56%', '230 25% 16%', '40 30% 96%'),
     nodes: foundationsNodes(),
-  },
-  {
-    id: 'operations',
-    titleKey: 'paths:path_operations',
-    summaryKey: 'paths:path_operations_lead',
-    theme: theme('operations', '28 70% 52%', '24 24% 14%', '30 40% 96%'),
-    nodes: operationsNodes(),
   },
 ];
 
@@ -174,16 +146,19 @@ export const CLASSROOM_PATHS: Path[] = PATHS;
 /** Curriculum "based on" list: classroom pathways + topic templates. */
 export const CURRICULUM_BASE_PATHS: Path[] = [...PATHS, ...TOPIC_PATHS];
 
+/** Any stored pathway id folds onto the single foundations solar system. */
 const PATH_ALIASES: Record<string, SolarPathId> = {
   foundations: 'foundations',
-  operations: 'operations',
+  operations: 'foundations',
+  ss1: 'foundations',
+  ss2: 'foundations',
   counting: 'foundations',
   addition: 'foundations',
   subtraction: 'foundations',
-  multiplication: 'operations',
-  division: 'operations',
-  algebra: 'operations',
-  geometry: 'operations',
+  multiplication: 'foundations',
+  division: 'foundations',
+  algebra: 'foundations',
+  geometry: 'foundations',
 };
 
 export const resolveClassroomPathId = (id: string | null | undefined): SolarPathId => {

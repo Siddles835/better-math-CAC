@@ -1,4 +1,4 @@
-import { PATHS, resolveClassroomPathId } from '@/content/catalog';
+import { PATHS } from '@/content/catalog';
 import type { GeneratorId, Path, PathNode, PathTheme } from '@/content/types';
 import { PLANET_ORDER, type PlanetId, type SolarPathId } from '@/lib/planets';
 
@@ -162,15 +162,23 @@ const fromPath = (path: Path, solarId: string, topics: [TopicId, TopicId, TopicI
 });
 
 const foundations = PATHS.find((path) => path.id === 'foundations')!;
-const operations = PATHS.find((path) => path.id === 'operations')!;
 
 /**
- * Classroom solar systems. SS1 and SS2 wrap the existing foundations / operations paths
- * so saved progress and classroom docs keep working.
+ * One live classroom solar system (SS1). Extra pathway drafts stay coming-soon
+ * and are never shown to teachers or students.
  */
 export const SOLAR_SYSTEMS: SolarSystem[] = [
   fromPath(foundations, 'ss1', ['counting', 'addition', 'subtraction']),
-  fromPath(operations, 'ss2', ['multiplication', 'division', 'algebra']),
+  {
+    id: 'ss2',
+    legacyPathId: 'operations',
+    nameKey: 'paths:path_operations',
+    summaryKey: 'paths:path_operations_lead',
+    topics: ['multiplication', 'division', 'algebra'],
+    theme: theme('ss2', '28 70% 52%', '24 24% 14%', '30 40% 96%'),
+    comingSoon: true,
+    nodes: buildSolarNodes('ss2', ['multiplication', 'division', 'algebra']),
+  },
   {
     id: 'ss3',
     legacyPathId: 'ss3',
@@ -233,34 +241,20 @@ export const SOLAR_SYSTEMS: SolarSystem[] = [
   },
 ];
 
-/** Systems shown to teachers and students (not coming soon). */
+/** Only SS1 is live — one solar system for the class. */
 export const LIVE_SOLAR_SYSTEMS: SolarSystem[] = SOLAR_SYSTEMS.filter((system) => !system.comingSoon);
 
 export const getSolarSystem = (id: string | null | undefined): SolarSystem | null =>
   SOLAR_SYSTEMS.find((system) => system.id === id || system.legacyPathId === id) ?? null;
 
-/**
- * Map any stored path id (foundations, addition, ss1, …) onto a live solar system.
- * Unknown or coming-soon ids fall back to SS1.
- */
-export const resolveSolarSystemId = (pathId: string | null | undefined): string => {
-  if (!pathId || pathId === 'all') return 'ss1';
-  const direct = getSolarSystem(pathId);
-  if (direct && !direct.comingSoon) return direct.id;
-  const legacy = resolveClassroomPathId(pathId);
-  if (legacy === 'operations') return 'ss2';
-  return 'ss1';
-};
+/** Every stored path id resolves to the single live system (SS1). */
+export const resolveSolarSystemId = (_pathId?: string | null): string => 'ss1';
 
 export const resolveSolarSystem = (pathId: string | null | undefined): SolarSystem =>
   getSolarSystem(resolveSolarSystemId(pathId)) ?? LIVE_SOLAR_SYSTEMS[0];
 
-/** Path id to store on classroom / learner docs (keeps foundations / operations). */
-export const legacyPathIdForSolar = (solarId: string): string => {
-  const system = getSolarSystem(solarId);
-  if (!system || system.comingSoon) return 'foundations';
-  return system.legacyPathId;
-};
+/** Path id to store on classroom / learner docs. */
+export const legacyPathIdForSolar = (_solarId?: string): string => 'foundations';
 
 export const topicLabelKey = (topic: TopicId): string => {
   const known: Partial<Record<TopicId, string>> = {

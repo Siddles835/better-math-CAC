@@ -28,13 +28,7 @@ import ClassTrends from '@/components/ClassTrends';
 import FamilyNote from '@/components/FamilyNote';
 import { misconceptionLabel, teacherLineFor } from '@/lib/cognition';
 import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
-import {
-  LIVE_SOLAR_SYSTEMS,
-  isTopicStartPlanet,
-  legacyPathIdForSolar,
-  resolveSolarSystemId,
-  topicLabelKey,
-} from '@/content/solarSystems';
+import { isTopicStartPlanet } from '@/content/solarSystems';
 import PilotOverview from '@/components/PilotOverview';
 import { isDemoMode } from '@/lib/demo/mode';
 import { cn } from '@/lib/utils';
@@ -57,7 +51,6 @@ const TeacherDashboard: React.FC = () => {
   );
   const [usePlacement, setUsePlacement] = useState(false);
   const [allowStudentPhotos, setAllowStudentPhotos] = useState(false);
-  const [defaultPath, setDefaultPath] = useState('foundations');
   const [savingPlacement, setSavingPlacement] = useState(false);
   const [savingPhotos, setSavingPhotos] = useState(false);
 
@@ -91,10 +84,7 @@ const TeacherDashboard: React.FC = () => {
         }
         setUsePlacement(!!data.usePlacementCheck);
         setAllowStudentPhotos(!!data.allowStudentObjectPhotos);
-        const solarId = resolveSolarSystemId(data.defaultStart?.pathId);
-        const pathway = legacyPathIdForSolar(solarId);
-        setDefaultPath(pathway);
-        setSolarPathHint(pathway);
+        setSolarPathHint('foundations');
       },
       () => {
         setLoading(false);
@@ -113,22 +103,15 @@ const TeacherDashboard: React.FC = () => {
     );
   }
 
-  const derivedLesson = getLessonForPlanet(defaultPlanet, defaultPath);
-  const planetOptions = planetLevelsForPath(defaultPath);
+  const derivedLesson = getLessonForPlanet(defaultPlanet, 'foundations');
+  const planetOptions = planetLevelsForPath('foundations');
   const teacherPin = cls?.teacherCode || getActiveTeacher()?.teacherCode;
   const classUnlock = getClassroomUnlockPlanet(cls) ?? defaultPlanet;
-  const pathwayBands =
-    defaultPath === 'operations'
-      ? ([
-          ['planetLevel_band_mul', 'planetLevel_band_mul_help'],
-          ['planetLevel_band_div', 'planetLevel_band_div_help'],
-          ['planetLevel_band_alg', 'planetLevel_band_alg_help'],
-        ] as const)
-      : ([
-          ['planetLevel_band_count', 'planetLevel_band_count_help'],
-          ['planetLevel_band_add', 'planetLevel_band_add_help'],
-          ['planetLevel_band_sub', 'planetLevel_band_sub_help'],
-        ] as const);
+  const pathwayBands = [
+    ['planetLevel_band_count', 'planetLevel_band_count_help'],
+    ['planetLevel_band_add', 'planetLevel_band_add_help'],
+    ['planetLevel_band_sub', 'planetLevel_band_sub_help'],
+  ] as const;
 
   const handleBack = () => {
     navigate('/');
@@ -145,7 +128,7 @@ const TeacherDashboard: React.FC = () => {
     setSaveError('');
     setSavingDefault(true);
     try {
-      await setClassDefaultStart(classCode, planet, defaultPath);
+      await setClassDefaultStart(classCode, planet, 'foundations');
       setDefaultSaved(true);
     } catch (err) {
       console.error(err);
@@ -300,55 +283,23 @@ const TeacherDashboard: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm">
-              <span className="mb-1 block font-medium">{tx('ui:s_8d52e3c61c')}</span>
-              <select
-                value={defaultPlanet}
-                onChange={(e) => handleDefaultChange(e.target.value)}
-                disabled={savingDefault || !!loadError || sample}
-                className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={tx('ui:s_8d52e3c61c')}
-              >
-                {planetOptions.map((info) => (
-                  <option key={info.id} value={info.id}>
-                    {tx(`ui:${info.labelKey}`)}
-                    {isTopicStartPlanet(info.id) ? ` (${tx('paths:topicStartTag')})` : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-sm">
-              <span className="mb-1 block font-medium">{tx('paths:solarSystem')}</span>
-              <select
-                value={resolveSolarSystemId(defaultPath)}
-                disabled={savingDefault || !!loadError || sample}
-                onChange={(e) => {
-                  const pathId = legacyPathIdForSolar(e.target.value);
-                  setDefaultPath(pathId);
-                  setSolarPathHint(pathId);
-                  setDefaultSaved(false);
-                  setSaveError('');
-                  setSavingDefault(true);
-                  void setClassDefaultStart(classCode, defaultPlanet, pathId)
-                    .then(() => setDefaultSaved(true))
-                    .catch((err) => {
-                      console.error(err);
-                      setSaveError(tx('ui:dashSaveFail'));
-                    })
-                    .finally(() => setSavingDefault(false));
-                }}
-                className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={tx('paths:solarSystem')}
-              >
-                {LIVE_SOLAR_SYSTEMS.map((system) => (
-                  <option key={system.id} value={system.id}>
-                    {tx(system.nameKey)}: {system.topics.map((topic) => tx(topicLabelKey(topic))).join(', ')}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium">{tx('ui:s_8d52e3c61c')}</span>
+            <select
+              value={defaultPlanet}
+              onChange={(e) => handleDefaultChange(e.target.value)}
+              disabled={savingDefault || !!loadError || sample}
+              className="min-h-[48px] w-full max-w-md rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={tx('ui:s_8d52e3c61c')}
+            >
+              {planetOptions.map((info) => (
+                <option key={info.id} value={info.id}>
+                  {tx(`ui:${info.labelKey}`)}
+                  {isTopicStartPlanet(info.id) ? ` (${tx('paths:topicStartTag')})` : ''}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <p className="mt-2 text-sm text-muted-foreground">{tx('ui:planetLevel_how')}</p>
           <p className="mt-1 text-sm text-muted-foreground">{tx('paths:topicStartsHelp')}</p>
@@ -464,8 +415,8 @@ const TeacherDashboard: React.FC = () => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {students.map(([key, s]) => {
                 const currentPlanet = getTeacherVisiblePlanet(s, classUnlock);
-                const lesson = getLessonForPlanet(currentPlanet, defaultPath);
-                const level = getPlanetLevel(currentPlanet, defaultPath);
+                const lesson = getLessonForPlanet(currentPlanet, 'foundations');
+                const level = getPlanetLevel(currentPlanet, 'foundations');
                 return (
                   <article
                     key={key}

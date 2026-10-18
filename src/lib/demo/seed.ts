@@ -37,23 +37,13 @@ export interface DemoWorld {
 
 export const buildDemoWorld = (): DemoWorld => {
   const rng = mulberry32(20261010);
-  const pathIds = [
-    'foundations',
-    'foundations',
-    'foundations',
-    'foundations',
-    'operations',
-    'operations',
-    'operations',
-    'operations',
-  ];
   const names = Array.from({ length: 8 }, () => seededUsername(rng));
   const students: Record<string, StudentState> = {};
   const learners: Record<string, LearnerRecord> = {};
 
   names.forEach((name, index) => {
     const key = keyOf(name);
-    const pathId = pathIds[index] ?? 'foundations';
+    const pathId = 'foundations';
     const path = getPath(pathId) ?? PATHS[0];
     let progress = emptyPathProgress(path);
     const steps = 2 + (index % 3);
@@ -84,17 +74,11 @@ export const buildDemoWorld = (): DemoWorld => {
     learners[key] = learner;
     const planet = progress.currentNodeId || 'sun';
     const lesson =
-      pathId === 'operations'
-        ? planet === 'earth' || planet === 'mars' || planet === 'jupiter'
-          ? 'division'
-          : planet === 'saturn' || planet === 'uranus' || planet === 'neptune'
-            ? 'algebra'
-            : 'multiplication'
-        : planet === 'earth' || planet === 'mars' || planet === 'jupiter'
-          ? 'addition'
-          : planet === 'saturn' || planet === 'uranus' || planet === 'neptune'
-            ? 'subtraction'
-            : 'counting';
+      planet === 'earth' || planet === 'mars' || planet === 'jupiter'
+        ? 'addition'
+        : planet === 'saturn' || planet === 'uranus' || planet === 'neptune'
+          ? 'subtraction'
+          : 'counting';
     students[key] = {
       nickname: name,
       planet,

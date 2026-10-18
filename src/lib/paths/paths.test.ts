@@ -381,7 +381,7 @@ describe('path locales', () => {
         expect(leaksAnswer([value], '8')).toBe(false);
       }
     }
-    expect(PATHS.length).toBe(2);
-    expect(PATHS.map((path) => path.id)).toEqual(['foundations', 'operations']);
+    expect(PATHS.length).toBe(1);
+    expect(PATHS.map((path) => path.id)).toEqual(['foundations']);
   });
 });

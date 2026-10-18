@@ -378,13 +378,10 @@ export const setClassDefaultStart = async (classCode: string, planet: string, pa
   }
   const resolved = (await resolveClassCode(classCode)) ?? classCodeKey(classCode);
   const normalized = normalizePlanetId(planet) ?? 'sun';
-  const existing = await getClassById(resolved);
-  const rawPath = pathId ?? existing?.defaultStart?.pathId ?? 'foundations';
-  const pathway = rawPath === 'operations' ? 'operations' : 'foundations';
-  setSolarPathHint(pathway);
-  const lesson = getLessonForPlanet(normalized, pathway);
+  setSolarPathHint('foundations');
+  const lesson = getLessonForPlanet(normalized, 'foundations');
   await updateDoc(doc(db, 'classrooms', resolved), {
-    defaultStart: { planet: normalized, lesson, pathId: pathway },
+    defaultStart: { planet: normalized, lesson, pathId: 'foundations' },
     // Keep legacy field in sync for older readers
     defaultPlanet: normalized,
   });
