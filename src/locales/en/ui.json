@@ -36,7 +36,7 @@
   "s_4590b30f09": "Saved locally so the app can resume. Only one role is kept at a time.",
   "s_1d36923f3a": "Avoid forcing a sign-in on every launch. Cleared on Sign Out or account deletion.",
   "s_936f7282c0": "MathLift does",
-  "s_ca54156154": "collect: handwriting images, stroke data, advertising IDs, analytics user IDs, crash reports that include usernames, microphone audio (read-aloud uses on-device speech synthesis only), camera, contacts, or precise location.",
+  "s_ca54156154": "collect: handwriting images, stroke data, advertising IDs, analytics user IDs, crash reports that include usernames, microphone audio (read-aloud uses on-device speech by default; when Natural voice cloud TTS is configured, lesson text is sent only to generate spoken audio), camera, contacts, or precise location.",
   "s_15ab50faca": "How we collect and store it",
   "s_f05a94ff46": "Classroom records are stored in Google Cloud Firestore (project mathlift-63f6e) over HTTPS. App Transport Security is enforced on iOS.",
   "s_fa65bf4660": "The iOS app stores the last session in the iOS Keychain (not in unencrypted UserDefaults). Downloaded files on device use complete file protection so they are encrypted when the device is locked.",

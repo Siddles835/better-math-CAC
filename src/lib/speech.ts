@@ -51,6 +51,11 @@ export const getSpeechRatePref = (): SpeechRatePref => speechRatePref;
 
 export const setNaturalVoicePref = (enabled: boolean) => {
   naturalVoicePref = enabled;
+  if (enabled) {
+    void import('./speechOpenAI').then(({ ensureCloudTtsAvailable }) => {
+      void ensureCloudTtsAvailable();
+    });
+  }
   void import('./speechNeural').then(({ setNaturalVoiceEnabled, ensureNeuralReady }) => {
     setNaturalVoiceEnabled(enabled);
     if (enabled) void ensureNeuralReady();
@@ -856,6 +861,27 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
   const afterClip = async () => {
     if (token !== speechToken) return;
+    if (naturalVoicePref) {
+      // Tier 1.5: OpenAI gpt-4o-mini-tts via /api/tts when the host has a key.
+      // Clearer than on-device Kokoro; falls back if unavailable.
+      try {
+        const { speakWithOpenAI, ensureCloudTtsAvailable } = await import('./speechOpenAI');
+        if (await ensureCloudTtsAvailable()) {
+          const playedCloud = await speakWithOpenAI(cleaned, {
+            token,
+            isCurrent: (value) => value === speechToken,
+            ratePref,
+            onEnd: options?.onEnd,
+            bindAudio: (audio) => {
+              activeAudio = audio;
+            },
+          });
+          if (playedCloud || token !== speechToken) return;
+        }
+      } catch {
+        // fall through
+      }
+    }
     if (naturalVoicePref && lang === 'en') {
       // Prefer a real OS Natural/Neural voice when the browser has one.
       // Edge Aria, macOS Enhanced, etc. usually sound more like a person than

@@ -1,8 +1,9 @@
 # TTS audit: fixed vs dynamic speech
 
-Generated for the three-tier voice work. Runtime never calls a cloud TTS API.
-Fixed strings are candidates for `npm run generate:tts` pre-rendered clips.
-Dynamic strings fall through to the device voice (Tier 3), or optional on-device Kokoro (Tier 2, English only, off by default).
+Generated for the voice stack. Runtime prefers OpenAI `gpt-4o-mini-tts` via `/api/tts`
+when `OPENAI_API_KEY` is configured on the host (Natural voice on). Otherwise falls
+through to on-device Kokoro (English) or device `speechSynthesis`.
+Fixed strings are still candidates for `npm run generate:tts` pre-rendered clips.
 
 ## Call sites
 
@@ -34,6 +35,7 @@ Dynamic strings fall through to the device voice (Tier 3), or optional on-device
 
 ## Tiers
 
-1. **Pre-rendered Chirp 3 HD** under `public/audio/<lang>/<hash>.mp3` via `scripts/generate-tts.mjs`
-2. **Kokoro-82M** warm English neural voice (`af_heart`). Pref `naturalVoice` defaults **on**. Downloads about 90 MB once, then stays on device. Falls back if load/play fails.
-3. **Improved device `speechSynthesis`** with packed utterances, soft prosody, better voice ranking, and a speech generation token to avoid stale queues
+1. **Pre-rendered clips** under `public/audio/<lang>/<hash>.mp3` via `scripts/generate-tts.mjs`
+2. **OpenAI gpt-4o-mini-tts** (`coral` by default) through `api/tts.js` when `OPENAI_API_KEY` is set. AI-generated voice is disclosed in Settings. Text is capped and never exposes the API key to the browser.
+3. **Kokoro-82M** warm English neural voice (`af_bella`). Pref `naturalVoice` defaults **on**. Downloads about 90 MB once, then stays on device. Falls back if load/play fails.
+4. **Improved device `speechSynthesis`** with packed utterances, soft prosody, better voice ranking, and a speech generation token to avoid stale queues

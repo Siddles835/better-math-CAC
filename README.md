@@ -16,6 +16,10 @@ Vite + React learning app for early math (Congressional App Challenge).
 |------|---------|--------|
 | `VITE_ENABLE_CLASS_PHOTO_SHARING` | OFF | Class photo sharing stays disabled while Firestore rules are open. See `.env.example`. |
 
+## Clear cloud voice (OpenAI TTS)
+
+Set **server-only** `OPENAI_API_KEY` on Vercel (or your host). MathLift’s `/api/tts` proxy uses `gpt-4o-mini-tts` with the `coral` voice so read-aloud sounds clearer. The key never ships to the browser. Without the key, Natural voice falls back to on-device Kokoro (English) or the device voice. Settings discloses that the cloud voice is AI-generated.
+
 ## Firestore rules
 
 Deploy the rules in this repo (they must stay in sync with production):
