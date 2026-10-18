@@ -119,13 +119,13 @@ const PlanetSelectPage: React.FC = () => {
     setPosition(pid, lesson);
     void markPlanetVisited(pid);
     setShowRocketTransition(true);
+    // Navigate mid-flight; RocketTransition clears itself after the full 5.5s fly.
     setTimeout(() => {
       navigate(getLessonRoute(planetId), {
         state: { initialStep: savedStep, replay: isCompleted },
       });
-      setShowRocketTransition(false);
       setSelecting(false);
-    }, 1400);
+    }, 1200);
   };
 
   const maxPlanetLabel = tx(`ui:planet_${classMax as PlanetId}`);

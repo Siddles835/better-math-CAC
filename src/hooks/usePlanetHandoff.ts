@@ -17,10 +17,10 @@ export function usePlanetHandoff() {
     busy.current = true;
     void completePlanet(planetId);
     setShowRocketTransition(true);
+    // Navigate mid-flight; RocketTransition clears itself after the full 5.5s fly.
     window.setTimeout(() => {
       navigate(nextPath, state === undefined ? undefined : { state });
-      setShowRocketTransition(false);
-    }, 1600);
+    }, 2500);
   };
 
   const finish = (planetId: PlanetId, nextPath = '/planets') => {
