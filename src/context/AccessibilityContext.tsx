@@ -23,6 +23,8 @@ interface AccessibilityValue {
   setPref: <K extends keyof AccessibilityPrefs>(key: K, value: AccessibilityPrefs[K]) => void;
   /** Merge several prefs at once without locking. Calm mode still bundles when calmBackground is set. */
   patchPrefs: (patch: Partial<AccessibilityPrefs>) => void;
+  /** Replace the full preference object (used when turning accommodation needs off). */
+  replacePrefs: (next: AccessibilityPrefs) => void;
   resetPrefs: () => void;
   announce: (message: string) => void;
 }
@@ -31,6 +33,7 @@ const AccessibilityContext = createContext<AccessibilityValue>({
   prefs: DEFAULT_PREFS,
   setPref: () => undefined,
   patchPrefs: () => undefined,
+  replacePrefs: () => undefined,
   resetPrefs: () => undefined,
   announce: () => undefined,
 });
@@ -152,6 +155,10 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, []);
 
+  const replacePrefs = useCallback((next: AccessibilityPrefs) => {
+    setPrefs(next);
+  }, []);
+
   const resetPrefs = useCallback(() => setPrefs(DEFAULT_PREFS), []);
   const announce = useCallback((next: string) => {
     // Clear first so the same message is read out again if repeated
@@ -169,8 +176,8 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const value = useMemo(
-    () => ({ prefs, setPref, patchPrefs, resetPrefs, announce }),
-    [prefs, setPref, patchPrefs, resetPrefs, announce]
+    () => ({ prefs, setPref, patchPrefs, replacePrefs, resetPrefs, announce }),
+    [prefs, setPref, patchPrefs, replacePrefs, resetPrefs, announce]
   );
 
   return (

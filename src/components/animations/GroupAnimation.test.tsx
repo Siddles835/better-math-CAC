@@ -17,6 +17,7 @@ vi.mock('@/context/AccessibilityContext', () => ({
     setPref: () => undefined,
     resetPrefs: () => undefined,
     patchPrefs: () => undefined,
+    replacePrefs: () => undefined,
     announce: () => undefined,
   }),
 }));
