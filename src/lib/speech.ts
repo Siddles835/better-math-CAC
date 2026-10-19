@@ -15,6 +15,11 @@ let unavailableHandler: (() => void) | null = null;
 /** Bumps on every speak/stop so stale utterance callbacks do nothing. */
 let speechToken = 0;
 let naturalVoicePref = true;
+/**
+ * When true (default), every speak() uses OpenAI Alloy only —
+ * no Kokoro, no device SpeechSynthesis, no pre-rendered clips.
+ */
+let alloyOnlyPref = true;
 
 export type SpeechRatePref = 'slow' | 'normal';
 
@@ -64,10 +69,27 @@ export const setNaturalVoicePref = (enabled: boolean) => {
 
 export const getNaturalVoicePref = (): boolean => naturalVoicePref;
 
+/** Product default: OpenAI Alloy for all read-aloud. */
+export const setAlloyOnlyPref = (enabled: boolean) => {
+  alloyOnlyPref = enabled;
+  if (enabled) {
+    preferredVoiceURI = null;
+    void import('./speechOpenAI').then(({ ensureCloudTtsAvailable, setPreferredCloudVoice }) => {
+      setPreferredCloudVoice('alloy');
+      void ensureCloudTtsAvailable();
+    });
+  }
+};
+
+export const getAlloyOnlyPref = (): boolean => alloyOnlyPref;
+
 export const rateForPref = (pref: SpeechRatePref = speechRatePref): number =>
   pref === 'slow' ? K2_SPEECH_RATE_SLOW : K2_SPEECH_RATE;
 
 export const isSpeechSupported = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+/** True when any voice playback path can run (Alloy HTMLAudio or device TTS). */
+export const isVoicePlaybackAvailable = () => typeof window !== 'undefined';
 
 export const setSpeechUnavailableHandler = (handler: (() => void) | null) => {
   unavailableHandler = handler;
@@ -868,13 +890,13 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
   const afterClip = async () => {
     if (token !== speechToken) return;
-    // Settings "Play sample" on a device voice must actually use that voice.
-    if (options?.preferDevice) {
+    // Explicit device-only sample (legacy Settings backups). Skipped in Alloy-only mode.
+    if (options?.preferDevice && !alloyOnlyPref) {
       startDevice();
       return;
     }
-    // OpenAI Alloy whenever the host has a key — independent of Natural voice
-    // (Natural voice only controls Kokoro / OS neural fallback).
+
+    // OpenAI Alloy for every lesson / read-aloud / animation narration.
     try {
       const { speakWithOpenAI, ensureCloudTtsAvailable, DEFAULT_CLOUD_VOICE } = await import(
         './speechOpenAI'
@@ -895,17 +917,24 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
     } catch {
       // fall through
     }
+
+    // Alloy-only: never substitute Kokoro or a phone voice for OpenAI Alloy.
+    if (alloyOnlyPref) {
+      if (token === speechToken) {
+        options?.onUnavailable?.();
+        unavailableHandler?.();
+        options?.onEnd?.();
+      }
+      return;
+    }
+
     if (naturalVoicePref && lang === 'en') {
-      // Prefer a real OS Natural/Neural voice when the browser has one.
-      // Edge Aria, macOS Enhanced, etc. usually sound more like a person than
-      // a small on-device model.
       const uri = options?.voiceURI !== undefined ? options.voiceURI : preferredVoiceURI;
       const osNatural = findOsNaturalVoice(lang, getVoices(), uri);
       if (osNatural) {
         startDevice();
         return;
       }
-      // Tier 2: Kokoro when the OS only has flat robotic voices.
       try {
         const { speakWithNeural, getNeuralStatus, ensureNeuralReady } = await import('./speechNeural');
         if (getNeuralStatus() !== 'ready') void ensureNeuralReady();
@@ -917,7 +946,6 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
           bindAudio: (audio) => {
             activeAudio = audio;
           },
-          // Wait on first load so we do not fall straight into a robotic voice.
           waitForModel: true,
         });
         if (played || token !== speechToken) return;
@@ -928,7 +956,8 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
     startDevice();
   };
 
-  if (manifestHasClips()) {
+  // Pre-rendered clips are a different voice — skip them when Alloy is selected.
+  if (!alloyOnlyPref && manifestHasClips()) {
     void playPreRendered(lang, cleaned, ratePref, token, options?.onEnd).then((played) => {
       if (played || token !== speechToken) return;
       void afterClip();

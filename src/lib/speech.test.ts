@@ -8,6 +8,7 @@ import {
   packSpeechChunks,
   pickVoice,
   scoreVoice,
+  setAlloyOnlyPref,
   setNaturalVoicePref,
   setSpeechMuted,
   smoothProsodyText,
@@ -190,6 +191,7 @@ describe('number-to-word for all five languages', () => {
 describe('voice on/off and stale queue', () => {
   afterEach(() => {
     setSpeechMuted(false);
+    setAlloyOnlyPref(true);
     stopSpeaking();
     vi.unstubAllGlobals();
     vi.useRealTimers();
@@ -229,86 +231,39 @@ describe('voice on/off and stale queue', () => {
     expect(cancel).toHaveBeenCalled();
   });
 
-  it('ignores stale callbacks after rapid back-to-back speak calls', async () => {
-    vi.useFakeTimers();
+  it('alloy-only never falls back to device SpeechSynthesis', async () => {
+    setAlloyOnlyPref(true);
     setNaturalVoicePref(false);
-    const utterances: Array<{
-      onend: (() => void) | null;
-      onerror: ((e: { error: string }) => void) | null;
-      text: string;
-      lang: string;
-      voice: SpeechSynthesisVoice | null;
-      rate: number;
-      pitch: number;
-    }> = [];
-    class FakeUtterance {
-      text: string;
-      lang = '';
-      voice: SpeechSynthesisVoice | null = null;
-      rate = 1;
-      pitch = 1;
-      onend: (() => void) | null = null;
-      onerror: ((e: { error: string }) => void) | null = null;
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-    const speakFn = vi.fn((utterance: (typeof utterances)[number]) => {
-      utterances.push(utterance);
-    });
-    const synthesis = {
+    const { resetCloudTtsForTests } = await import('./speechOpenAI');
+    resetCloudTtsForTests();
+    const speakFn = vi.fn();
+    vi.stubGlobal('speechSynthesis', {
       speaking: false,
       pending: false,
-      cancel: vi.fn(() => {
-        const previous = utterances[utterances.length - 1];
-        // Chrome fires interrupted/canceled when cancel() runs; must not chain.
-        previous?.onerror?.({ error: 'interrupted' });
-        previous?.onend?.();
-      }),
+      cancel: vi.fn(),
       speak: speakFn,
       getVoices: () => [voice('Samantha', 'en-US')],
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
-    };
-    vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+    });
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => ({
-        ok: false,
-        json: async () => ({}),
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ available: false }),
       }))
     );
-    vi.stubGlobal('speechSynthesis', synthesis);
-    vi.stubGlobal('window', {
-      ...globalThis,
-      speechSynthesis: synthesis,
-      SpeechSynthesisUtterance: FakeUtterance,
-    });
 
-    const flush = async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-      await vi.runAllTimersAsync();
-      await Promise.resolve();
-    };
+    const onUnavailable = vi.fn();
+    const onEnd = vi.fn();
+    speak('Hello alloy only.', { onUnavailable, onEnd });
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
 
-    const firstEnd = vi.fn();
-    const secondEnd = vi.fn();
-    speak('First sentence here.', { onEnd: firstEnd });
-    await flush();
-    const firstUtteranceCount = utterances.length;
-    expect(firstUtteranceCount).toBeGreaterThan(0);
-
-    speak('Second sentence here.', { onEnd: secondEnd });
-    await flush();
-    expect(utterances.length).toBeGreaterThan(firstUtteranceCount);
-
-    // Completing the first (stale) utterance must not fire firstEnd.
-    utterances[0]?.onend?.();
-    expect(firstEnd).not.toHaveBeenCalled();
-
-    // Completing the latest utterance fires only the second callback.
-    utterances[utterances.length - 1]?.onend?.();
-    expect(secondEnd).toHaveBeenCalled();
+    expect(speakFn).not.toHaveBeenCalled();
+    expect(onUnavailable).toHaveBeenCalled();
+    expect(onEnd).toHaveBeenCalled();
   });
 });

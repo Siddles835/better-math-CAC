@@ -8,13 +8,14 @@ import {
 } from '@/lib/accessibility';
 import {
   prefetchSpeechManifest,
+  setAlloyOnlyPref,
   setNaturalVoicePref,
   setPreferredVoiceURI,
   setSpeechMuted,
   setSpeechRatePref,
   stopSpeaking,
 } from '@/lib/speech';
-import { setPreferredCloudVoice } from '@/lib/speechOpenAI';
+import { ensureCloudTtsAvailable, setPreferredCloudVoice } from '@/lib/speechOpenAI';
 
 /** Visible "Nice work" captions clear after 3 seconds so Back stays usable. */
 export const ANNOUNCE_VISIBLE_MS = 3000;
@@ -54,11 +55,13 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     applyPrefsToDocument(prefs);
     // Voice off mutes TTS; muteSounds is SFX-only and does not stop speech.
     setSpeechMuted(!prefs.voiceEnabled);
-    setPreferredVoiceURI(prefs.voiceURI);
-    // Product: Natural (Kokoro) stays off; cloud TTS is always OpenAI Alloy.
+    // Alloy is the only speaking voice — clear any saved device voiceURI.
+    setPreferredVoiceURI(null);
     setPreferredCloudVoice('alloy');
+    setAlloyOnlyPref(true);
     setSpeechRatePref(prefs.speechRate);
     setNaturalVoicePref(false);
+    void ensureCloudTtsAvailable();
     if (!prefs.voiceEnabled) stopSpeaking();
     savePrefs(prefs);
     if (prefs.colorTheme !== 'system' || typeof window.matchMedia !== 'function') return;
