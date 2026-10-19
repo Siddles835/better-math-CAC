@@ -49,6 +49,12 @@ const endpoint = (): string => {
   return `${base}/api/tts`;
 };
 
+/**
+ * Settings Play sample: only the OpenAI Alloy line
+ * “The quick brown fox jumps over the lazy dog.”
+ */
+export const ALLOY_SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog.';
+
 /** Vite-bundled OpenAI Alloy reference clip (Settings Play sample). */
 export const ALLOY_REFERENCE_SAMPLE_URL = alloySampleUrl;
 
