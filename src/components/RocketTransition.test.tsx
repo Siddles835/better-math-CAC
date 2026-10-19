@@ -3,17 +3,19 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import React from 'react';
-import RocketTransition, { ROCKET_FLIGHT_MS } from './RocketTransition';
+import RocketTransition from './RocketTransition';
 import { GameProvider, useGame } from '@/context/GameContext';
 import { AccessibilityProvider } from '@/context/AccessibilityContext';
 import { DEFAULT_PREFS, savePrefs } from '@/lib/accessibility';
 
+const ROCKET_FLIGHT_MS = 5500;
+
 const Controls: React.FC = () => {
   const navigate = useNavigate();
-  const { startRocketTransition, showRocketTransition } = useGame();
+  const { setShowRocketTransition, showRocketTransition } = useGame();
   return (
     <div>
-      <button type="button" data-testid="launch" onClick={() => startRocketTransition()}>
+      <button type="button" data-testid="launch" onClick={() => setShowRocketTransition(true)}>
         launch
       </button>
       <button type="button" data-testid="go-settings" onClick={() => navigate('/settings')}>
@@ -55,56 +57,20 @@ describe('RocketTransition', () => {
     vi.useRealTimers();
   });
 
-  it('shows the rocket and clears when the JS flight ends', () => {
+  it('shows the classic rocket SVG and clears after the full 5.5s fly', () => {
     renderApp();
     act(() => {
       screen.getByTestId('launch').click();
     });
-    const overlay = screen.getByTestId('rocket-transition');
-    expect(overlay).toBeTruthy();
-    expect(screen.getByTestId('rocket-hopper')).toBeTruthy();
-    expect(overlay.querySelector('svg')).toBeTruthy();
+    expect(document.querySelector('.animate-rocket-fly')).toBeTruthy();
+    expect(document.querySelector('.animate-rocket-fly svg')).toBeTruthy();
+    expect(screen.getByTestId('rocket-flag').textContent).toBe('on');
 
     act(() => {
-      vi.advanceTimersByTime(ROCKET_FLIGHT_MS + 250);
+      vi.advanceTimersByTime(ROCKET_FLIGHT_MS);
     });
-    expect(screen.queryByTestId('rocket-transition')).toBeNull();
+    expect(document.querySelector('.animate-rocket-fly')).toBeNull();
     expect(screen.getByTestId('rocket-flag').textContent).toBe('off');
-  });
-
-  it('restarts when launched again while already showing', () => {
-    renderApp();
-    act(() => {
-      screen.getByTestId('launch').click();
-    });
-    act(() => {
-      vi.advanceTimersByTime(ROCKET_FLIGHT_MS - 500);
-    });
-    expect(screen.getByTestId('rocket-transition')).toBeTruthy();
-    act(() => {
-      screen.getByTestId('launch').click();
-    });
-    act(() => {
-      vi.advanceTimersByTime(ROCKET_FLIGHT_MS - 500);
-    });
-    expect(screen.getByTestId('rocket-transition')).toBeTruthy();
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    expect(screen.queryByTestId('rocket-transition')).toBeNull();
-  });
-
-  it('drops the overlay when navigating to settings mid-flight', () => {
-    renderApp();
-    act(() => {
-      screen.getByTestId('launch').click();
-    });
-    expect(screen.getByTestId('rocket-transition')).toBeTruthy();
-
-    act(() => {
-      screen.getByTestId('go-settings').click();
-    });
-    expect(screen.queryByTestId('rocket-transition')).toBeNull();
   });
 
   it('keeps the overlay while navigating into a lesson mid-flight', () => {
@@ -112,11 +78,30 @@ describe('RocketTransition', () => {
     act(() => {
       screen.getByTestId('launch').click();
     });
-    expect(screen.getByTestId('rocket-transition')).toBeTruthy();
+    expect(document.querySelector('.animate-rocket-fly')).toBeTruthy();
 
     act(() => {
       screen.getByTestId('go-lesson').click();
     });
-    expect(screen.getByTestId('rocket-transition')).toBeTruthy();
+    expect(document.querySelector('.animate-rocket-fly')).toBeTruthy();
+    expect(screen.getByTestId('rocket-flag').textContent).toBe('on');
+  });
+
+  it('does not clear early when navigating to settings mid-flight (self-clears at 5.5s)', () => {
+    renderApp();
+    act(() => {
+      screen.getByTestId('launch').click();
+    });
+    expect(document.querySelector('.animate-rocket-fly')).toBeTruthy();
+
+    act(() => {
+      screen.getByTestId('go-settings').click();
+    });
+    expect(document.querySelector('.animate-rocket-fly')).toBeTruthy();
+
+    act(() => {
+      vi.advanceTimersByTime(ROCKET_FLIGHT_MS);
+    });
+    expect(document.querySelector('.animate-rocket-fly')).toBeNull();
   });
 });
