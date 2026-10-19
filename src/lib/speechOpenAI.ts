@@ -17,6 +17,7 @@ const statusListeners = new Set<(status: CloudTtsStatus) => void>();
 export const resetCloudTtsForTests = () => {
   status = 'unknown';
   probePromise = null;
+  lastProbeAt = 0;
   preferredCloudVoice = DEFAULT_CLOUD_VOICE;
   for (const url of cache.values()) {
     try {
@@ -121,13 +122,23 @@ export const stopAlloyReferenceSample = () => {
   referenceAudio = null;
 };
 
-/** One-time probe so Settings can show the clear-voice option. */
-export const ensureCloudTtsAvailable = async (): Promise<boolean> => {
+let lastProbeAt = 0;
+const PROBE_RETRY_MS = 15_000;
+
+/** Probe /api/tts so Settings and speak() know if Alloy cloud is ready. */
+export const ensureCloudTtsAvailable = async (
+  options?: { retry?: boolean }
+): Promise<boolean> => {
   if (status === 'available') return true;
-  if (status === 'unavailable') return false;
+  const now = Date.now();
+  // Allow a re-probe after a short cooldown (host may have gained an API key).
+  if (status === 'unavailable' && !(options?.retry && now - lastProbeAt >= PROBE_RETRY_MS)) {
+    return false;
+  }
   if (probePromise) return probePromise;
 
   probePromise = (async () => {
+    lastProbeAt = Date.now();
     try {
       const response = await fetch(endpoint(), { method: 'GET' });
       const contentType = response.headers.get('content-type') || '';

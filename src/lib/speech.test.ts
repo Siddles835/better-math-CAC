@@ -231,13 +231,28 @@ describe('voice on/off and stale queue', () => {
     expect(cancel).toHaveBeenCalled();
   });
 
-  it('alloy-only never falls back to device SpeechSynthesis', async () => {
+  it('prefers Alloy but falls back to device when cloud TTS is down', async () => {
     setAlloyOnlyPref(true);
     setNaturalVoicePref(false);
     const { resetCloudTtsForTests } = await import('./speechOpenAI');
     resetCloudTtsForTests();
-    const speakFn = vi.fn();
-    vi.stubGlobal('speechSynthesis', {
+    const utterances: unknown[] = [];
+    class FakeUtterance {
+      text: string;
+      lang = '';
+      voice: SpeechSynthesisVoice | null = null;
+      rate = 1;
+      pitch = 1;
+      onend: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      constructor(text: string) {
+        this.text = text;
+      }
+    }
+    const speakFn = vi.fn((utterance: unknown) => {
+      utterances.push(utterance);
+    });
+    const synthesis = {
       speaking: false,
       pending: false,
       cancel: vi.fn(),
@@ -245,6 +260,13 @@ describe('voice on/off and stale queue', () => {
       getVoices: () => [voice('Samantha', 'en-US')],
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
+    };
+    vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+    vi.stubGlobal('speechSynthesis', synthesis);
+    vi.stubGlobal('window', {
+      ...globalThis,
+      speechSynthesis: synthesis,
+      SpeechSynthesisUtterance: FakeUtterance,
     });
     vi.stubGlobal(
       'fetch',
@@ -256,13 +278,11 @@ describe('voice on/off and stale queue', () => {
     );
 
     const onUnavailable = vi.fn();
-    const onEnd = vi.fn();
-    speak('Hello alloy only.', { onUnavailable, onEnd });
+    speak('Hello alloy preferred.', { onUnavailable });
     await vi.waitFor(() => {
-      expect(onUnavailable).toHaveBeenCalled();
+      expect(speakFn).toHaveBeenCalled();
     });
-
-    expect(speakFn).not.toHaveBeenCalled();
-    expect(onEnd).toHaveBeenCalled();
+    expect(onUnavailable).not.toHaveBeenCalled();
+    expect(utterances.length).toBeGreaterThan(0);
   });
 });

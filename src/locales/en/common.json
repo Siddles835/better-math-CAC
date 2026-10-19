@@ -17,7 +17,7 @@
   "drawNumber": "Draw a number",
   "readAloud": "Read aloud",
   "stopReading": "Stop reading",
-  "readAloudUnavailable": "Read aloud isn't available in this language on this device",
+  "readAloudUnavailable": "Read aloud could not start. Tap the speaker again.",
   "language": "Language",
   "numberStyle": "Number style",
   "numberWestern": "Western",

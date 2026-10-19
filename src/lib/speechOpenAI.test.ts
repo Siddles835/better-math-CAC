@@ -80,6 +80,31 @@ describe('speechOpenAI', () => {
     expect(getCloudTtsStatus()).toBe('unavailable');
   });
 
+  it('can re-probe after retry cooldown when previously unavailable', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'text/html' },
+        json: async () => ({}),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ available: true }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    expect(await ensureCloudTtsAvailable()).toBe(false);
+    expect(await ensureCloudTtsAvailable({ retry: true })).toBe(false);
+    vi.setSystemTime(new Date('2026-01-01T00:00:16Z'));
+    expect(await ensureCloudTtsAvailable({ retry: true })).toBe(true);
+    expect(getCloudTtsStatus()).toBe('available');
+    vi.useRealTimers();
+  });
+
   it('always sends OpenAI alloy in the POST body', async () => {
     const { setPreferredCloudVoice, DEFAULT_CLOUD_VOICE } = await import('./speechOpenAI');
     setPreferredCloudVoice('sage');

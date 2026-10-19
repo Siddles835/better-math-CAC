@@ -896,12 +896,14 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
       return;
     }
 
-    // OpenAI Alloy for every lesson / read-aloud / animation narration.
+    // Prefer OpenAI Alloy for every lesson / read-aloud / animation narration.
     try {
-      const { speakWithOpenAI, ensureCloudTtsAvailable, DEFAULT_CLOUD_VOICE } = await import(
-        './speechOpenAI'
-      );
-      if (await ensureCloudTtsAvailable()) {
+      const {
+        speakWithOpenAI,
+        ensureCloudTtsAvailable,
+        DEFAULT_CLOUD_VOICE,
+      } = await import('./speechOpenAI');
+      if (await ensureCloudTtsAvailable({ retry: true })) {
         const playedCloud = await speakWithOpenAI(cleaned, {
           token,
           isCurrent: (value) => value === speechToken,
@@ -915,16 +917,13 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
         if (playedCloud || token !== speechToken) return;
       }
     } catch {
-      // fall through
+      // fall through to device so read-aloud never bricks
     }
 
-    // Alloy-only: never substitute Kokoro or a phone voice for OpenAI Alloy.
+    // Alloy preferred: if cloud TTS is down, still speak with the best device voice
+    // so students are not stuck on “Read aloud isn't available”.
     if (alloyOnlyPref) {
-      if (token === speechToken) {
-        options?.onUnavailable?.();
-        unavailableHandler?.();
-        options?.onEnd?.();
-      }
+      startDevice();
       return;
     }
 
