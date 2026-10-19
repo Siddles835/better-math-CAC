@@ -55,13 +55,15 @@ describe('RocketTransition', () => {
     vi.useRealTimers();
   });
 
-  it('shows the rocket hop and clears when the short flight ends', () => {
+  it('shows the rocket fly and clears when the flight ends', () => {
     renderApp();
     act(() => {
       screen.getByTestId('launch').click();
     });
-    expect(screen.getByTestId('rocket-transition')).toBeTruthy();
-    expect(screen.getByTestId('rocket-transition').querySelector('svg')).toBeTruthy();
+    const overlay = screen.getByTestId('rocket-transition');
+    expect(overlay).toBeTruthy();
+    expect(overlay.querySelector('svg')).toBeTruthy();
+    expect(overlay.querySelector('.animate-rocket-fly')).toBeTruthy();
 
     act(() => {
       vi.advanceTimersByTime(ROCKET_FLIGHT_MS - 1);

@@ -23,7 +23,6 @@ import {
 import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { useAccessibility } from '@/context/AccessibilityContext';
 import { ROCKET_NAVIGATE_MS } from '@/components/RocketTransition';
 
 const BASE_SIZE = 640; // design space that fits Neptune orbit (580) + labels
@@ -34,8 +33,6 @@ const BASE_SIZE = 640; // design space that fits Neptune orbit (580) + labels
 const SolarSystemPage: React.FC = () => {
   const { t } = useTranslation('explore');
   const navigate = useNavigate();
-  const { prefs } = useAccessibility();
-  const reduceMotion = prefs.reduceMotion || prefs.calmBackground;
   const {
     startRocketTransition,
     completedPlanets,
@@ -146,16 +143,15 @@ const SolarSystemPage: React.FC = () => {
     setPosition(planetId, lesson);
     void markPlanetVisited(planetId);
     startRocketTransition();
-    // Navigate mid-hop; overlay clears when the rocket finishes (not a long blank sky).
+    // Navigate mid-flight; overlay clears when the rocket finishes crossing.
     if (selectTimerRef.current != null) window.clearTimeout(selectTimerRef.current);
-    const delayMs = reduceMotion ? 0 : ROCKET_NAVIGATE_MS;
     selectTimerRef.current = window.setTimeout(() => {
       selectTimerRef.current = null;
       navigate(getLessonRoute(planetId), {
         state: { initialStep: savedStep, replay: isCompleted },
       });
       setSelecting(false);
-    }, delayMs);
+    }, ROCKET_NAVIGATE_MS);
   };
 
   const orbitPlanets = PLANET_ORDER.filter((id) => id !== 'sun');

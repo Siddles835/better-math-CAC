@@ -23,15 +23,12 @@ import {
 import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { useAccessibility } from '@/context/AccessibilityContext';
 import { ROCKET_NAVIGATE_MS } from '@/components/RocketTransition';
 
 const PlanetSelectPage: React.FC = () => {
   const { t } = useTranslation('explore');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { prefs } = useAccessibility();
-  const reduceMotion = prefs.reduceMotion || prefs.calmBackground;
   const {
     startRocketTransition,
     progressPlanetId,
@@ -131,16 +128,15 @@ const PlanetSelectPage: React.FC = () => {
     setPosition(pid, lesson);
     void markPlanetVisited(pid);
     startRocketTransition();
-    // Navigate mid-hop; overlay clears when the rocket finishes (not a long blank sky).
+    // Navigate mid-flight; overlay clears when the rocket finishes crossing.
     if (selectTimerRef.current != null) window.clearTimeout(selectTimerRef.current);
-    const delayMs = reduceMotion ? 0 : ROCKET_NAVIGATE_MS;
     selectTimerRef.current = window.setTimeout(() => {
       selectTimerRef.current = null;
       navigate(getLessonRoute(planetId), {
         state: { initialStep: savedStep, replay: isCompleted },
       });
       setSelecting(false);
-    }, delayMs);
+    }, ROCKET_NAVIGATE_MS);
   };
 
   const maxPlanetLabel = tx(`ui:planet_${classMax as PlanetId}`);

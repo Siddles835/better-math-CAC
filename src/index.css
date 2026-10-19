@@ -144,14 +144,13 @@
   overflow: auto;
 }
 
-/* Rocket animation — short hop across the viewport (clears with the overlay).
-   Keep the rocket on-screen for most of the flight so kids never stare at a blank sky. */
+/* Rocket fly — left-to-right across the screen (matches RocketTransition clear timer). */
 @keyframes rocket-fly {
   0% {
-    transform: translate3d(-40vw, -50%, 0);
+    transform: translate3d(-30vw, -50%, 0);
   }
   100% {
-    transform: translate3d(110vw, -50%, 0);
+    transform: translate3d(115vw, -50%, 0);
   }
 }
 
@@ -187,18 +186,10 @@
 }
 
 .animate-rocket-fly {
-  animation: rocket-fly 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  /* !important so global reduce-motion 0.01ms rules cannot kill the hop */
+  animation: rocket-fly 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  animation-duration: 3.2s !important;
   will-change: transform;
-}
-
-/* Reduced-motion / calm: never snap the rocket off-screen (global 0.01ms
-   animation rules would park it at 110vw and leave a blank dark cover). */
-html[data-reduce-motion] .rocket-transition-root .animate-rocket-fly,
-html:not([data-motion='allow']) .rocket-transition-root .animate-rocket-fly,
-.rocket-transition-root .rocket-fly-static {
-  animation: none !important;
-  left: 50% !important;
-  transform: translate3d(-50%, -50%, 0) !important;
 }
 
 .animate-gentle-float {
