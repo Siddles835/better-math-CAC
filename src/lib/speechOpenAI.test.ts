@@ -105,6 +105,37 @@ describe('speechOpenAI', () => {
     vi.useRealTimers();
   });
 
+  const audioMpegHeaders = { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'audio/mpeg' : null) };
+  const jsonHeaders = { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) };
+
+  const stubAudio = () => {
+    const play = vi.fn().mockResolvedValue(undefined);
+    const audioInstances: Array<{
+      onended: (() => void) | null;
+      onerror: (() => void) | null;
+      src: string;
+      play: ReturnType<typeof vi.fn>;
+      pause: ReturnType<typeof vi.fn>;
+    }> = [];
+    class FakeAudio {
+      onended: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      src = '';
+      preload = '';
+      currentTime = 0;
+      play = play;
+      pause = vi.fn();
+      load = vi.fn();
+      setAttribute = vi.fn();
+      constructor(_src?: string) {
+        if (_src) this.src = _src;
+        audioInstances.push(this);
+      }
+    }
+    vi.stubGlobal('Audio', FakeAudio);
+    return { play, audioInstances };
+  };
+
   it('always sends OpenAI alloy in the POST body', async () => {
     const { setPreferredCloudVoice, DEFAULT_CLOUD_VOICE } = await import('./speechOpenAI');
     setPreferredCloudVoice('sage');
@@ -115,25 +146,14 @@ describe('speechOpenAI', () => {
       if (!init || init.method === 'GET') {
         return {
           ok: true,
-          headers: { get: () => 'application/json' },
+          headers: jsonHeaders,
           json: async () => ({ available: true }),
         };
       }
-      return { ok: true, blob: async () => blob };
+      return { ok: true, headers: audioMpegHeaders, blob: async () => blob };
     });
     vi.stubGlobal('fetch', fetchMock);
-
-    const play = vi.fn().mockResolvedValue(undefined);
-    const audioInstances: Array<{ onended: (() => void) | null }> = [];
-    class FakeAudio {
-      onended: (() => void) | null = null;
-      onerror: (() => void) | null = null;
-      play = play;
-      constructor(_src?: string) {
-        audioInstances.push(this);
-      }
-    }
-    vi.stubGlobal('Audio', FakeAudio);
+    const { play, audioInstances } = stubAudio();
     vi.stubGlobal('URL', {
       createObjectURL: () => 'blob:alloy',
       revokeObjectURL: vi.fn(),
@@ -145,14 +165,15 @@ describe('speechOpenAI', () => {
       ratePref: 'normal',
       voice: 'coral',
     });
-    await vi.waitFor(() => expect(audioInstances.length).toBe(1));
-    audioInstances[0]?.onended?.();
+    await vi.waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
+    audioInstances[audioInstances.length - 1]?.onended?.();
     await pending;
 
     const postCall = fetchMock.mock.calls.find((call) => call[1]?.method === 'POST');
     expect(postCall).toBeTruthy();
     const body = JSON.parse(String(postCall?.[1]?.body ?? '{}')) as { voice?: string };
     expect(body.voice).toBe('alloy');
+    expect(play).toHaveBeenCalled();
   });
 
   it('plays mp3 audio from the proxy when current', async () => {
@@ -161,25 +182,14 @@ describe('speechOpenAI', () => {
       if (!init || init.method === 'GET') {
         return {
           ok: true,
-          headers: { get: () => 'application/json' },
+          headers: jsonHeaders,
           json: async () => ({ available: true }),
         };
       }
-      return { ok: true, blob: async () => blob };
+      return { ok: true, headers: audioMpegHeaders, blob: async () => blob };
     });
     vi.stubGlobal('fetch', fetchMock);
-
-    const play = vi.fn().mockResolvedValue(undefined);
-    const audioInstances: Array<{ onended: (() => void) | null }> = [];
-    class FakeAudio {
-      onended: (() => void) | null = null;
-      onerror: (() => void) | null = null;
-      play = play;
-      constructor(_src?: string) {
-        audioInstances.push(this);
-      }
-    }
-    vi.stubGlobal('Audio', FakeAudio);
+    const { play, audioInstances } = stubAudio();
     vi.stubGlobal('URL', {
       createObjectURL: () => 'blob:test',
       revokeObjectURL: vi.fn(),
@@ -193,9 +203,8 @@ describe('speechOpenAI', () => {
       voice: 'coral',
       onEnd,
     });
-    // Let the async fetch + Audio construction settle, then finish playback.
-    await vi.waitFor(() => expect(audioInstances.length).toBe(1));
-    audioInstances[0]?.onended?.();
+    await vi.waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
+    audioInstances[audioInstances.length - 1]?.onended?.();
     const played = await pending;
 
     expect(played).toBe(true);
@@ -208,12 +217,13 @@ describe('speechOpenAI', () => {
       if (!init || init.method === 'GET') {
         return {
           ok: true,
-          headers: { get: () => 'application/json' },
+          headers: jsonHeaders,
           json: async () => ({ available: true }),
         };
       }
       return {
         ok: true,
+        headers: audioMpegHeaders,
         blob: async () => new Blob([new Uint8Array([9])], { type: 'audio/mpeg' }),
       };
     });
@@ -222,12 +232,7 @@ describe('speechOpenAI', () => {
       createObjectURL: () => 'blob:stale',
       revokeObjectURL: vi.fn(),
     });
-    vi.stubGlobal(
-      'Audio',
-      class {
-        play = vi.fn();
-      }
-    );
+    stubAudio();
 
     const played = await speakWithOpenAI('Stale line.', {
       token: 1,
@@ -235,5 +240,42 @@ describe('speechOpenAI', () => {
       onEnd: vi.fn(),
     });
     expect(played).toBe(false);
+  });
+
+  it('still tries POST when GET probe previously marked unavailable', async () => {
+    const blob = new Blob([new Uint8Array([4, 5])], { type: 'audio/mpeg' });
+    let postHits = 0;
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
+      if (!init || init.method === 'GET') {
+        return {
+          ok: true,
+          headers: { get: () => 'text/html' },
+          json: async () => {
+            throw new Error('html');
+          },
+        };
+      }
+      postHits += 1;
+      return { ok: true, headers: audioMpegHeaders, blob: async () => blob };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const { audioInstances } = stubAudio();
+    vi.stubGlobal('URL', {
+      createObjectURL: () => 'blob:retry',
+      revokeObjectURL: vi.fn(),
+    });
+
+    expect(await ensureCloudTtsAvailable()).toBe(false);
+    expect(getCloudTtsStatus()).toBe('unavailable');
+
+    const pending = speakWithOpenAI('Retry alloy.', {
+      token: 2,
+      isCurrent: () => true,
+    });
+    await vi.waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
+    audioInstances[audioInstances.length - 1]?.onended?.();
+    expect(await pending).toBe(true);
+    expect(postHits).toBeGreaterThan(0);
+    expect(getCloudTtsStatus()).toBe('available');
   });
 });

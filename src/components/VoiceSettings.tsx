@@ -10,6 +10,7 @@ import {
   ensureCloudTtsAvailable,
   getCloudTtsStatus,
   onCloudTtsStatus,
+  unlockCloudAudio,
   type CloudTtsStatus,
 } from '@/lib/speechOpenAI';
 
@@ -53,6 +54,7 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
 
   const playAlloySample = async () => {
     unlockAudio();
+    unlockCloudAudio();
     setSampleError(false);
     setSampleBusy(true);
     stopSpeaking({ skipAlloySample: true });
@@ -75,6 +77,7 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
       try {
         await audio.play();
       } catch {
+        unlockCloudAudio();
         audio.load();
         await new Promise<void>((resolve) => {
           const done = () => {
@@ -123,7 +126,13 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
             type="button"
             aria-pressed
             data-testid="openai-alloy-voice-option"
+            onPointerDown={() => {
+              unlockAudio();
+              unlockCloudAudio();
+            }}
             onClick={() => {
+              unlockAudio();
+              unlockCloudAudio();
               setPref('voiceURI', null);
               setPref('cloudVoice', DEFAULT_CLOUD_VOICE);
               announce(t('settings:voiceAlloyName'));
@@ -164,8 +173,13 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
             type="button"
             variant="default"
             className="min-h-[64px] shrink-0"
-            onPointerDown={() => unlockAudio()}
+            onPointerDown={() => {
+              unlockAudio();
+              unlockCloudAudio();
+            }}
             onClick={() => {
+              unlockAudio();
+              unlockCloudAudio();
               void playAlloySample();
             }}
             data-testid="alloy-voice-sample"

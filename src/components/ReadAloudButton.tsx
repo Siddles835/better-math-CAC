@@ -1,7 +1,7 @@
 import { tx } from '@/i18n/tx';
 import React, { useEffect, useRef, useState } from 'react';
 import { Volume2 } from 'lucide-react';
-import { speak, stopSpeaking, isVoicePlaybackAvailable } from '@/lib/speech';
+import { speak, stopSpeaking, unlockAudio, isVoicePlaybackAvailable } from '@/lib/speech';
 import { useAccessibility } from '@/context/AccessibilityContext';
 
 interface ReadAloudButtonProps {
@@ -99,6 +99,7 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
   if (!isVoicePlaybackAvailable() || !prefs.voiceEnabled) return null;
 
   const handleClick = () => {
+    unlockAudio();
     if (isSpeaking) {
       clearSafety();
       stopSpeaking();
@@ -112,6 +113,7 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
     <span className="inline-flex flex-col items-center gap-1">
     <button
       type="button"
+      onPointerDown={() => unlockAudio()}
       onClick={handleClick}
       aria-label={isSpeaking ? 'Stop reading' : 'Read aloud'}
       title={isSpeaking ? 'Stop reading' : 'Read aloud'}

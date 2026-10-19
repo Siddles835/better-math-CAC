@@ -1,5 +1,6 @@
 import type { AppLang } from '@/lib/cognition/readingTime';
 import { loadLanguage } from '@/lib/i18n/language';
+import { unlockCloudAudio } from '@/lib/speechOpenAI';
 
 const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
 /** Strip leftover symbols that should not be spoken (keep / until fractions are handled). */
@@ -605,7 +606,10 @@ let manifestCache: Record<string, { file: string; duration?: number }> | null | 
 
 /** Unlock HTMLAudioElement playback on the first user gesture (iOS/WKWebView). */
 export const unlockAudio = () => {
-  if (audioUnlocked || typeof window === 'undefined') return;
+  if (typeof window === 'undefined') return;
+  // Sync unlock of the shared Alloy element — must run inside the gesture.
+  unlockCloudAudio();
+  if (audioUnlocked) return;
   audioUnlocked = true;
   try {
     const silent = new Audio();
@@ -851,6 +855,8 @@ const speakDevice = (
 };
 
 export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
+  // Prime Alloy audio during the click gesture before any await.
+  unlockAudio();
   const lang = options?.lang ?? loadLanguage();
   speechToken += 1;
   const token = speechToken;
@@ -897,25 +903,24 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
     }
 
     // Prefer OpenAI Alloy for every lesson / read-aloud / animation narration.
+    // speakWithOpenAI tries POST even when the GET probe previously failed
+    // (misconfigured SPA rewrites used to mark Alloy "unavailable" forever).
     try {
-      const {
-        speakWithOpenAI,
-        ensureCloudTtsAvailable,
-        DEFAULT_CLOUD_VOICE,
-      } = await import('./speechOpenAI');
-      if (await ensureCloudTtsAvailable({ retry: true })) {
-        const playedCloud = await speakWithOpenAI(cleaned, {
-          token,
-          isCurrent: (value) => value === speechToken,
-          ratePref,
-          voice: DEFAULT_CLOUD_VOICE,
-          onEnd: options?.onEnd,
-          bindAudio: (audio) => {
-            activeAudio = audio;
-          },
-        });
-        if (playedCloud || token !== speechToken) return;
-      }
+      const { speakWithOpenAI, unlockCloudAudio, DEFAULT_CLOUD_VOICE } = await import(
+        './speechOpenAI'
+      );
+      unlockCloudAudio();
+      const playedCloud = await speakWithOpenAI(cleaned, {
+        token,
+        isCurrent: (value) => value === speechToken,
+        ratePref,
+        voice: DEFAULT_CLOUD_VOICE,
+        onEnd: options?.onEnd,
+        bindAudio: (audio) => {
+          activeAudio = audio;
+        },
+      });
+      if (playedCloud || token !== speechToken) return;
     } catch {
       // fall through to device so read-aloud never bricks
     }

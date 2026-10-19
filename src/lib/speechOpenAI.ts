@@ -13,12 +13,70 @@ let status: CloudTtsStatus = 'unknown';
 let probePromise: Promise<boolean> | null = null;
 const statusListeners = new Set<(status: CloudTtsStatus) => void>();
 
+/** One shared element — iOS only unlocks the element that played during a gesture. */
+let cloudAudio: HTMLAudioElement | null = null;
+let cloudUnlocked = false;
+
+const SILENT_MP3 =
+  'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4OjE2LjEwMAAAAAAAAAAAAAAAAC1FWERTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+1DEAAADAAAhHgAADUQAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+
+const getCloudAudio = (): HTMLAudioElement | null => {
+  if (typeof window === 'undefined' || typeof Audio === 'undefined') return null;
+  if (!cloudAudio) {
+    cloudAudio = new Audio();
+    cloudAudio.setAttribute('playsinline', 'true');
+    cloudAudio.setAttribute('webkit-playsinline', 'true');
+    cloudAudio.preload = 'auto';
+  }
+  return cloudAudio;
+};
+
+/**
+ * Must run inside a user gesture (pointerdown/click) so later async Alloy
+ * playback on the same element is allowed after /api/tts returns.
+ */
+export const unlockCloudAudio = (): void => {
+  if (typeof window === 'undefined') return;
+  const audio = getCloudAudio();
+  if (!audio) return;
+  cloudUnlocked = true;
+  try {
+    const prev = audio.src;
+    audio.src = SILENT_MP3;
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      void playPromise
+        .then(() => {
+          try {
+            audio.pause();
+            audio.currentTime = 0;
+          } catch {
+            /* ignore */
+          }
+          if (prev && prev !== SILENT_MP3) audio.src = prev;
+        })
+        .catch(() => undefined);
+    }
+  } catch {
+    /* ignore */
+  }
+};
+
 /** Test-only: clear probe + blob cache between cases. */
 export const resetCloudTtsForTests = () => {
   status = 'unknown';
   probePromise = null;
   lastProbeAt = 0;
   preferredCloudVoice = DEFAULT_CLOUD_VOICE;
+  cloudUnlocked = false;
+  if (cloudAudio) {
+    try {
+      cloudAudio.pause();
+    } catch {
+      /* ignore */
+    }
+    cloudAudio = null;
+  }
   for (const url of cache.values()) {
     try {
       URL.revokeObjectURL(url);
@@ -68,6 +126,7 @@ let referenceToken = 0;
 
 /** Play the real OpenAI Alloy sample the product ships with. */
 export const playAlloyReferenceSample = (): Promise<boolean> => {
+  unlockCloudAudio();
   const token = ++referenceToken;
   return new Promise((resolve) => {
     try {
@@ -79,8 +138,15 @@ export const playAlloyReferenceSample = (): Promise<boolean> => {
         }
         referenceAudio = null;
       }
-      const audio = new Audio(ALLOY_REFERENCE_SAMPLE_URL);
+      // Prefer the shared unlocked element so iOS allows playback.
+      const audio = getCloudAudio() ?? new Audio();
+      audio.src = ALLOY_REFERENCE_SAMPLE_URL;
       audio.preload = 'auto';
+      try {
+        audio.load();
+      } catch {
+        /* ignore */
+      }
       referenceAudio = audio;
       let settled = false;
       const finish = (ok: boolean) => {
@@ -123,16 +189,20 @@ export const stopAlloyReferenceSample = () => {
 };
 
 let lastProbeAt = 0;
-const PROBE_RETRY_MS = 15_000;
+const PROBE_RETRY_MS = 5_000;
 
 /** Probe /api/tts so Settings and speak() know if Alloy cloud is ready. */
 export const ensureCloudTtsAvailable = async (
-  options?: { retry?: boolean }
+  options?: { retry?: boolean; force?: boolean }
 ): Promise<boolean> => {
-  if (status === 'available') return true;
+  if (status === 'available' && !options?.force) return true;
   const now = Date.now();
   // Allow a re-probe after a short cooldown (host may have gained an API key).
-  if (status === 'unavailable' && !(options?.retry && now - lastProbeAt >= PROBE_RETRY_MS)) {
+  if (
+    status === 'unavailable' &&
+    !options?.force &&
+    !(options?.retry && now - lastProbeAt >= PROBE_RETRY_MS)
+  ) {
     return false;
   }
   if (probePromise) return probePromise;
@@ -217,6 +287,61 @@ export const setPreferredCloudVoice = (_voice?: string | null) => {
 
 export const getPreferredCloudVoice = (): CloudVoiceId => DEFAULT_CLOUD_VOICE;
 
+const isAudioResponse = (response: Response): boolean => {
+  const contentType = response.headers.get('content-type') || '';
+  return (
+    response.ok &&
+    (contentType.includes('audio/') ||
+      contentType.includes('octet-stream') ||
+      contentType.includes('mpeg'))
+  );
+};
+
+const playObjectUrl = (
+  objectUrl: string,
+  options: SpeakWithOpenAIOptions
+): Promise<boolean> =>
+  new Promise<boolean>((resolve) => {
+    const audio = getCloudAudio() ?? new Audio();
+    // Stop any prior clip on the shared element.
+    try {
+      audio.pause();
+    } catch {
+      /* ignore */
+    }
+    audio.onended = null;
+    audio.onerror = null;
+    audio.src = objectUrl;
+    options.bindAudio?.(audio);
+    let settled = false;
+    const finish = (ok: boolean) => {
+      if (settled) return;
+      settled = true;
+      options.bindAudio?.(null);
+      if (ok) options.onEnd?.();
+      resolve(ok);
+    };
+    audio.onended = () => finish(true);
+    audio.onerror = () => finish(false);
+    void audio.play().then(
+      () => {
+        /* playing */
+      },
+      () => {
+        // Last chance: if unlock never ran, try once more after priming.
+        if (!cloudUnlocked) {
+          unlockCloudAudio();
+        }
+        void audio.play().then(
+          () => {
+            /* playing after retry */
+          },
+          () => finish(false)
+        );
+      }
+    );
+  });
+
 export const speakWithOpenAI = async (
   text: string,
   options: SpeakWithOpenAIOptions
@@ -227,8 +352,20 @@ export const speakWithOpenAI = async (
     return false;
   }
 
-  const available = await ensureCloudTtsAvailable();
-  if (!available || !options.isCurrent(options.token)) return false;
+  // Do not block on GET probe when we already know the host is up — and when
+  // status is unknown/unavailable, still attempt POST (probe can lag deploy).
+  if (status === 'unavailable') {
+    const ok = await ensureCloudTtsAvailable({ retry: true, force: false });
+    // Even if probe still says no, try POST once — GET SPA fallback used to
+    // brick Alloy forever while the function was actually reachable.
+    if (!ok) {
+      /* fall through and attempt POST */
+    }
+  } else if (status === 'unknown') {
+    void ensureCloudTtsAvailable({ retry: true });
+  }
+
+  if (!options.isCurrent(options.token)) return false;
 
   // Product decision: always Alloy for classroom clarity.
   const voice = DEFAULT_CLOUD_VOICE;
@@ -249,11 +386,25 @@ export const speakWithOpenAI = async (
           ratePref,
         }),
       });
-      if (!response.ok || !options.isCurrent(options.token)) return false;
+      if (!options.isCurrent(options.token)) return false;
+      // SPA HTML or JSON error = not Alloy audio.
+      if (!isAudioResponse(response)) {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('text/html') || response.status === 503 || response.status === 502) {
+          setStatus('unavailable');
+        }
+        return false;
+      }
       const blob = await response.blob();
       if (!blob.size || !options.isCurrent(options.token)) return false;
+      // Guard against HTML mistakenly typed as octet-stream.
+      if (blob.type.includes('html')) {
+        setStatus('unavailable');
+        return false;
+      }
       objectUrl = URL.createObjectURL(blob);
       cache.set(key, objectUrl);
+      setStatus('available');
       // Cap cache size so long sessions do not retain every clip forever.
       if (cache.size > 48) {
         const first = cache.keys().next().value;
@@ -271,24 +422,5 @@ export const speakWithOpenAI = async (
 
   if (!options.isCurrent(options.token) || !objectUrl) return false;
 
-  return await new Promise<boolean>((resolve) => {
-    const audio = new Audio(objectUrl);
-    options.bindAudio?.(audio);
-    let settled = false;
-    const finish = (ok: boolean) => {
-      if (settled) return;
-      settled = true;
-      options.bindAudio?.(null);
-      if (ok) options.onEnd?.();
-      resolve(ok);
-    };
-    audio.onended = () => finish(true);
-    audio.onerror = () => finish(false);
-    void audio.play().then(
-      () => {
-        /* playing */
-      },
-      () => finish(false)
-    );
-  });
+  return playObjectUrl(objectUrl, options);
 };

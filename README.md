@@ -18,7 +18,9 @@ Vite + React learning app for early math (Congressional App Challenge).
 
 ## Clear cloud voice (OpenAI TTS)
 
-Set **server-only** `OPENAI_API_KEY` on Vercel (or your host). MathLift’s `/api/tts` proxy uses `gpt-4o-mini-tts` with the **Alloy** voice so read-aloud sounds clearer. The key never ships to the browser. Without the key, read-aloud falls back to the device voice. Settings discloses that the cloud voice is AI-generated.
+Set **server-only** `OPENAI_API_KEY` on Vercel (Project → Settings → Environment Variables). MathLift’s `/api/tts` serverless function (`api/tts.cjs`) uses `gpt-4o-mini-tts` with the **Alloy** voice so read-aloud sounds clearer. The key never ships to the browser. Without the key, `/api/tts` returns 503 and read-aloud falls back to the device voice. Settings discloses that the cloud voice is AI-generated.
+
+After changing the key, redeploy so the function picks it up. Locally, put `OPENAI_API_KEY` in `.env` and run `npm run dev` (Vite middleware serves `/api/tts`).
 
 ## Firestore rules
 
