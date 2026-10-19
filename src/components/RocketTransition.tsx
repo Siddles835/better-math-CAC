@@ -1,16 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 
-/** Match .animate-rocket-fly duration — clear when the hop finishes (no blank linger). */
-export const ROCKET_FLIGHT_MS = 3200;
+/**
+ * Full left→right hop. Driven with JS transforms so global reduce-motion CSS
+ * (`animation-duration: 0.01ms !important`) cannot freeze or skip the flight.
+ */
+export const ROCKET_FLIGHT_MS = 5500;
 /** Navigate mid-flight so the lesson is ready under the cover. */
 export const ROCKET_NAVIGATE_MS = 1200;
+
+/** Same curve as the old `cubic-bezier(0.4, 0, 0.2, 1)` ease-out feel. */
+const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
 const RocketTransition: React.FC = () => {
   const { showRocketTransition, rocketNonce, setShowRocketTransition } = useGame();
   const location = useLocation();
   const [stars, setStars] = useState<{ x: number; y: number; size: number; delay: number }[]>([]);
+  const rocketRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const generatedStars = Array.from({ length: 60 }, () => ({
@@ -22,17 +30,47 @@ const RocketTransition: React.FC = () => {
     setStars(generatedStars);
   }, []);
 
-  // rocketNonce forces a timer restart even when showRocketTransition stays true.
-  useEffect(() => {
+  // JS fly — layout effect so the first frame is positioned before paint.
+  useLayoutEffect(() => {
     if (!showRocketTransition || rocketNonce === 0) return;
-    const timer = window.setTimeout(() => {
+
+    const start = performance.now();
+    const width = typeof window !== 'undefined' ? window.innerWidth : 800;
+    // Start fully off the left, finish fully off the right (original feel).
+    const fromX = -Math.max(420, width * 0.45);
+    const toX = width + Math.max(420, width * 0.45);
+
+    const place = (x: number) => {
+      const el = rocketRef.current;
+      if (el) el.style.transform = `translate3d(${x}px, -50%, 0)`;
+    };
+
+    place(fromX);
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / ROCKET_FLIGHT_MS);
+      place(fromX + (toX - fromX) * easeOutCubic(t));
+      if (t < 1) {
+        rafRef.current = window.requestAnimationFrame(tick);
+      } else {
+        setShowRocketTransition(false);
+      }
+    };
+
+    rafRef.current = window.requestAnimationFrame(tick);
+
+    // Safety clear if rAF is throttled in background tabs.
+    const safety = window.setTimeout(() => {
       setShowRocketTransition(false);
-    }, ROCKET_FLIGHT_MS);
-    return () => window.clearTimeout(timer);
+    }, ROCKET_FLIGHT_MS + 200);
+
+    return () => {
+      if (rafRef.current != null) window.cancelAnimationFrame(rafRef.current);
+      window.clearTimeout(safety);
+    };
   }, [showRocketTransition, rocketNonce, setShowRocketTransition]);
 
   // Abandoned flight (Settings / Home): drop the cover so the page is usable.
-  // Lesson routes keep the mid-flight overlay until the timer ends.
   useEffect(() => {
     if (!showRocketTransition) return;
     if (location.pathname.startsWith('/lesson/')) return;
@@ -62,30 +100,23 @@ const RocketTransition: React.FC = () => {
             top: `${star.y}%`,
             width: `${star.size}px`,
             height: `${star.size}px`,
-            backgroundColor: `hsl(45 70% ${60 + Math.random() * 30}%)`,
-            animation: `twinkle ${3 + star.delay}s ease-in-out infinite`,
-            animationDelay: `${star.delay}s`,
+            backgroundColor: `hsl(45 70% ${65 + (i % 4) * 8}%)`,
+            opacity: 0.5 + (i % 5) * 0.08,
           }}
         />
       ))}
 
-      <div className="absolute inset-0 pointer-events-none">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div
-            key={`streak-${i}`}
-            className="absolute h-[2px] bg-gradient-to-r from-transparent via-white/30 to-transparent"
-            style={{
-              top: `${10 + i * 7}%`,
-              left: '-100%',
-              width: '80px',
-              animation: `star-drift 3s linear infinite`,
-              animationDelay: `${i * 0.4}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="animate-rocket-fly absolute" style={{ top: '40%' }}>
+      <div
+        ref={rocketRef}
+        data-testid="rocket-hopper"
+        className="absolute"
+        style={{
+          top: '40%',
+          left: 0,
+          transform: 'translate3d(-40vw, -50%, 0)',
+          willChange: 'transform',
+        }}
+      >
         <svg width="400" height="260" viewBox="0 0 100 60" fill="none" aria-hidden>
           <ellipse cx="8" cy="30" rx="14" ry="10" fill="hsl(30 80% 55%)" opacity="0.6" />
           <ellipse cx="5" cy="30" rx="10" ry="7" fill="hsl(40 90% 65%)" opacity="0.7" />

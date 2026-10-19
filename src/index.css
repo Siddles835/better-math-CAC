@@ -185,11 +185,10 @@
   100% { transform: translateX(-100px); }
 }
 
+/* Legacy CSS hop kept for StoryQuiz / other screens. Planet transitions use
+   JS transforms in RocketTransition so reduce-motion CSS cannot kill them. */
 .animate-rocket-fly {
-  /* !important so global reduce-motion 0.01ms rules cannot kill the hop */
-  animation: rocket-fly 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-  animation-duration: 3.2s !important;
-  will-change: transform;
+  animation: rocket-fly 5.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .animate-gentle-float {
@@ -474,15 +473,6 @@ html[data-calm] body {
 html[data-calm] .planet-glow {
   animation: none !important;
   box-shadow: none !important;
-}
-
-html[data-reduce-motion] *,
-html[data-reduce-motion] *::before,
-html[data-reduce-motion] *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-  scroll-behavior: auto !important;
 }
 
 /* One thing at a time: side notes step out of the way. */

@@ -55,45 +55,41 @@ describe('RocketTransition', () => {
     vi.useRealTimers();
   });
 
-  it('shows the rocket fly and clears when the flight ends', () => {
+  it('shows the rocket and clears when the JS flight ends', () => {
     renderApp();
     act(() => {
       screen.getByTestId('launch').click();
     });
     const overlay = screen.getByTestId('rocket-transition');
     expect(overlay).toBeTruthy();
+    expect(screen.getByTestId('rocket-hopper')).toBeTruthy();
     expect(overlay.querySelector('svg')).toBeTruthy();
-    expect(overlay.querySelector('.animate-rocket-fly')).toBeTruthy();
 
     act(() => {
-      vi.advanceTimersByTime(ROCKET_FLIGHT_MS - 1);
-    });
-    expect(screen.getByTestId('rocket-transition')).toBeTruthy();
-
-    act(() => {
-      vi.advanceTimersByTime(2);
+      vi.advanceTimersByTime(ROCKET_FLIGHT_MS + 250);
     });
     expect(screen.queryByTestId('rocket-transition')).toBeNull();
     expect(screen.getByTestId('rocket-flag').textContent).toBe('off');
   });
 
-  it('restarts the clear timer when launched again while already showing', () => {
+  it('restarts when launched again while already showing', () => {
     renderApp();
     act(() => {
       screen.getByTestId('launch').click();
     });
     act(() => {
-      vi.advanceTimersByTime(ROCKET_FLIGHT_MS - 200);
+      vi.advanceTimersByTime(ROCKET_FLIGHT_MS - 500);
     });
+    expect(screen.getByTestId('rocket-transition')).toBeTruthy();
     act(() => {
       screen.getByTestId('launch').click();
     });
     act(() => {
-      vi.advanceTimersByTime(ROCKET_FLIGHT_MS - 1);
+      vi.advanceTimersByTime(ROCKET_FLIGHT_MS - 500);
     });
     expect(screen.getByTestId('rocket-transition')).toBeTruthy();
     act(() => {
-      vi.advanceTimersByTime(2);
+      vi.advanceTimersByTime(1000);
     });
     expect(screen.queryByTestId('rocket-transition')).toBeNull();
   });
