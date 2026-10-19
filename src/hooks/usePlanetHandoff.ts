@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
-import { ROCKET_NAVIGATE_MS } from '@/components/RocketTransition';
 import type { PlanetId } from '@/lib/planets';
 
 /**
@@ -11,16 +10,17 @@ import type { PlanetId } from '@/lib/planets';
 export function usePlanetHandoff() {
   const busy = useRef(false);
   const navigate = useNavigate();
-  const { completePlanet, startRocketTransition } = useGame();
+  const { completePlanet, setShowRocketTransition } = useGame();
 
   const leave = (planetId: PlanetId, nextPath: string, state?: unknown) => {
     if (busy.current) return;
     busy.current = true;
     void completePlanet(planetId);
-    startRocketTransition();
+    setShowRocketTransition(true);
+    // Navigate mid-flight; RocketTransition clears itself after the full 5.5s fly.
     window.setTimeout(() => {
       navigate(nextPath, state === undefined ? undefined : { state });
-    }, ROCKET_NAVIGATE_MS);
+    }, 2500);
   };
 
   const finish = (planetId: PlanetId, nextPath = '/planets') => {
