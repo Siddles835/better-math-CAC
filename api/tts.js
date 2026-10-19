@@ -3,34 +3,25 @@
  * Keeps OPENAI_API_KEY on the server — never ship it to the browser.
  *
  * POST { text, voice?, lang?, ratePref?, instructions? }
- * → audio/mpeg
+ * → audio/mpeg (OpenAI gpt-4o-mini-tts, Alloy)
  *
  * GET → { available: boolean } so the client can probe without speaking.
+ *
+ * Uses CommonJS so Vercel always registers this as a Node serverless
+ * function even when the app package.json has "type": "module".
  */
-import OpenAI from 'openai';
+
+const OpenAI = require('openai');
 
 const MAX_CHARS = 600;
-const ALLOWED_VOICES = new Set([
-  'alloy',
-  'ash',
-  'ballad',
-  'coral',
-  'echo',
-  'fable',
-  'nova',
-  'onyx',
-  'sage',
-  'shimmer',
-  'verse',
-  'marin',
-  'cedar',
-]);
 
-/** Warm, clear teacher tone for early elementary listeners. */
+/**
+ * Match OpenAI’s public Alloy TTS sample tone (clear, natural, not cartoonish).
+ * Keep instructions light so Alloy sounds like the playground sample.
+ */
 const DEFAULT_INSTRUCTIONS =
-  'Speak clearly and warmly, like a friendly elementary school teacher. ' +
-  'Keep a calm, encouraging tone. Enunciate numbers carefully. ' +
-  'Do not sound rushed or robotic.';
+  'Speak naturally and clearly in a warm, friendly tone. ' +
+  'Sound like a helpful person, not a robot. Enunciate numbers carefully.';
 
 const cors = (res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -47,7 +38,7 @@ const readJson = async (req) => {
   return JSON.parse(raw);
 };
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') {
     res.status(204).end();
@@ -87,12 +78,10 @@ export default async function handler(req, res) {
       return;
     }
 
-    // MathLift always uses Alloy for classroom read-aloud.
-    const requested = typeof body.voice === 'string' ? body.voice : '';
-    const voice = ALLOWED_VOICES.has('alloy') ? 'alloy' : requested || 'alloy';
+    // Always Alloy — matches Settings and OpenAI’s reference sample.
+    const voice = 'alloy';
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
-    // OpenAI speed: 0.25–4.0. Keep kid-friendly pacing near 1.0.
-    const speed = ratePref === 'slow' ? 0.9 : 1.0;
+    const speed = ratePref === 'slow' ? 0.95 : 1.0;
     const instructions =
       typeof body.instructions === 'string' && body.instructions.trim()
         ? body.instructions.trim().slice(0, 400)
@@ -121,4 +110,4 @@ export default async function handler(req, res) {
       error: 'Speech generation failed',
     });
   }
-}
+};

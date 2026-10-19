@@ -36,6 +36,6 @@ Fixed strings are still candidates for `npm run generate:tts` pre-rendered clips
 ## Tiers
 
 1. **Pre-rendered clips** under `public/audio/<lang>/<hash>.mp3` via `scripts/generate-tts.mjs`
-2. **OpenAI gpt-4o-mini-tts** (`coral` by default) through `api/tts.js` when `OPENAI_API_KEY` is set. AI-generated voice is disclosed in Settings. Text is capped and never exposes the API key to the browser.
+2. **OpenAI gpt-4o-mini-tts** (`alloy`) through `api/tts.js` when `OPENAI_API_KEY` is set. Settings Play sample uses a bundled Alloy reference clip. AI-generated voice is disclosed in Settings. Text is capped and never exposes the API key to the browser.
 3. **Kokoro-82M** warm English neural voice (`af_bella`). Pref `naturalVoice` defaults **on**. Downloads about 90 MB once, then stays on device. Falls back if load/play fails.
 4. **Improved device `speechSynthesis`** with packed utterances, soft prosody, better voice ranking, and a speech generation token to avoid stale queues

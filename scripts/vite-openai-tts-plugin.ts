@@ -23,9 +23,8 @@ const ALLOWED_VOICES = new Set([
 ]);
 
 const DEFAULT_INSTRUCTIONS =
-  'Speak clearly and warmly, like a friendly elementary school teacher. ' +
-  'Keep a calm, encouraging tone. Enunciate numbers carefully. ' +
-  'Do not sound rushed or robotic.';
+  'Speak naturally and clearly in a warm, friendly tone. ' +
+  'Sound like a helpful person, not a robot. Enunciate numbers carefully.';
 
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>
   new Promise((resolve, reject) => {
@@ -105,7 +104,7 @@ export function openaiTtsDevPlugin(): Plugin {
           // MathLift always uses Alloy for classroom read-aloud.
           const voice = 'alloy';
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
-          const speed = ratePref === 'slow' ? 0.9 : 1.0;
+          const speed = ratePref === 'slow' ? 0.95 : 1.0;
 
           const { default: OpenAI } = await import('openai');
           const client = new OpenAI({ apiKey });

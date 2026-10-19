@@ -953,6 +953,9 @@ export const stopSpeaking = () => {
     activeAudio = null;
   }
   if (isSpeechSupported()) speechSynthesis.cancel();
+  void import('./speechOpenAI').then(({ stopAlloyReferenceSample }) => {
+    stopAlloyReferenceSample();
+  });
 };
 
 /** Short demo line for the Settings voice picker. */

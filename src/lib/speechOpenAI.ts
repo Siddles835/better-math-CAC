@@ -48,6 +48,51 @@ const endpoint = (): string => {
   return `${base}/api/tts`;
 };
 
+/** Bundled OpenAI Alloy reference clip (Settings Play sample). */
+export const ALLOY_REFERENCE_SAMPLE_URL = '/audio/openai-alloy-sample.mp3';
+
+let referenceAudio: HTMLAudioElement | null = null;
+
+/** Play the real OpenAI Alloy sample the product ships with. */
+export const playAlloyReferenceSample = (): Promise<boolean> =>
+  new Promise((resolve) => {
+    try {
+      if (referenceAudio) {
+        referenceAudio.pause();
+        referenceAudio = null;
+      }
+      const audio = new Audio(ALLOY_REFERENCE_SAMPLE_URL);
+      referenceAudio = audio;
+      let settled = false;
+      const finish = (ok: boolean) => {
+        if (settled) return;
+        settled = true;
+        if (referenceAudio === audio) referenceAudio = null;
+        resolve(ok);
+      };
+      audio.onended = () => finish(true);
+      audio.onerror = () => finish(false);
+      void audio.play().then(
+        () => {
+          /* playing */
+        },
+        () => finish(false)
+      );
+    } catch {
+      resolve(false);
+    }
+  });
+
+export const stopAlloyReferenceSample = () => {
+  if (!referenceAudio) return;
+  try {
+    referenceAudio.pause();
+  } catch {
+    /* ignore */
+  }
+  referenceAudio = null;
+};
+
 /** One-time probe so Settings can show the clear-voice option. */
 export const ensureCloudTtsAvailable = async (): Promise<boolean> => {
   if (status === 'available') return true;
@@ -57,7 +102,9 @@ export const ensureCloudTtsAvailable = async (): Promise<boolean> => {
   probePromise = (async () => {
     try {
       const response = await fetch(endpoint(), { method: 'GET' });
-      if (!response.ok) {
+      const contentType = response.headers.get('content-type') || '';
+      // SPA fallback returns index.html — that is NOT a working TTS API.
+      if (!response.ok || !contentType.includes('application/json')) {
         setStatus('unavailable');
         return false;
       }

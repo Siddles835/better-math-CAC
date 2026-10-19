@@ -17,6 +17,8 @@ import {
   ensureCloudTtsAvailable,
   getCloudTtsStatus,
   onCloudTtsStatus,
+  playAlloyReferenceSample,
+  stopAlloyReferenceSample,
   type CloudTtsStatus,
 } from '@/lib/speechOpenAI';
 
@@ -59,12 +61,10 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
       announce(t('settings:voiceOff'));
       return;
     }
+    // Always play the real OpenAI Alloy reference clip — never a device voice.
     stopSpeaking();
-    speak(sampleSpeechText(lang), {
-      lang,
-      ratePref: prefs.speechRate,
-      cloudVoice: DEFAULT_CLOUD_VOICE,
-    });
+    stopAlloyReferenceSample();
+    void playAlloyReferenceSample();
   };
 
   const playDeviceSample = (voiceURI: string | null) => {

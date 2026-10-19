@@ -23,6 +23,7 @@ describe('speechOpenAI', () => {
   it('probes availability and reports when the API is ready', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
+      headers: { get: () => 'application/json' },
       json: async () => ({ available: true }),
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -33,6 +34,21 @@ describe('speechOpenAI', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/tts', { method: 'GET' });
   });
 
+  it('treats SPA HTML fallback as unavailable (not a working TTS API)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => 'text/html; charset=utf-8' },
+      json: async () => {
+        throw new Error('not json');
+      },
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const ok = await ensureCloudTtsAvailable();
+    expect(ok).toBe(false);
+    expect(getCloudTtsStatus()).toBe('unavailable');
+  });
+
   it('always sends OpenAI alloy in the POST body', async () => {
     const { setPreferredCloudVoice, DEFAULT_CLOUD_VOICE } = await import('./speechOpenAI');
     setPreferredCloudVoice('sage');
@@ -41,7 +57,11 @@ describe('speechOpenAI', () => {
     const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/mpeg' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
       if (!init || init.method === 'GET') {
-        return { ok: true, json: async () => ({ available: true }) };
+        return {
+          ok: true,
+          headers: { get: () => 'application/json' },
+          json: async () => ({ available: true }),
+        };
       }
       return { ok: true, blob: async () => blob };
     });
@@ -83,7 +103,11 @@ describe('speechOpenAI', () => {
     const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/mpeg' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
       if (!init || init.method === 'GET') {
-        return { ok: true, json: async () => ({ available: true }) };
+        return {
+          ok: true,
+          headers: { get: () => 'application/json' },
+          json: async () => ({ available: true }),
+        };
       }
       return { ok: true, blob: async () => blob };
     });
@@ -126,7 +150,11 @@ describe('speechOpenAI', () => {
   it('returns false when the token is stale before play', async () => {
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
       if (!init || init.method === 'GET') {
-        return { ok: true, json: async () => ({ available: true }) };
+        return {
+          ok: true,
+          headers: { get: () => 'application/json' },
+          json: async () => ({ available: true }),
+        };
       }
       return {
         ok: true,
