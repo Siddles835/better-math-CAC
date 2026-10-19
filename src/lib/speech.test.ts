@@ -258,12 +258,11 @@ describe('voice on/off and stale queue', () => {
     const onUnavailable = vi.fn();
     const onEnd = vi.fn();
     speak('Hello alloy only.', { onUnavailable, onEnd });
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    await vi.waitFor(() => {
+      expect(onUnavailable).toHaveBeenCalled();
+    });
 
     expect(speakFn).not.toHaveBeenCalled();
-    expect(onUnavailable).toHaveBeenCalled();
     expect(onEnd).toHaveBeenCalled();
   });
 });
