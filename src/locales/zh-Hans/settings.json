@@ -40,6 +40,7 @@
   "voiceAutoHint": "自动选择已安装中最清晰的声音。",
   "voiceNone": "这台设备没有安装当前语言的语音。文字仍会显示。",
   "voiceSample": "试听",
+  "voiceSampleFailed": "无法播放 Alloy 试听。请再点一次试听。",
   "voiceBestFound": "已找到的最佳声音",
   "voiceQualityNatural": "自然",
   "voiceQualityStandard": "标准",

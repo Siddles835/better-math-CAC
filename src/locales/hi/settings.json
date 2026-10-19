@@ -40,6 +40,7 @@
   "voiceAutoHint": "स्वचालित रूप से सबसे साफ़ स्थापित आवाज़ चुनें।",
   "voiceNone": "इस डिवाइस पर इस भाषा की कोई आवाज़ नहीं है। लेखन स्क्रीन पर रहता है।",
   "voiceSample": "नमूना सुनें",
+  "voiceSampleFailed": "Alloy नमूना नहीं चल सका। फिर से नमूना सुनें दबाएँ।",
   "voiceBestFound": "सबसे अच्छी आवाज़ मिली",
   "voiceQualityNatural": "प्राकृतिक",
   "voiceQualityStandard": "सामान्य",

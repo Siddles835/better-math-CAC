@@ -4,7 +4,7 @@
  */
 
 import type { SpeechRatePref } from '@/lib/speech';
-import alloySampleUrl from '@/assets/audio/openai-alloy-sample.mp3';
+import { ALLOY_SAMPLE_DATA_URI } from '@/assets/audio/openaiAlloySampleData';
 
 export type CloudTtsStatus = 'unknown' | 'available' | 'unavailable';
 
@@ -55,8 +55,11 @@ const endpoint = (): string => {
  */
 export const ALLOY_SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog.';
 
-/** Vite-bundled OpenAI Alloy reference clip (Settings Play sample). */
-export const ALLOY_REFERENCE_SAMPLE_URL = alloySampleUrl;
+/**
+ * Inlined OpenAI Alloy “quick brown fox” clip (Settings Play sample).
+ * Data URI so playback does not depend on a separate /assets/*.mp3 fetch.
+ */
+export const ALLOY_REFERENCE_SAMPLE_URL = ALLOY_SAMPLE_DATA_URI;
 
 let referenceAudio: HTMLAudioElement | null = null;
 /** Bumps on every play/stop so a stale stopSpeaking() cannot kill a new sample. */

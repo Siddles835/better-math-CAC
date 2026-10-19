@@ -40,6 +40,7 @@
   "voiceAutoHint": "يختار تلقائيًا أوضح صوت مثبت.",
   "voiceNone": "لا يوجد صوت لهذه اللغة على هذا الجهاز. يبقى النص على الشاشة.",
   "voiceSample": "تشغيل عينة",
+  "voiceSampleFailed": "تعذر تشغيل عينة Alloy. المس تشغيل عينة مرة أخرى.",
   "voiceBestFound": "أفضل صوت متوفر",
   "voiceQualityNatural": "طبيعي",
   "voiceQualityStandard": "قياسي",

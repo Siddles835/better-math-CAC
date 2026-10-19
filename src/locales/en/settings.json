@@ -40,6 +40,7 @@
   "voiceAutoHint": "Automatically pick the clearest installed voice.",
   "voiceNone": "No voice for this language is installed on this device. Text stays on screen.",
   "voiceSample": "Play sample",
+  "voiceSampleFailed": "Could not play the Alloy sample. Tap Play sample again.",
   "voiceBestFound": "Best voice found",
   "voiceQualityNatural": "Natural",
   "voiceQualityStandard": "Standard",

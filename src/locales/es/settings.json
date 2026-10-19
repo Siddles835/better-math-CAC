@@ -40,6 +40,7 @@
   "voiceAutoHint": "Elige automáticamente la voz instalada más clara.",
   "voiceNone": "No hay una voz para este idioma en este dispositivo. El texto se queda en pantalla.",
   "voiceSample": "Escuchar muestra",
+  "voiceSampleFailed": "No se pudo reproducir la muestra de Alloy. Toca Escuchar muestra de nuevo.",
   "voiceBestFound": "Mejor voz encontrada",
   "voiceQualityNatural": "Natural (neural)",
   "voiceQualityStandard": "Estándar",
