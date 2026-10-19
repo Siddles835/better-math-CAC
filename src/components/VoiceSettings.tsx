@@ -31,12 +31,6 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
   }, []);
 
   useEffect(() => {
-    if (prefs.naturalVoice) setPref('naturalVoice', false);
-    if (prefs.cloudVoice !== DEFAULT_CLOUD_VOICE) setPref('cloudVoice', DEFAULT_CLOUD_VOICE);
-    if (prefs.voiceURI) setPref('voiceURI', null);
-  }, [prefs.naturalVoice, prefs.cloudVoice, prefs.voiceURI, setPref]);
-
-  useEffect(() => {
     const audio = alloyAudioRef.current;
     if (!audio) return;
     audio.setAttribute('playsinline', 'true');

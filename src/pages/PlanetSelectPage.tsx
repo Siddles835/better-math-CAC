@@ -1,5 +1,5 @@
 import { tx } from '@/i18n/tx';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -23,13 +23,16 @@ import {
 import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { useAccessibility } from '@/context/AccessibilityContext';
 
 const PlanetSelectPage: React.FC = () => {
   const { t } = useTranslation('explore');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { prefs } = useAccessibility();
+  const reduceMotion = prefs.reduceMotion || prefs.calmBackground;
   const {
-    setShowRocketTransition,
+    startRocketTransition,
     progressPlanetId,
     completedPlanets,
     classMaxPlanetId,
@@ -45,6 +48,14 @@ const PlanetSelectPage: React.FC = () => {
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [selecting, setSelecting] = useState(false);
+  const selectTimerRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (selectTimerRef.current != null) window.clearTimeout(selectTimerRef.current);
+    },
+    []
+  );
 
   useEffect(() => {
     const active = getActiveStudent();
@@ -118,14 +129,17 @@ const PlanetSelectPage: React.FC = () => {
     setSelecting(true);
     setPosition(pid, lesson);
     void markPlanetVisited(pid);
-    setShowRocketTransition(true);
-    // Navigate mid-flight; RocketTransition clears itself after the full 5.5s fly.
-    setTimeout(() => {
+    startRocketTransition();
+    // Navigate mid-flight; RocketTransition clears itself after the full fly (or sooner if reduced motion).
+    if (selectTimerRef.current != null) window.clearTimeout(selectTimerRef.current);
+    const delayMs = reduceMotion ? 0 : 1200;
+    selectTimerRef.current = window.setTimeout(() => {
+      selectTimerRef.current = null;
       navigate(getLessonRoute(planetId), {
         state: { initialStep: savedStep, replay: isCompleted },
       });
       setSelecting(false);
-    }, 1200);
+    }, delayMs);
   };
 
   const maxPlanetLabel = tx(`ui:planet_${classMax as PlanetId}`);
@@ -140,8 +154,9 @@ const PlanetSelectPage: React.FC = () => {
             {' · '}
             <button
               type="button"
+              disabled={selecting}
               onClick={() => navigate('/settings')}
-              className="underline underline-offset-2 hover:text-foreground"
+              className="underline underline-offset-2 hover:text-foreground disabled:opacity-50"
             >{tx('ui:s_c7f73bb54d')}</button>
             {solo && (
               <>

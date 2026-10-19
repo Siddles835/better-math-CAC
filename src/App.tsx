@@ -72,11 +72,12 @@ const App = () => {
         <GameProvider>
           <Toaster />
           <Sonner />
-          <RocketTransition />
           <ForegroundTime />
           <BrowserRouter>
             {/* Inside the router so announce captions clear on navigation. */}
             <AccessibilityProvider>
+            {/* Rocket needs router + a11y (reduce-motion) to clear stuck overlays. */}
+            <RocketTransition />
             <DemoBadge />
             <NativeShellBridge />
             <Routes>

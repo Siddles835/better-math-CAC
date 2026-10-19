@@ -23,6 +23,7 @@ import {
 import { isSoloClassCode, loadSoloProgress, soloProgressToStudent } from '@/lib/solo';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { useAccessibility } from '@/context/AccessibilityContext';
 
 const BASE_SIZE = 640; // design space that fits Neptune orbit (580) + labels
 
@@ -32,8 +33,10 @@ const BASE_SIZE = 640; // design space that fits Neptune orbit (580) + labels
 const SolarSystemPage: React.FC = () => {
   const { t } = useTranslation('explore');
   const navigate = useNavigate();
+  const { prefs } = useAccessibility();
+  const reduceMotion = prefs.reduceMotion || prefs.calmBackground;
   const {
-    setShowRocketTransition,
+    startRocketTransition,
     completedPlanets,
     progressPlanetId,
     classMaxPlanetId,
@@ -49,8 +52,16 @@ const SolarSystemPage: React.FC = () => {
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [selecting, setSelecting] = useState(false);
+  const selectTimerRef = useRef<number | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+
+  useEffect(
+    () => () => {
+      if (selectTimerRef.current != null) window.clearTimeout(selectTimerRef.current);
+    },
+    []
+  );
 
   useEffect(() => {
     const active = getActiveStudent();
@@ -133,14 +144,17 @@ const SolarSystemPage: React.FC = () => {
     setSelecting(true);
     setPosition(planetId, lesson);
     void markPlanetVisited(planetId);
-    setShowRocketTransition(true);
-    // Navigate mid-flight; RocketTransition clears itself after the full 5.5s fly.
-    setTimeout(() => {
+    startRocketTransition();
+    // Navigate mid-flight; RocketTransition clears itself after the full fly (or sooner if reduced motion).
+    if (selectTimerRef.current != null) window.clearTimeout(selectTimerRef.current);
+    const delayMs = reduceMotion ? 0 : 1200;
+    selectTimerRef.current = window.setTimeout(() => {
+      selectTimerRef.current = null;
       navigate(getLessonRoute(planetId), {
         state: { initialStep: savedStep, replay: isCompleted },
       });
       setSelecting(false);
-    }, 1200);
+    }, delayMs);
   };
 
   const orbitPlanets = PLANET_ORDER.filter((id) => id !== 'sun');
@@ -156,8 +170,9 @@ const SolarSystemPage: React.FC = () => {
             {' · '}
             <button
               type="button"
+              disabled={selecting}
               onClick={() => navigate('/settings')}
-              className="underline underline-offset-2 hover:text-foreground"
+              className="underline underline-offset-2 hover:text-foreground disabled:opacity-50"
             >{tx('ui:s_c7f73bb54d')}</button>
             {' · '}
             <button
