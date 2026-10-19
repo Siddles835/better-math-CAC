@@ -39,7 +39,11 @@ interface GameContextType {
   getPlanetStep: (planetId: PlanetId) => number;
   savePlanetStep: (planetId: PlanetId, step: number) => Promise<void>;
   showRocketTransition: boolean;
+  /** Bumped on every launch so the overlay can restart its clear timer. */
+  rocketNonce: number;
   setShowRocketTransition: (show: boolean) => void;
+  /** Always starts (or restarts) the rocket overlay, even if it is already showing. */
+  startRocketTransition: () => void;
   completedPlanets: Record<PlanetId, boolean>;
   progressPlanetId: PlanetId;
   classMaxPlanetId: PlanetId;
@@ -86,6 +90,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentLesson, setCurrentLesson] = React.useState<LessonType | null>(null);
   const [planetSteps, setPlanetSteps] = React.useState<Record<string, number>>({});
   const [showRocketTransition, setShowRocketTransition] = React.useState(false);
+  const [rocketNonce, setRocketNonce] = React.useState(0);
   const [completedPlanets, setCompletedPlanets] = React.useState<Record<PlanetId, boolean>>(emptyCompleted);
   const [progressPlanetId, setProgressPlanetId] = React.useState<PlanetId>('sun');
   const [classMaxPlanetId, setClassMaxPlanetId] = React.useState<PlanetId>('sun');
@@ -110,6 +115,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLastPlanetId(null);
     setLastDiagnosis(null);
     setShowRocketTransition(false);
+    setRocketNonce(0);
     writerRef.current = null;
     writerKeyRef.current = '';
     visitedLocally.current = false;
@@ -345,6 +351,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Do not write planet to Firebase here — that regressed progress when replaying.
   };
 
+  const startRocketTransition = React.useCallback(() => {
+    // Bump nonce even when already showing so RocketTransition restarts its clear timer.
+    // set(true) alone is a no-op when state is already true, which left a stuck overlay.
+    setRocketNonce((n) => n + 1);
+    setShowRocketTransition(true);
+  }, []);
+
   return (
     <GameContext.Provider
       value={{
@@ -354,7 +367,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         getPlanetStep,
         savePlanetStep,
         showRocketTransition,
+        rocketNonce,
         setShowRocketTransition,
+        startRocketTransition,
         completedPlanets,
         progressPlanetId,
         classMaxPlanetId,
