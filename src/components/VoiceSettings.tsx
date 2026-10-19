@@ -10,6 +10,7 @@ import {
   sampleSpeechText,
   speak,
   stopSpeaking,
+  unlockAudio,
   voiceQuality,
 } from '@/lib/speech';
 import {
@@ -62,7 +63,8 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
       return;
     }
     // Always play the real OpenAI Alloy reference clip — never a device voice.
-    stopSpeaking();
+    unlockAudio();
+    stopSpeaking({ skipAlloySample: true });
     stopAlloyReferenceSample();
     void playAlloyReferenceSample();
   };

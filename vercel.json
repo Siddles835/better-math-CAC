@@ -22,7 +22,7 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|audio/|assets/).*)",
       "destination": "/index.html"
     }
   ]

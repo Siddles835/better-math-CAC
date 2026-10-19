@@ -941,7 +941,7 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
   return 'spoken';
 };
 
-export const stopSpeaking = () => {
+export const stopSpeaking = (options?: { skipAlloySample?: boolean }) => {
   speechToken += 1;
   if (speakTimer) {
     clearTimeout(speakTimer);
@@ -953,9 +953,13 @@ export const stopSpeaking = () => {
     activeAudio = null;
   }
   if (isSpeechSupported()) speechSynthesis.cancel();
-  void import('./speechOpenAI').then(({ stopAlloyReferenceSample }) => {
-    stopAlloyReferenceSample();
-  });
+  // Do not async-stop Alloy here when Settings is about to start a new sample —
+  // the late import callback would kill playback right after it begins.
+  if (!options?.skipAlloySample) {
+    void import('./speechOpenAI').then(({ stopAlloyReferenceSample }) => {
+      stopAlloyReferenceSample();
+    });
+  }
 };
 
 /** Short demo line for the Settings voice picker. */

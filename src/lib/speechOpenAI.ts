@@ -4,6 +4,7 @@
  */
 
 import type { SpeechRatePref } from '@/lib/speech';
+import alloySampleUrl from '@/assets/audio/openai-alloy-sample.mp3';
 
 export type CloudTtsStatus = 'unknown' | 'available' | 'unavailable';
 
@@ -48,33 +49,49 @@ const endpoint = (): string => {
   return `${base}/api/tts`;
 };
 
-/** Bundled OpenAI Alloy reference clip (Settings Play sample). */
-export const ALLOY_REFERENCE_SAMPLE_URL = '/audio/openai-alloy-sample.mp3';
+/** Vite-bundled OpenAI Alloy reference clip (Settings Play sample). */
+export const ALLOY_REFERENCE_SAMPLE_URL = alloySampleUrl;
 
 let referenceAudio: HTMLAudioElement | null = null;
+/** Bumps on every play/stop so a stale stopSpeaking() cannot kill a new sample. */
+let referenceToken = 0;
 
 /** Play the real OpenAI Alloy sample the product ships with. */
-export const playAlloyReferenceSample = (): Promise<boolean> =>
-  new Promise((resolve) => {
+export const playAlloyReferenceSample = (): Promise<boolean> => {
+  const token = ++referenceToken;
+  return new Promise((resolve) => {
     try {
       if (referenceAudio) {
-        referenceAudio.pause();
+        try {
+          referenceAudio.pause();
+        } catch {
+          /* ignore */
+        }
         referenceAudio = null;
       }
       const audio = new Audio(ALLOY_REFERENCE_SAMPLE_URL);
+      audio.preload = 'auto';
       referenceAudio = audio;
       let settled = false;
       const finish = (ok: boolean) => {
         if (settled) return;
         settled = true;
-        if (referenceAudio === audio) referenceAudio = null;
+        if (referenceToken === token && referenceAudio === audio) {
+          referenceAudio = null;
+        }
         resolve(ok);
       };
-      audio.onended = () => finish(true);
+      audio.onended = () => {
+        if (referenceToken !== token) {
+          resolve(false);
+          return;
+        }
+        finish(true);
+      };
       audio.onerror = () => finish(false);
       void audio.play().then(
         () => {
-          /* playing */
+          /* playing — keep referenceAudio so stop can pause it */
         },
         () => finish(false)
       );
@@ -82,8 +99,10 @@ export const playAlloyReferenceSample = (): Promise<boolean> =>
       resolve(false);
     }
   });
+};
 
 export const stopAlloyReferenceSample = () => {
+  referenceToken += 1;
   if (!referenceAudio) return;
   try {
     referenceAudio.pause();

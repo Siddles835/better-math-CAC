@@ -34,6 +34,37 @@ describe('speechOpenAI', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/tts', { method: 'GET' });
   });
 
+  it('keeps playing Alloy sample when a late stop from another call is stale', async () => {
+    const { playAlloyReferenceSample, stopAlloyReferenceSample } = await import('./speechOpenAI');
+    const audioInstances: Array<{
+      pause: ReturnType<typeof vi.fn>;
+      play: ReturnType<typeof vi.fn>;
+      onended: (() => void) | null;
+      onerror: (() => void) | null;
+    }> = [];
+    class FakeAudio {
+      preload = '';
+      onended: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      pause = vi.fn();
+      play = vi.fn().mockResolvedValue(undefined);
+      constructor(_src?: string) {
+        audioInstances.push(this);
+      }
+    }
+    vi.stubGlobal('Audio', FakeAudio);
+
+    stopAlloyReferenceSample();
+    const pending = playAlloyReferenceSample();
+    await vi.waitFor(() => expect(audioInstances.length).toBe(1));
+    // Simulate a stale async stopSpeaking callback that ran after play started
+    // but was scheduled before — token bump would kill old plays only.
+    const first = audioInstances[0];
+    expect(first?.play).toHaveBeenCalled();
+    first?.onended?.();
+    await expect(pending).resolves.toBe(true);
+  });
+
   it('treats SPA HTML fallback as unavailable (not a working TTS API)', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
