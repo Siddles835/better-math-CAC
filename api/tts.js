@@ -16,15 +16,13 @@ const OpenAI = require('openai');
 const MAX_CHARS = 600;
 
 /**
- * Onyx is the traditional deep masculine OpenAI voice. Instructions keep a
- * General American classroom accent.
+ * Onyx's preset is a deep male. Keep the prompt short so gpt-4o-mini-tts
+ * does not replace that timbre with the same generic teacher performance
+ * used for Ash.
  */
 const DEFAULT_INSTRUCTIONS =
-  'Speak as a traditional adult American man with a deep masculine voice. ' +
-  'Classic General American accent: rhotic R, American vowels, “zee” for Z. ' +
-  'Never sound like a woman, a girl, or a light young voice. ' +
-  'Do not sound Chinese, East Asian, British, Australian, or Irish. ' +
-  'Calm classroom pace. Crisp consonants. Enunciate every number.';
+  'Low baritone only. Middle-aged American man, deep chest voice, pitched down. ' +
+  'Slow and plain. Do not sound young, bright, medium-pitched, or like the previous lighter voice.';
 
 /** Fixed product voice: OpenAI Onyx (traditional masculine). Never Ash / Alloy. */
 const DEFAULT_VOICE = 'onyx';
@@ -104,7 +102,8 @@ module.exports = async function handler(req, res) {
 
     const buffer = Buffer.from(await response.arrayBuffer());
     res.setHeader('Content-Type', 'audio/wav');
-    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Access-Control-Expose-Headers', 'X-MathLift-Voice, X-MathLift-Gender');
     res.setHeader('X-MathLift-TTS', TTS_MODEL);
     res.setHeader('X-MathLift-Voice', voice);
     res.setHeader('X-MathLift-Gender', 'male');

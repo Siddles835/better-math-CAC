@@ -137,7 +137,7 @@ export const ensureCloudTtsAvailable = async (
 };
 
 /** Bump when TTS format/instructions change so old muddy clips are not reused. */
-const CACHE_VERSION = 'onyx-masculine-wav-v1';
+const CACHE_VERSION = 'onyx-baritone-v2';
 
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
   `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;
@@ -219,6 +219,7 @@ export const speakWithOpenAI = async (
     try {
       const response = await fetch(endpoint(), {
         method: 'POST',
+        cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: cleaned.slice(0, 600),
