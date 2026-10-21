@@ -294,4 +294,80 @@ describe('voice on/off and stale queue', () => {
     expect(onUnavailable).not.toHaveBeenCalled();
     expect(utterances.length).toBeGreaterThan(0);
   });
+
+  it('speaks a Sun lesson word with Onyx instead of the device voice', async () => {
+    setAlloyOnlyPref(true);
+    setNaturalVoicePref(false);
+    const { resetCloudTtsForTests } = await import('./speechOpenAI');
+    resetCloudTtsForTests();
+    const speakFn = vi.fn();
+    const synthesis = {
+      speaking: false,
+      pending: false,
+      cancel: vi.fn(),
+      speak: speakFn,
+      getVoices: () => [voice('Samantha', 'en-US')],
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    };
+    vi.stubGlobal('speechSynthesis', synthesis);
+    vi.stubGlobal('window', { ...globalThis, speechSynthesis: synthesis });
+    const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/mpeg' });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        if (!init || init.method === 'GET') {
+          return {
+            ok: true,
+            headers: { get: () => 'application/json' },
+            json: async () => ({ available: true }),
+          };
+        }
+        return {
+          ok: true,
+          headers: {
+            get: (name: string) => {
+              const key = name.toLowerCase();
+              if (key === 'content-type') return 'audio/mpeg';
+              if (key === 'x-mathlift-voice') return 'onyx';
+              return '';
+            },
+          },
+          blob: async () => blob,
+        };
+      })
+    );
+    const play = vi.fn().mockResolvedValue(undefined);
+    const audioInstances: Array<{ src: string; onended: (() => void) | null }> = [];
+    class FakeAudio {
+      src = '';
+      preload = '';
+      onended: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      play = play;
+      pause = vi.fn();
+      constructor() {
+        audioInstances.push(this);
+      }
+    }
+    vi.stubGlobal('Audio', FakeAudio);
+    vi.stubGlobal('URL', {
+      createObjectURL: () => 'blob:onyx-lesson',
+      revokeObjectURL: vi.fn(),
+    });
+
+    speak('one');
+    await vi.waitFor(() =>
+      expect(audioInstances.some((audio) => audio.src === 'blob:onyx-lesson')).toBe(true)
+    );
+    const post = (fetch as unknown as { mock: { calls: unknown[][] } }).mock.calls.find(
+      (call) => (call[1] as RequestInit | undefined)?.method === 'POST'
+    );
+    const body = JSON.parse(String((post?.[1] as RequestInit | undefined)?.body ?? '{}')) as {
+      voice?: string;
+    };
+    expect(body.voice).toBe('onyx');
+    expect(speakFn).not.toHaveBeenCalled();
+    audioInstances[audioInstances.length - 1]?.onended?.();
+  });
 });
