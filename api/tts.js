@@ -2,112 +2,119 @@
  * Vercel serverless TTS proxy.
  * Keeps OPENAI_API_KEY on the server — never ship it to the browser.
  *
- * POST { text, ratePref? } → audio/mpeg (gpt-4o-mini-tts, Onyx)
- * GET → { available: boolean }
+ * POST { text, ratePref? }
+ * → audio/wav (OpenAI gpt-4o-mini-tts, Ash — male General American)
  *
- * This file is ESM because package.json has "type": "module".
- * CommonJS `require` crashes the function (FUNCTION_INVOCATION_FAILED)
- * and the lesson then speaks with the device voice.
+ * GET → { available: boolean } so the client can probe without speaking.
+ *
+ * Uses CommonJS so Vercel always registers this as a Node serverless
+ * function even when the app package.json has "type": "module".
  */
 
-import OpenAI from 'openai';
+const OpenAI = require('openai');
 
 const MAX_CHARS = 600;
-const DEFAULT_VOICE = 'onyx';
+
+/**
+ * Ash is a distinctly male OpenAI voice. Instructions force General American
+ * and explicitly forbid female / Chinese / East-Asian delivery.
+ */
+const DEFAULT_INSTRUCTIONS =
+  'Speak as an adult American man from the Midwest. ' +
+  'Deep male voice only — never sound like a woman or a girl. ' +
+  'Pure General American English accent (rhotic R, American vowels, “zee” for Z). ' +
+  'Do not sound Chinese, East Asian, British, Australian, or Irish. ' +
+  'Calm classroom pace. Crisp consonants. Enunciate every number.';
+
+/** Fixed product voice: OpenAI Ash (male US). Never Alloy / Nova / female voices. */
+const DEFAULT_VOICE = 'ash';
 const TTS_MODEL = 'gpt-4o-mini-tts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Expose-Headers': 'X-MathLift-Voice',
+const cors = (res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 };
 
-const json = (body, status) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
+const readJson = async (req) => {
+  if (req.body && typeof req.body === 'object') return req.body;
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const raw = Buffer.concat(chunks).toString('utf8');
+  if (!raw) return {};
+  return JSON.parse(raw);
+};
 
-async function handle(request) {
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+module.exports = async function handler(req, res) {
+  cors(res);
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return json({ available: false, error: 'OPENAI_API_KEY not configured' }, 503);
+    res.status(503).json({ available: false, error: 'OPENAI_API_KEY not configured' });
+    return;
   }
 
-  if (request.method === 'GET') {
-    return json(
-      {
-        available: true,
-        model: TTS_MODEL,
-        defaultVoice: DEFAULT_VOICE,
-        disclosure: 'AI-generated voice',
-      },
-      200
-    );
+  if (req.method === 'GET') {
+    res.status(200).json({
+      available: true,
+      model: TTS_MODEL,
+      defaultVoice: DEFAULT_VOICE,
+      gender: 'male',
+      accent: 'general-american',
+      disclosure: 'AI-generated voice',
+    });
+    return;
   }
 
-  if (request.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
-    const body = await request.json().catch(() => ({}));
+    const body = await readJson(req);
     const text = typeof body.text === 'string' ? body.text.trim() : '';
-    if (!text) return json({ error: 'Missing text' }, 400);
+    if (!text) {
+      res.status(400).json({ error: 'Missing text' });
+      return;
+    }
     if (text.length > MAX_CHARS) {
-      return json({ error: `Text too long (max ${MAX_CHARS} characters)` }, 400);
+      res.status(400).json({ error: `Text too long (max ${MAX_CHARS} characters)` });
+      return;
     }
 
+    // Ignore client voice — always Ash (male US). Alloy/onyx/etc. cannot drift in.
     const voice = DEFAULT_VOICE;
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
-    const speed = ratePref === 'slow' ? 0.95 : 1;
+    const speed = ratePref === 'slow' ? 0.78 : 0.88;
 
     const client = new OpenAI({ apiKey });
-    // No instructions. A teacher script makes Onyx sound like the previous voice.
-    const speech = await client.audio.speech.create({
+    const response = await client.audio.speech.create({
       model: TTS_MODEL,
       voice,
       input: text,
+      instructions: DEFAULT_INSTRUCTIONS,
       speed,
-      response_format: 'mp3',
+      response_format: 'wav',
     });
 
-    const buffer = Buffer.from(await speech.arrayBuffer());
-    return new Response(buffer, {
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'no-store',
-        'X-MathLift-TTS': 'openai-gpt-4o-mini-tts',
-        'X-MathLift-Voice': voice,
-      },
-    });
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Type', 'audio/wav');
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.setHeader('X-MathLift-TTS', TTS_MODEL);
+    res.setHeader('X-MathLift-Voice', voice);
+    res.setHeader('X-MathLift-Gender', 'male');
+    res.setHeader('X-MathLift-Accent', 'general-american');
+    res.status(200).send(buffer);
   } catch (error) {
     console.error('tts proxy failed', error?.message || error);
-    return json({ available: false, error: 'Speech generation failed' }, 502);
+    res.status(502).json({
+      available: false,
+      error: 'Speech generation failed',
+    });
   }
-}
-
-export function GET(request) {
-  return handle(request);
-}
-
-export function POST(request) {
-  return handle(request);
-}
-
-export function OPTIONS(request) {
-  return handle(request);
-}
-
-export default {
-  fetch(request) {
-    return handle(request);
-  },
 };

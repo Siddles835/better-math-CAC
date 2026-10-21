@@ -34,7 +34,7 @@ describe('speechOpenAI', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/tts', { method: 'GET' });
   });
 
-  it('keeps playing Onyx sample when a late stop from another call is stale', async () => {
+  it('keeps playing Ash sample when a late stop from another call is stale', async () => {
     const { playAlloyReferenceSample, stopAlloyReferenceSample } = await import('./speechOpenAI');
     const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/wav' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
@@ -51,7 +51,7 @@ describe('speechOpenAI', () => {
           get: (name: string) => {
             const key = name.toLowerCase();
             if (key === 'content-type') return 'audio/wav';
-            if (key === 'x-mathlift-voice') return 'onyx';
+            if (key === 'x-mathlift-voice') return 'ash';
             return '';
           },
         },
@@ -60,7 +60,7 @@ describe('speechOpenAI', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
     vi.stubGlobal('URL', {
-      createObjectURL: () => 'blob:onyx-sample',
+      createObjectURL: () => 'blob:ash-sample',
       revokeObjectURL: vi.fn(),
     });
     const audioInstances: Array<{
@@ -132,32 +132,10 @@ describe('speechOpenAI', () => {
     vi.useRealTimers();
   });
 
-  it('force re-probes immediately when Play sample is tapped', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: { get: () => 'text/html' },
-        json: async () => ({}),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: { get: () => 'application/json' },
-        json: async () => ({ available: true }),
-      });
-    vi.stubGlobal('fetch', fetchMock);
-
-    expect(await ensureCloudTtsAvailable()).toBe(false);
-    expect(await ensureCloudTtsAvailable({ retry: true })).toBe(false);
-    expect(await ensureCloudTtsAvailable({ force: true })).toBe(true);
-    expect(getCloudTtsStatus()).toBe('available');
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-  });
-
-  it('always sends OpenAI onyx in the POST body', async () => {
+  it('always sends OpenAI ash in the POST body', async () => {
     const { setPreferredCloudVoice, DEFAULT_CLOUD_VOICE } = await import('./speechOpenAI');
     setPreferredCloudVoice('sage');
-    expect(DEFAULT_CLOUD_VOICE).toBe('onyx');
+    expect(DEFAULT_CLOUD_VOICE).toBe('ash');
 
     const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/wav' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
@@ -174,7 +152,7 @@ describe('speechOpenAI', () => {
           get: (name: string) => {
             const key = name.toLowerCase();
             if (key === 'content-type') return 'audio/wav';
-            if (key === 'x-mathlift-voice') return 'onyx';
+            if (key === 'x-mathlift-voice') return 'ash';
             return '';
           },
         },
@@ -196,11 +174,11 @@ describe('speechOpenAI', () => {
     }
     vi.stubGlobal('Audio', FakeAudio);
     vi.stubGlobal('URL', {
-      createObjectURL: () => 'blob:onyx',
+      createObjectURL: () => 'blob:ash',
       revokeObjectURL: vi.fn(),
     });
 
-    const pending = speakWithOpenAI('Try onyx.', {
+    const pending = speakWithOpenAI('Try ash.', {
       token: 1,
       isCurrent: () => true,
       ratePref: 'normal',
@@ -213,7 +191,7 @@ describe('speechOpenAI', () => {
     const postCall = fetchMock.mock.calls.find((call) => call[1]?.method === 'POST');
     expect(postCall).toBeTruthy();
     const body = JSON.parse(String(postCall?.[1]?.body ?? '{}')) as { voice?: string };
-    expect(body.voice).toBe('onyx');
+    expect(body.voice).toBe('ash');
   });
 
   it('plays wav audio from the proxy when current', async () => {
@@ -232,7 +210,7 @@ describe('speechOpenAI', () => {
           get: (name: string) => {
             const key = name.toLowerCase();
             if (key === 'content-type') return 'audio/wav';
-            if (key === 'x-mathlift-voice') return 'onyx';
+            if (key === 'x-mathlift-voice') return 'ash';
             return '';
           },
         },

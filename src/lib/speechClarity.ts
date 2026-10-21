@@ -51,18 +51,18 @@ export const prepareClearPlayback = (audio: HTMLAudioElement): void => {
 
     const source = ctx.createMediaElementSource(audio);
 
-    // Keep a deep male chest tone. A higher cutoff makes Onyx sound like Ash.
+    // Drop rumble that muddies little speakers.
     const highpass = ctx.createBiquadFilter();
     highpass.type = 'highpass';
-    highpass.frequency.value = 45;
+    highpass.frequency.value = 90;
     highpass.Q.value = 0.7;
 
-    // Light consonant lift. A strong presence boost flattens voice identity.
+    // Speech intelligibility band (~2–4 kHz).
     const presence = ctx.createBiquadFilter();
     presence.type = 'peaking';
     presence.frequency.value = 2800;
     presence.Q.value = 0.85;
-    presence.gain.value = 2.5;
+    presence.gain.value = 6.5;
 
     // Slight air / consonant lift.
     const air = ctx.createBiquadFilter();
