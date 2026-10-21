@@ -1,6 +1,7 @@
 import type { AppLang } from '@/lib/cognition/readingTime';
 import { loadLanguage } from '@/lib/i18n/language';
 import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
+import { getCloudTtsStatus } from '@/lib/speechOpenAI';
 
 const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
 /** Strip leftover symbols that should not be spoken (keep / until fractions are handled). */
@@ -998,6 +999,17 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
     }
     startDevice();
   };
+
+  // Cloud Onyx is already up: fetch the clip. Otherwise speak in this tap.
+  // Waiting on /api/tts spends the click, and the device voice is then blocked.
+  const cloudReady = getCloudTtsStatus() === 'available';
+  if (!cloudReady && !options?.cloudOnly) {
+    startDevice();
+    void import('./speechOpenAI').then(({ ensureCloudTtsAvailable }) => {
+      void ensureCloudTtsAvailable();
+    });
+    return 'spoken';
+  }
 
   // Pre-rendered clips are a different voice — skip them when Alloy is selected.
   if (!alloyOnlyPref && manifestHasClips()) {

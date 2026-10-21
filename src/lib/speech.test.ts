@@ -288,9 +288,8 @@ describe('voice on/off and stale queue', () => {
 
     const onUnavailable = vi.fn();
     speak('Hello alloy preferred.', { onUnavailable });
-    await vi.waitFor(() => {
-      expect(speakFn).toHaveBeenCalled();
-    });
+    // Lesson taps must speak in the click, before /api/tts answers.
+    expect(speakFn).toHaveBeenCalled();
     expect(onUnavailable).not.toHaveBeenCalled();
     expect(utterances.length).toBeGreaterThan(0);
   });

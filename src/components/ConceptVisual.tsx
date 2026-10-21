@@ -185,7 +185,12 @@ const ConceptVisual: React.FC<ConceptVisualProps> = ({ type, step }) => {
             </div>
           </div>
         )}
-        {step >= 7 && <HearLessonPrompt text={countingStepNarration(6)} />}
+        {step >= 1 && (
+          <div className="flex flex-col items-center gap-1 pt-2">
+            <ReadAloudButton text={countingStepNarration(6)} />
+            <span className="text-xs sm:text-sm text-muted-foreground">{tx('ui:hearTap')}</span>
+          </div>
+        )}
       </div>
     );
   }
