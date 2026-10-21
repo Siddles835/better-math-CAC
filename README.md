@@ -18,7 +18,7 @@ Vite + React learning app for early math (Congressional App Challenge).
 
 ## Clear cloud voice (OpenAI TTS)
 
-Set **server-only** `OPENAI_API_KEY` on Vercel (or your host). MathLift’s `/api/tts` proxy uses `gpt-4o-mini-tts` with the **Cedar** voice (a natural male voice, without a performed accent) so read-aloud sounds clearer. The key never ships to the browser. Without the key, read-aloud falls back to the device voice. Settings discloses that the cloud voice is AI-generated.
+Set **server-only** `OPENAI_API_KEY` on Vercel (or your host). MathLift’s `/api/tts` proxy uses `gpt-4o-mini-tts` with the **Cedar** voice (a natural male voice, without a performed accent) so read-aloud sounds clearer. Every Sun page — student lesson, teacher preview, and the iOS shell — uses **Onyx** with a traditional masculine General American accent. The key never ships to the browser. Without the key, read-aloud falls back to the device voice. Settings discloses that the cloud voice is AI-generated.
 
 ## Firestore rules
 

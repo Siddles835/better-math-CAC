@@ -5,6 +5,7 @@
 
 import type { SpeechRatePref } from '@/lib/speech';
 import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
+import { resolveSpeechProfile, type SpeechProfileId } from '@/lib/ttsProfile';
 
 export type CloudTtsStatus = 'unknown' | 'available' | 'unavailable';
 
@@ -139,13 +140,19 @@ export const ensureCloudTtsAvailable = async (
 /** Bump when TTS format/instructions change so old muddy clips are not reused. */
 const CACHE_VERSION = 'cedar-natural-wav-v1';
 
-const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
-  `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;
+const cacheKey = (
+  text: string,
+  voice: string,
+  ratePref: SpeechRatePref,
+  profile: SpeechProfileId
+): string => `${CACHE_VERSION}|${profile}|${voice}|${ratePref}|${text}`;
 
 export interface SpeakWithOpenAIOptions {
   token: number;
   isCurrent: (token: number) => boolean;
   ratePref?: SpeechRatePref;
+  /** Sun lessons request Onyx. Any other value stays on Cedar. */
+  profile?: SpeechProfileId;
   voice?: string;
   onEnd?: () => void;
   bindAudio?: (audio: HTMLAudioElement | null) => void;
@@ -207,12 +214,13 @@ export const speakWithOpenAI = async (
   const available = await ensureCloudTtsAvailable();
   if (!available || !options.isCurrent(options.token)) return false;
 
-  // Product decision: always Cedar (natural male) for classroom clarity.
-  const voice = DEFAULT_CLOUD_VOICE;
+  // Sun pages are Onyx. Every other page is Cedar. Ignore options.voice.
+  const resolved = resolveSpeechProfile(options.profile);
+  const voice = resolved.voice;
   void options.voice;
   void preferredCloudVoice;
   const ratePref = options.ratePref === 'slow' ? 'slow' : 'normal';
-  const key = cacheKey(cleaned, voice, ratePref);
+  const key = cacheKey(cleaned, voice, ratePref, resolved.id);
 
   let objectUrl = cache.get(key);
   if (!objectUrl) {
@@ -224,6 +232,7 @@ export const speakWithOpenAI = async (
           text: cleaned.slice(0, 600),
           voice,
           ratePref,
+          profile: resolved.id,
         }),
       });
       if (!response.ok || !options.isCurrent(options.token)) return false;

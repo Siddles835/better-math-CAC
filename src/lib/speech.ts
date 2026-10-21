@@ -1,5 +1,6 @@
 import type { AppLang } from '@/lib/cognition/readingTime';
 import { loadLanguage } from '@/lib/i18n/language';
+import { getLessonVoiceProfile } from '@/lib/speechProfile';
 import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
 
 const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
@@ -920,17 +921,13 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
     // Prefer OpenAI Alloy for every lesson / read-aloud / animation narration.
     try {
-      const {
-        speakWithOpenAI,
-        ensureCloudTtsAvailable,
-        DEFAULT_CLOUD_VOICE,
-      } = await import('./speechOpenAI');
+      const { speakWithOpenAI, ensureCloudTtsAvailable } = await import('./speechOpenAI');
       if (await ensureCloudTtsAvailable({ retry: true })) {
         const playedCloud = await speakWithOpenAI(cleaned, {
           token,
           isCurrent: (value) => value === speechToken,
           ratePref,
-          voice: DEFAULT_CLOUD_VOICE,
+          profile: getLessonVoiceProfile(),
           onEnd: options?.onEnd,
           bindAudio: (audio) => {
             activeAudio = audio;

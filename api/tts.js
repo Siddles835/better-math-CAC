@@ -2,8 +2,9 @@
  * Vercel serverless TTS proxy.
  * Keeps OPENAI_API_KEY on the server — never ship it to the browser.
  *
- * POST { text, voice?, lang?, ratePref?, instructions? }
- * → audio/wav (OpenAI gpt-4o-mini-tts, Cedar — natural male)
+ * POST { text, profile?, ratePref? }
+ * → audio/wav (gpt-4o-mini-tts). profile "sun" is Onyx; otherwise Cedar.
+ * Client voice and instructions are ignored so every interface matches.
  *
  * GET → { available: boolean } so the client can probe without speaking.
  *
@@ -12,22 +13,9 @@
  */
 
 const OpenAI = require('openai');
+const { resolveSpeechProfile } = require('./ttsProfile.cjs');
 
 const MAX_CHARS = 600;
-
-/**
- * Natural classroom delivery. Avoid performed accents — they make Cedar
- * sound like an impression instead of a teacher.
- */
-const DEFAULT_INSTRUCTIONS =
-  'Speak as a warm, natural adult man with a relaxed everyday voice. ' +
-  'Sound like a calm kindergarten teacher talking to one child. ' +
-  'Use your normal speaking accent. Do not imitate or exaggerate any accent. ' +
-  'Keep a steady, unhurried pace. Say each number clearly. ' +
-  'Do not sound like a radio announcer or a deep movie-trailer voice.';
-
-/** Fixed product voice: OpenAI Cedar (natural male, recommended for quality). */
-const DEFAULT_VOICE = 'cedar';
 
 const cors = (res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -61,7 +49,8 @@ module.exports = async function handler(req, res) {
     res.status(200).json({
       available: true,
       model: 'gpt-4o-mini-tts',
-      defaultVoice: DEFAULT_VOICE,
+      defaultVoice: resolveSpeechProfile('default').voice,
+      sunVoice: resolveSpeechProfile('sun').voice,
       disclosure: 'AI-generated voice',
     });
     return;
@@ -84,15 +73,14 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Always Cedar — natural male classroom voice (not deep Onyx).
-    const voice = DEFAULT_VOICE;
+    // Profile picks the voice. Ignore client voice/instructions so student,
+    // teacher, web, and the iOS shell cannot drift onto different accents.
+    const resolved = resolveSpeechProfile(body.profile);
+    const voice = resolved.voice;
+    const instructions = resolved.instructions;
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
     // Slightly slower than 1.0 so numbers and short lesson lines stay intelligible.
     const speed = ratePref === 'slow' ? 0.78 : 0.88;
-    const instructions =
-      typeof body.instructions === 'string' && body.instructions.trim()
-        ? body.instructions.trim().slice(0, 400)
-        : DEFAULT_INSTRUCTIONS;
 
     const client = new OpenAI({ apiKey });
     const response = await client.audio.speech.create({

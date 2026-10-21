@@ -10,6 +10,7 @@ import { AccessibilityProvider } from "./context/AccessibilityContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import RequireStudentSession from "./components/RequireStudentSession";
 import NativeShellBridge from "./components/NativeShellBridge";
+import SpeechRouteProfile from "./components/SpeechRouteProfile";
 import RocketTransition from "./components/RocketTransition";
 import HomePage from "./pages/HomePage";
 import StudentLoginPage from "./pages/StudentLoginPage";
@@ -79,6 +80,7 @@ const App = () => {
             <RocketTransition />
             <DemoBadge />
             <NativeShellBridge />
+            <SpeechRouteProfile />
             <Routes>
               <Route path="/" element={<HomePage />} />
               {DigitCollectPage && (

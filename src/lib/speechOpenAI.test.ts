@@ -176,8 +176,59 @@ describe('speechOpenAI', () => {
 
     const postCall = fetchMock.mock.calls.find((call) => call[1]?.method === 'POST');
     expect(postCall).toBeTruthy();
-    const body = JSON.parse(String(postCall?.[1]?.body ?? '{}')) as { voice?: string };
+    const body = JSON.parse(String(postCall?.[1]?.body ?? '{}')) as { voice?: string; profile?: string };
     expect(body.voice).toBe('cedar');
+    expect(body.profile).toBe('default');
+  });
+
+  it('sends OpenAI onyx for the sun profile', async () => {
+    const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/wav' });
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
+      if (!init || init.method === 'GET') {
+        return {
+          ok: true,
+          headers: { get: () => 'application/json' },
+          json: async () => ({ available: true }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => 'audio/wav' },
+        blob: async () => blob,
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const play = vi.fn().mockResolvedValue(undefined);
+    const audioInstances: Array<{ onended: (() => void) | null }> = [];
+    class FakeAudio {
+      onended: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      play = play;
+      constructor(_src?: string) {
+        audioInstances.push(this);
+      }
+    }
+    vi.stubGlobal('Audio', FakeAudio);
+    vi.stubGlobal('URL', {
+      createObjectURL: () => 'blob:sun',
+      revokeObjectURL: vi.fn(),
+    });
+
+    const pending = speakWithOpenAI('Count the apples.', {
+      token: 1,
+      isCurrent: () => true,
+      ratePref: 'normal',
+      profile: 'sun',
+      voice: 'cedar',
+    });
+    await vi.waitFor(() => expect(audioInstances.length).toBe(1));
+    audioInstances[0]?.onended?.();
+    await pending;
+
+    const postCall = fetchMock.mock.calls.find((call) => call[1]?.method === 'POST');
+    const body = JSON.parse(String(postCall?.[1]?.body ?? '{}')) as { voice?: string; profile?: string };
+    expect(body.voice).toBe('onyx');
+    expect(body.profile).toBe('sun');
   });
 
   it('plays wav audio from the proxy when current', async () => {

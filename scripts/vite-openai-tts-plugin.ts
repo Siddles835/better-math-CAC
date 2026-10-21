@@ -2,34 +2,15 @@
  * Dev-only /api/tts middleware so `npm run dev` can use OPENAI_API_KEY
  * the same way Vercel serverless does in production.
  */
+import { createRequire } from 'node:module';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 
+const { resolveSpeechProfile } = createRequire(import.meta.url)('../api/ttsProfile.cjs') as {
+  resolveSpeechProfile: (profile?: string | null) => { voice: string; instructions: string };
+};
+
 const MAX_CHARS = 600;
-const ALLOWED_VOICES = new Set([
-  'alloy',
-  'ash',
-  'ballad',
-  'coral',
-  'echo',
-  'fable',
-  'nova',
-  'onyx',
-  'sage',
-  'shimmer',
-  'verse',
-  'marin',
-  'cedar',
-]);
-
-const DEFAULT_INSTRUCTIONS =
-  'Speak as a warm, natural adult man with a relaxed everyday voice. ' +
-  'Sound like a calm kindergarten teacher talking to one child. ' +
-  'Use your normal speaking accent. Do not imitate or exaggerate any accent. ' +
-  'Keep a steady, unhurried pace. Say each number clearly. ' +
-  'Do not sound like a radio announcer or a deep movie-trailer voice.';
-
-const DEFAULT_VOICE = 'cedar';
 
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>
   new Promise((resolve, reject) => {
@@ -83,7 +64,8 @@ export function openaiTtsDevPlugin(): Plugin {
             JSON.stringify({
               available: true,
               model: 'gpt-4o-mini-tts',
-              defaultVoice: DEFAULT_VOICE,
+              defaultVoice: resolveSpeechProfile('default').voice,
+              sunVoice: resolveSpeechProfile('sun').voice,
               disclosure: 'AI-generated voice',
             })
           );
@@ -106,8 +88,11 @@ export function openaiTtsDevPlugin(): Plugin {
             response.end(JSON.stringify({ error: 'Invalid text' }));
             return;
           }
-          // MathLift always uses Cedar (natural male) for classroom read-aloud.
-          const voice = DEFAULT_VOICE;
+          // Same profile map as production /api/tts (Sun = Onyx, else Cedar).
+          const resolved = resolveSpeechProfile(
+            typeof body.profile === 'string' ? body.profile : 'default'
+          );
+          const voice = resolved.voice;
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
           const speed = ratePref === 'slow' ? 0.78 : 0.88;
 
@@ -117,7 +102,7 @@ export function openaiTtsDevPlugin(): Plugin {
             model: 'gpt-4o-mini-tts',
             voice,
             input: text,
-            instructions: DEFAULT_INSTRUCTIONS,
+            instructions: resolved.instructions,
             speed,
             response_format: 'wav',
           });
