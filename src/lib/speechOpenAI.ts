@@ -51,7 +51,7 @@ const endpoint = (): string => {
 };
 
 /**
- * Settings Play sample line (live Onyx TTS — not a baked female Alloy clip).
+ * Settings Play sample line (live Cedar TTS — not a baked Alloy clip).
  */
 export const CLOUD_SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog.';
 /** @deprecated Use CLOUD_SAMPLE_TEXT */
@@ -62,7 +62,7 @@ let referenceAudio: HTMLAudioElement | null = null;
 let referenceToken = 0;
 
 /**
- * Play the product cloud voice sample (Onyx) via /api/tts.
+ * Play the product cloud voice sample (Cedar) via /api/tts.
  * Kept name for callers; no longer uses the old Alloy data-URI clip.
  */
 export const playAlloyReferenceSample = async (): Promise<boolean> => {
@@ -137,7 +137,7 @@ export const ensureCloudTtsAvailable = async (
 };
 
 /** Bump when TTS format/instructions change so old muddy clips are not reused. */
-const CACHE_VERSION = 'onyx-male-us-wav-v1';
+const CACHE_VERSION = 'cedar-natural-wav-v1';
 
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
   `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;
@@ -152,11 +152,11 @@ export interface SpeakWithOpenAIOptions {
 }
 
 /**
- * MathLift uses OpenAI Onyx (male US) for all cloud read-aloud.
+ * MathLift uses OpenAI Cedar (natural male) for all cloud read-aloud.
  * Other gpt-4o-mini-tts ids remain listed for compatibility,
- * but the client always requests onyx.
+ * but the client always requests cedar.
  */
-export const DEFAULT_CLOUD_VOICE = 'onyx';
+export const DEFAULT_CLOUD_VOICE = 'cedar';
 
 /** Voices the /api/tts proxy accepts (gpt-4o-mini-tts). */
 export const CLOUD_VOICE_IDS = [
@@ -180,15 +180,15 @@ export type CloudVoiceId = (typeof CLOUD_VOICE_IDS)[number];
 export const isCloudVoiceId = (value: string | null | undefined): value is CloudVoiceId =>
   !!value && (CLOUD_VOICE_IDS as readonly string[]).includes(value);
 
-/** @deprecated Cloud voice picker removed — Onyx is fixed. Kept for type imports. */
+/** @deprecated Cloud voice picker removed — Cedar is fixed. Kept for type imports. */
 export const CLOUD_VOICE_OPTIONS: ReadonlyArray<{ id: CloudVoiceId; label: string }> = [
-  { id: 'onyx', label: 'Onyx' },
+  { id: 'cedar', label: 'Cedar' },
 ];
 
 let preferredCloudVoice: CloudVoiceId = DEFAULT_CLOUD_VOICE;
 
 export const setPreferredCloudVoice = (_voice?: string | null) => {
-  // Always Onyx — ignore other selections so Settings cannot drift.
+  // Always Cedar — ignore other selections so Settings cannot drift.
   preferredCloudVoice = DEFAULT_CLOUD_VOICE;
 };
 
@@ -207,7 +207,7 @@ export const speakWithOpenAI = async (
   const available = await ensureCloudTtsAvailable();
   if (!available || !options.isCurrent(options.token)) return false;
 
-  // Product decision: always Onyx (male US) for classroom clarity.
+  // Product decision: always Cedar (natural male) for classroom clarity.
   const voice = DEFAULT_CLOUD_VOICE;
   void options.voice;
   void preferredCloudVoice;

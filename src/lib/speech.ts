@@ -17,7 +17,7 @@ let unavailableHandler: (() => void) | null = null;
 let speechToken = 0;
 let naturalVoicePref = true;
 /**
- * When true (default), every speak() uses OpenAI Onyx only —
+ * When true (default), every speak() uses OpenAI Cedar only —
  * no Kokoro, no device SpeechSynthesis, no pre-rendered clips.
  */
 let alloyOnlyPref = true;
@@ -70,13 +70,13 @@ export const setNaturalVoicePref = (enabled: boolean) => {
 
 export const getNaturalVoicePref = (): boolean => naturalVoicePref;
 
-/** Product default: OpenAI Onyx (male US) for all read-aloud. */
+/** Product default: OpenAI Cedar (natural male) for all read-aloud. */
 export const setAlloyOnlyPref = (enabled: boolean) => {
   alloyOnlyPref = enabled;
   if (enabled) {
     preferredVoiceURI = null;
     void import('./speechOpenAI').then(({ ensureCloudTtsAvailable, setPreferredCloudVoice }) => {
-      setPreferredCloudVoice('onyx');
+      setPreferredCloudVoice('cedar');
       void ensureCloudTtsAvailable();
     });
   }

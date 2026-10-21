@@ -9,7 +9,7 @@ export type NeuralStatus = 'idle' | 'loading' | 'ready' | 'error' | 'unsupported
 
 const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
 /**
- * Adam: clear American English male (matches cloud Onyx gender).
+ * Adam: clear American English male (matches cloud Cedar gender).
  */
 const VOICE = 'am_adam';
 /** Classroom pace — a bit under “brisk” so consonants stay clear. */

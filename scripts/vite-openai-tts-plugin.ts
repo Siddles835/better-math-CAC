@@ -23,13 +23,13 @@ const ALLOWED_VOICES = new Set([
 ]);
 
 const DEFAULT_INSTRUCTIONS =
-  'Speak as a clear adult American man — a typical US classroom teacher ' +
-  '(Midwest / California). Deep, natural male voice. Unmistakably General American: ' +
-  'rhotic R, “zee” for Z, American vowels. ' +
-  'Do not sound female. Do not use a Chinese, East Asian, British, Australian, ' +
-  'or Irish accent. Calm pace. Crisp consonants. Enunciate every number.';
+  'Speak as a warm, natural adult man with a relaxed everyday voice. ' +
+  'Sound like a calm kindergarten teacher talking to one child. ' +
+  'Use your normal speaking accent. Do not imitate or exaggerate any accent. ' +
+  'Keep a steady, unhurried pace. Say each number clearly. ' +
+  'Do not sound like a radio announcer or a deep movie-trailer voice.';
 
-const DEFAULT_VOICE = 'onyx';
+const DEFAULT_VOICE = 'cedar';
 
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>
   new Promise((resolve, reject) => {
@@ -106,7 +106,7 @@ export function openaiTtsDevPlugin(): Plugin {
             response.end(JSON.stringify({ error: 'Invalid text' }));
             return;
           }
-          // MathLift always uses Onyx (male US) for classroom read-aloud.
+          // MathLift always uses Cedar (natural male) for classroom read-aloud.
           const voice = DEFAULT_VOICE;
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
           const speed = ratePref === 'slow' ? 0.78 : 0.88;

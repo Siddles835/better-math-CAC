@@ -45,7 +45,7 @@ export interface AccessibilityPrefs {
   /** Device-only preferred SpeechSynthesis voiceURI for the current language. */
   voiceURI: string | null;
   /**
-   * OpenAI gpt-4o-mini-tts voice id. MathLift always uses Onyx (male US) when
+   * OpenAI gpt-4o-mini-tts voice id. MathLift always uses Cedar (natural male) when
    * cloud TTS is available; other values are normalized away on load.
    */
   cloudVoice: string;
@@ -53,7 +53,7 @@ export interface AccessibilityPrefs {
   speechRate: SpeechRatePref;
   /**
    * Warm on-device Kokoro / OS neural fallback for English.
-   * Default OFF — cloud OpenAI Onyx is preferred when configured.
+   * Default OFF — cloud OpenAI Cedar is preferred when configured.
    */
   naturalVoice: boolean;
   biggerButtons: boolean;
@@ -84,7 +84,7 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   muteSounds: false,
   voiceEnabled: true,
   voiceURI: null,
-  cloudVoice: 'onyx',
+  cloudVoice: 'cedar',
   speechRate: 'normal',
   naturalVoice: false,
   biggerButtons: false,
@@ -235,11 +235,11 @@ export const loadPrefs = (): AccessibilityPrefs => {
     if (merged.voiceURI != null && typeof merged.voiceURI !== 'string') {
       merged.voiceURI = null;
     }
-    // Always Onyx (male US) for cloud TTS — discard alloy/coral/etc. from older sessions.
-    merged.cloudVoice = 'onyx';
-    // Always keep Natural voice (Kokoro) off for users; OpenAI Onyx is the path.
+    // Always Cedar (natural male) for cloud TTS — discard onyx/alloy/etc. from older sessions.
+    merged.cloudVoice = 'cedar';
+    // Always keep Natural voice (Kokoro) off for users; OpenAI Cedar is the path.
     merged.naturalVoice = false;
-    // Default selection in Settings is OpenAI Onyx (shown when voiceURI is null).
+    // Default selection in Settings is OpenAI Cedar (shown when voiceURI is null).
     merged.voiceURI = null;
     if (migratedSystemToDark) {
       try {

@@ -3,7 +3,7 @@
  * Keeps OPENAI_API_KEY on the server — never ship it to the browser.
  *
  * POST { text, voice?, lang?, ratePref?, instructions? }
- * → audio/wav (OpenAI gpt-4o-mini-tts, Onyx male US)
+ * → audio/wav (OpenAI gpt-4o-mini-tts, Cedar — natural male)
  *
  * GET → { available: boolean } so the client can probe without speaking.
  *
@@ -16,18 +16,18 @@ const OpenAI = require('openai');
 const MAX_CHARS = 600;
 
 /**
- * Male General American accent + classroom clarity.
- * gpt-4o-mini-tts follows these instructions closely — keep them specific.
+ * Natural classroom delivery. Avoid performed accents — they make Cedar
+ * sound like an impression instead of a teacher.
  */
 const DEFAULT_INSTRUCTIONS =
-  'Speak as a clear adult American man — a typical US classroom teacher ' +
-  '(Midwest / California). Deep, natural male voice. Unmistakably General American: ' +
-  'rhotic R, “zee” for Z, American vowels. ' +
-  'Do not sound female. Do not use a Chinese, East Asian, British, Australian, ' +
-  'or Irish accent. Calm pace. Crisp consonants. Enunciate every number.';
+  'Speak as a warm, natural adult man with a relaxed everyday voice. ' +
+  'Sound like a calm kindergarten teacher talking to one child. ' +
+  'Use your normal speaking accent. Do not imitate or exaggerate any accent. ' +
+  'Keep a steady, unhurried pace. Say each number clearly. ' +
+  'Do not sound like a radio announcer or a deep movie-trailer voice.';
 
-/** Fixed product voice: OpenAI Onyx (male). */
-const DEFAULT_VOICE = 'onyx';
+/** Fixed product voice: OpenAI Cedar (natural male, recommended for quality). */
+const DEFAULT_VOICE = 'cedar';
 
 const cors = (res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -84,7 +84,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Always Onyx — male US classroom voice (not Alloy).
+    // Always Cedar — natural male classroom voice (not deep Onyx).
     const voice = DEFAULT_VOICE;
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
     // Slightly slower than 1.0 so numbers and short lesson lines stay intelligible.

@@ -57,7 +57,7 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     setSpeechMuted(!prefs.voiceEnabled);
     // Alloy is the only speaking voice — clear any saved device voiceURI.
     setPreferredVoiceURI(null);
-    setPreferredCloudVoice('alloy');
+    setPreferredCloudVoice('cedar');
     setAlloyOnlyPref(true);
     setSpeechRatePref(prefs.speechRate);
     setNaturalVoicePref(false);
