@@ -55,9 +55,9 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     applyPrefsToDocument(prefs);
     // Voice off mutes TTS; muteSounds is SFX-only and does not stop speech.
     setSpeechMuted(!prefs.voiceEnabled);
-    // Alloy is the only speaking voice — clear any saved device voiceURI.
+    // Ash (male US) is the only speaking voice — clear any saved device voiceURI.
     setPreferredVoiceURI(null);
-    setPreferredCloudVoice('alloy');
+    setPreferredCloudVoice('ash');
     setAlloyOnlyPref(true);
     setSpeechRatePref(prefs.speechRate);
     setNaturalVoicePref(false);

@@ -76,7 +76,7 @@ export const setAlloyOnlyPref = (enabled: boolean) => {
   if (enabled) {
     preferredVoiceURI = null;
     void import('./speechOpenAI').then(({ ensureCloudTtsAvailable, setPreferredCloudVoice }) => {
-      setPreferredCloudVoice('onyx');
+      setPreferredCloudVoice('ash');
       void ensureCloudTtsAvailable();
     });
   }
@@ -560,7 +560,12 @@ export const listVoicesForLang = (
 ): SpeechSynthesisVoice[] => {
   const prefixes = VOICE_PREFIX[lang];
   return voices
-    .filter((voice) => prefixes.some((prefix) => voice.lang.toLowerCase().startsWith(prefix)))
+    .filter((voice) => {
+      const langLower = voice.lang.toLowerCase();
+      // Never let a Chinese (or other CJK) OS voice leak into English lessons.
+      if (lang === 'en' && /^(zh|cmn|yue|ja|ko)/.test(langLower)) return false;
+      return prefixes.some((prefix) => langLower.startsWith(prefix));
+    })
     .sort((a, b) => scoreVoice(b, lang) - scoreVoice(a, lang));
 };
 

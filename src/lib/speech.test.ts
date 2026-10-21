@@ -96,6 +96,15 @@ describe('pickVoice ranking', () => {
     const chosen = pickVoice('en', [voice('Samantha', 'en-US'), voice('Karen', 'en-AU')], 'Karen');
     expect(chosen?.name).toBe('Karen');
   });
+
+  it('never picks a Chinese OS voice for English lessons', () => {
+    const chosen = pickVoice('en', [
+      voice('Ting-Ting', 'zh-CN'),
+      voice('Microsoft David', 'en-US'),
+    ]);
+    expect(chosen?.name).toMatch(/David/i);
+    expect(chosen?.lang.toLowerCase().startsWith('zh')).toBe(false);
+  });
 });
 
 describe('K–2 speech defaults', () => {

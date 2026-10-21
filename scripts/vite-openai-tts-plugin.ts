@@ -6,30 +6,16 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 
 const MAX_CHARS = 600;
-const ALLOWED_VOICES = new Set([
-  'alloy',
-  'ash',
-  'ballad',
-  'coral',
-  'echo',
-  'fable',
-  'nova',
-  'onyx',
-  'sage',
-  'shimmer',
-  'verse',
-  'marin',
-  'cedar',
-]);
 
 const DEFAULT_INSTRUCTIONS =
-  'Speak as a clear adult American man — a typical US classroom teacher ' +
-  '(Midwest / California). Deep, natural male voice. Unmistakably General American: ' +
-  'rhotic R, “zee” for Z, American vowels. ' +
-  'Do not sound female. Do not use a Chinese, East Asian, British, Australian, ' +
-  'or Irish accent. Calm pace. Crisp consonants. Enunciate every number.';
+  'Speak as an adult American man from the Midwest. ' +
+  'Deep male voice only — never sound like a woman or a girl. ' +
+  'Pure General American English accent (rhotic R, American vowels, “zee” for Z). ' +
+  'Do not sound Chinese, East Asian, British, Australian, or Irish. ' +
+  'Calm classroom pace. Crisp consonants. Enunciate every number.';
 
-const DEFAULT_VOICE = 'onyx';
+const DEFAULT_VOICE = 'ash';
+const TTS_MODEL = 'gpt-4o-mini-tts';
 
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>
   new Promise((resolve, reject) => {
@@ -82,8 +68,10 @@ export function openaiTtsDevPlugin(): Plugin {
           response.end(
             JSON.stringify({
               available: true,
-              model: 'gpt-4o-mini-tts',
+              model: TTS_MODEL,
               defaultVoice: DEFAULT_VOICE,
+              gender: 'male',
+              accent: 'general-american',
               disclosure: 'AI-generated voice',
             })
           );
@@ -106,7 +94,6 @@ export function openaiTtsDevPlugin(): Plugin {
             response.end(JSON.stringify({ error: 'Invalid text' }));
             return;
           }
-          // MathLift always uses Onyx (male US) for classroom read-aloud.
           const voice = DEFAULT_VOICE;
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
           const speed = ratePref === 'slow' ? 0.78 : 0.88;
@@ -114,7 +101,7 @@ export function openaiTtsDevPlugin(): Plugin {
           const { default: OpenAI } = await import('openai');
           const client = new OpenAI({ apiKey });
           const speech = await client.audio.speech.create({
-            model: 'gpt-4o-mini-tts',
+            model: TTS_MODEL,
             voice,
             input: text,
             instructions: DEFAULT_INSTRUCTIONS,
@@ -125,7 +112,9 @@ export function openaiTtsDevPlugin(): Plugin {
           response.statusCode = 200;
           response.setHeader('Content-Type', 'audio/wav');
           response.setHeader('Cache-Control', 'private, max-age=3600');
-          response.setHeader('X-MathLift-Clarity', 'wav-classroom');
+          response.setHeader('X-MathLift-Voice', voice);
+          response.setHeader('X-MathLift-Gender', 'male');
+          response.setHeader('X-MathLift-Accent', 'general-american');
           response.end(buffer);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
