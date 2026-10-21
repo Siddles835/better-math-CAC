@@ -7,11 +7,13 @@
  *
  * GET → { available: boolean } so the client can probe without speaking.
  *
- * Response formatting matches the earlier Play sample that browsers could
- * play (mp3, audio/mpeg). Only the voice id is Onyx.
+ * Uses CommonJS so Vercel always registers this as a Node serverless
+ * function even when the app package.json has "type": "module".
+ * An ESM file here is skipped, /api/tts returns the app HTML, and
+ * Settings shows that cloud TTS is unavailable.
  */
 
-import OpenAI from 'openai';
+const OpenAI = require('openai');
 
 const MAX_CHARS = 600;
 
@@ -26,64 +28,68 @@ const DEFAULT_INSTRUCTIONS =
 const DEFAULT_VOICE = 'onyx';
 const TTS_MODEL = 'gpt-4o-mini-tts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Expose-Headers': 'X-MathLift-Voice',
+const cors = (res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 };
 
-const json = (body, status, extra = {}) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      ...corsHeaders,
-      'Content-Type': 'application/json',
-      ...extra,
-    },
-  });
+const readJson = async (req) => {
+  if (req.body && typeof req.body === 'object') return req.body;
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const raw = Buffer.concat(chunks).toString('utf8');
+  if (!raw) return {};
+  return JSON.parse(raw);
+};
 
-async function handleRequest(request) {
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+module.exports = async function handler(req, res) {
+  cors(res);
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return json({ available: false, error: 'OPENAI_API_KEY not configured' }, 503);
+    res.status(503).json({ available: false, error: 'OPENAI_API_KEY not configured' });
+    return;
   }
 
-  if (request.method === 'GET') {
-    return json(
-      {
-        available: true,
-        model: TTS_MODEL,
-        defaultVoice: DEFAULT_VOICE,
-        disclosure: 'AI-generated voice',
-      },
-      200
-    );
+  if (req.method === 'GET') {
+    res.status(200).json({
+      available: true,
+      model: TTS_MODEL,
+      defaultVoice: DEFAULT_VOICE,
+      disclosure: 'AI-generated voice',
+    });
+    return;
   }
 
-  if (request.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
-    const body = await request.json().catch(() => ({}));
+    const body = await readJson(req);
     const text = typeof body.text === 'string' ? body.text.trim() : '';
-    if (!text) return json({ error: 'Missing text' }, 400);
+    if (!text) {
+      res.status(400).json({ error: 'Missing text' });
+      return;
+    }
     if (text.length > MAX_CHARS) {
-      return json({ error: `Text too long (max ${MAX_CHARS} characters)` }, 400);
+      res.status(400).json({ error: `Text too long (max ${MAX_CHARS} characters)` });
+      return;
     }
 
-    // Always Onyx — same request fields the earlier sample used.
+    // Always Onyx. Same request fields the earlier sample used.
     const voice = DEFAULT_VOICE;
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
     const speed = ratePref === 'slow' ? 0.95 : 1.0;
 
     const client = new OpenAI({ apiKey });
-    const speech = await client.audio.speech.create({
+    const response = await client.audio.speech.create({
       model: TTS_MODEL,
       voice,
       input: text,
@@ -92,38 +98,17 @@ async function handleRequest(request) {
       response_format: 'mp3',
     });
 
-    const buffer = Buffer.from(await speech.arrayBuffer());
-    return new Response(buffer, {
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'private, max-age=3600',
-        'X-MathLift-TTS': 'openai-gpt-4o-mini-tts',
-        'X-MathLift-Voice': voice,
-      },
-    });
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.setHeader('X-MathLift-TTS', 'openai-gpt-4o-mini-tts');
+    res.setHeader('X-MathLift-Voice', voice);
+    res.status(200).send(buffer);
   } catch (error) {
     console.error('tts proxy failed', error?.message || error);
-    return json({ available: false, error: 'Speech generation failed' }, 502);
+    res.status(502).json({
+      available: false,
+      error: 'Speech generation failed',
+    });
   }
-}
-
-/** Current Vercel Node runtime. */
-export function GET(request) {
-  return handleRequest(request);
-}
-
-export function POST(request) {
-  return handleRequest(request);
-}
-
-export function OPTIONS(request) {
-  return handleRequest(request);
-}
-
-export default {
-  fetch(request) {
-    return handleRequest(request);
-  },
 };
