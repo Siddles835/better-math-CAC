@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAccessibility } from '@/context/AccessibilityContext';
-import { speak, stopSpeaking, unlockAudio } from '@/lib/speech';
+import { stopSpeaking, unlockAudio } from '@/lib/speech';
 import {
   CLOUD_SAMPLE_TEXT,
   DEFAULT_CLOUD_VOICE,
   ensureCloudTtsAvailable,
   getCloudTtsStatus,
+  loadCloudMp3Url,
   onCloudTtsStatus,
-  primeCloudPlayback,
   type CloudTtsStatus,
 } from '@/lib/speechOpenAI';
 
@@ -24,10 +24,20 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
   const [cloudStatus, setCloudStatus] = useState<CloudTtsStatus>(() => getCloudTtsStatus());
   const [sampleBusy, setSampleBusy] = useState(false);
   const [sampleError, setSampleError] = useState(false);
+  const sampleAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => onCloudTtsStatus(setCloudStatus), []);
   useEffect(() => {
     void ensureCloudTtsAvailable();
+  }, []);
+
+  // Keep the sample element ready so the first tap can play on iOS.
+  useEffect(() => {
+    const audio = sampleAudioRef.current;
+    if (!audio) return;
+    audio.setAttribute('playsinline', 'true');
+    audio.setAttribute('webkit-playsinline', 'true');
+    audio.preload = 'auto';
   }, []);
 
   useEffect(() => {
@@ -38,27 +48,49 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
 
   const cloudReady = cloudStatus === 'available';
 
-  const playCloudSample = () => {
+  const playCloudSample = async () => {
     unlockAudio();
     setSampleError(false);
     setSampleBusy(true);
     stopSpeaking({ skipAlloySample: true });
-    const result = speak(CLOUD_SAMPLE_TEXT, {
-      lang: 'en',
-      cloudOnly: true,
-      onEnd: () => setSampleBusy(false),
-      onUnavailable: () => {
-        setSampleBusy(false);
-        setSampleError(true);
-        announce(t('settings:voiceSampleFailed'));
-      },
-    });
-    if (result === 'unavailable' || result === 'muted' || result === 'empty') {
+
+    const audio = sampleAudioRef.current;
+    if (!audio) {
       setSampleBusy(false);
-      if (result === 'unavailable') {
-        setSampleError(true);
-        announce(t('settings:voiceSampleFailed'));
+      setSampleError(true);
+      announce(t('settings:voiceSampleFailed'));
+      return;
+    }
+
+    try {
+      const url = await loadCloudMp3Url(CLOUD_SAMPLE_TEXT, 'normal');
+      if (!url) throw new Error('unavailable');
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = url;
+      audio.load();
+      const play = async () => {
+        await audio.play();
+      };
+      try {
+        await play();
+      } catch {
+        // iOS sometimes needs load() before the first successful play.
+        audio.load();
+        await new Promise<void>((resolve) => {
+          const onReady = () => {
+            audio.removeEventListener('canplaythrough', onReady);
+            resolve();
+          };
+          audio.addEventListener('canplaythrough', onReady, { once: true });
+          window.setTimeout(() => resolve(), 400);
+        });
+        await play();
       }
+    } catch {
+      setSampleBusy(false);
+      setSampleError(true);
+      announce(t('settings:voiceSampleFailed'));
     }
   };
 
@@ -71,6 +103,14 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
 
   return (
     <div className={`space-y-4 ${className}`}>
+      <audio
+        ref={sampleAudioRef}
+        preload="auto"
+        playsInline
+        data-testid="alloy-sample-audio"
+        className="sr-only"
+        onEnded={() => setSampleBusy(false)}
+      />
       <div
         className="rounded-2xl border-2 border-primary/60 bg-primary/10 p-4"
         data-testid="openai-alloy-voice-card"
@@ -121,12 +161,9 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
             type="button"
             variant="default"
             className="min-h-[64px] shrink-0"
-            onPointerDown={() => {
-              unlockAudio();
-              primeCloudPlayback();
-            }}
+            onPointerDown={() => unlockAudio()}
             onClick={() => {
-              playCloudSample();
+              void playCloudSample();
             }}
             data-testid="alloy-voice-sample"
             aria-busy={sampleBusy}
