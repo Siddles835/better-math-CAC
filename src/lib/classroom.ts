@@ -27,6 +27,7 @@ import {
   demoVerifyPin,
 } from './demo/store';
 import type { Diagnosis, DiagnosisSnapshot } from './cognition';
+import type { AccessibilityPrefs } from './accessibility';
 import {
   getClassroomUnlockPlanet,
   getClassroomPathwayId,
@@ -74,6 +75,16 @@ export interface StudentState {
    */
   diagnosisHistory?: DiagnosisSnapshot[];
   lastUpdated: number;
+  /**
+   * Teacher-assigned disability accommodations for this student only.
+   * Older documents omit the field. Students can still edit device settings
+   * until the teacher saves a newer snapshot.
+   */
+  accommodations?: {
+    needs: string[];
+    prefs: AccessibilityPrefs;
+    updatedAt: number;
+  };
 }
 
 export interface Classroom {

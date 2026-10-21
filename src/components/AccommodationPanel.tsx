@@ -1,29 +1,35 @@
-import React, { useMemo, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAccessibility } from '@/context/AccessibilityContext';
 import {
-  loadClassAccommodations,
-  setClassNeeds,
-} from '@/lib/accommodations/classDefaults';
+  accommodationsForStudent,
+  saveStudentAccommodations,
+  toggleStudentFeature,
+  toggleStudentNeed,
+  type StudentAccommodationRecord,
+} from '@/lib/accommodations/studentAccommodations';
 import {
   ACCOMMODATION_FEATURES,
   ACCOMMODATION_MATRIX,
   ACCOMMODATION_NEEDS,
-  applyAccommodationPreset,
-  clearAccommodationNeed,
   isFeatureEnabled,
-  toggleAccommodationFeature,
   type AccommodationFeatureId,
   type AccommodationNeed,
 } from '@/lib/accommodations/matrix';
-import { withCalmMode } from '@/lib/accessibility';
+
+export interface AccommodationStudentOption {
+  key: string;
+  nickname: string;
+  accommodations?: unknown;
+}
 
 interface AccommodationPanelProps {
   classCode: string;
-  /** When true, applying a preset also updates class localStorage defaults. */
-  persistClassDefaults?: boolean;
+  students: AccommodationStudentOption[];
+  /** Fired after a successful per-student save (sample roster badges). */
+  onSaved?: (studentKey: string, record: StudentAccommodationRecord) => void;
 }
 
 const FEATURE_ORDER: AccommodationFeatureId[] = [
@@ -46,86 +52,79 @@ const FEATURE_ORDER: AccommodationFeatureId[] = [
   'highContrast',
 ];
 
-const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
+interface EditorProps {
+  classCode: string;
+  studentKey: string;
+  nickname: string;
+  initial: StudentAccommodationRecord;
+  onSaved?: (studentKey: string, record: StudentAccommodationRecord) => void;
+}
+
+const StudentAccommodationEditor: React.FC<EditorProps> = ({
   classCode,
-  persistClassDefaults = true,
+  studentKey,
+  nickname,
+  initial,
+  onSaved,
 }) => {
   const { t } = useTranslation('teacher');
-  const { prefs, replacePrefs, announce } = useAccessibility();
-  const [selectedNeeds, setSelectedNeeds] = useState<AccommodationNeed[]>(() => {
-    return loadClassAccommodations(classCode)?.needs ?? [];
-  });
+  const { announce } = useAccessibility();
+  const [record, setRecord] = useState(initial);
   const [note, setNote] = useState('');
+  const [error, setError] = useState('');
+  const saveSeq = useRef(0);
+  const recordRef = useRef(record);
 
-  const applyNeed = (need: AccommodationNeed) => {
-    // Clicking an already-selected need turns it off (especially important for low vision).
-    if (selectedNeeds.includes(need)) {
-      removeNeed(need);
-      return;
-    }
-    const nextNeeds = [...selectedNeeds, need];
-    setSelectedNeeds(nextNeeds);
-    if (persistClassDefaults) setClassNeeds(classCode, nextNeeds);
-
-    let next = applyAccommodationPreset(prefs, need);
-    if (next.calmBackground) next = withCalmMode(next, true);
-    replacePrefs(next);
-    setNote(t('acc_applied', { need: t(ACCOMMODATION_MATRIX[need].labelKey) }));
-    announce(t('acc_applied', { need: t(ACCOMMODATION_MATRIX[need].labelKey) }));
+  const commit = (next: StudentAccommodationRecord) => {
+    const previous = recordRef.current;
+    const seq = ++saveSeq.current;
+    recordRef.current = next;
+    setRecord(next);
+    setError('');
+    void saveStudentAccommodations(classCode, studentKey, next)
+      .then(() => {
+        if (saveSeq.current !== seq) return;
+        setNote(t('acc_saved', { name: nickname }));
+        onSaved?.(studentKey, next);
+      })
+      .catch((err: unknown) => {
+        console.error(err);
+        if (saveSeq.current !== seq) return;
+        recordRef.current = previous;
+        setRecord(previous);
+        setNote('');
+        setError(t('acc_save_fail', { name: nickname }));
+      });
   };
 
-  const removeNeed = (need: AccommodationNeed) => {
-    const nextNeeds = selectedNeeds.filter((n) => n !== need);
-    setSelectedNeeds(nextNeeds);
-    if (persistClassDefaults) setClassNeeds(classCode, nextNeeds);
-    // Every need must actually clear its prefs (not only low vision).
-    replacePrefs(clearAccommodationNeed(prefs, need, nextNeeds));
-    setNote(t('acc_unlocked'));
-    announce(t('acc_unlocked'));
+  const applyNeed = (need: AccommodationNeed) => {
+    const { record: next, turnedOn } = toggleStudentNeed(recordRef.current, need);
+    const label = t(ACCOMMODATION_MATRIX[need].labelKey);
+    setNote(turnedOn ? t('acc_applied', { need: label }) : t('acc_unlocked'));
+    announce(turnedOn ? t('acc_applied', { need: label }) : t('acc_unlocked'));
+    commit(next);
   };
 
   const onToggleFeature = (featureId: AccommodationFeatureId, enabled: boolean) => {
-    const next = toggleAccommodationFeature(prefs, featureId, enabled);
-    replacePrefs(next);
-    // Keep need chips in sync when the matching feature is turned off/on.
-    if (featureId === 'highContrast') {
-      const nextNeeds = enabled
-        ? selectedNeeds.includes('lowVision')
-          ? selectedNeeds
-          : [...selectedNeeds, 'lowVision' as AccommodationNeed]
-        : selectedNeeds.filter((n) => n !== 'lowVision');
-      setSelectedNeeds(nextNeeds);
-      if (persistClassDefaults) setClassNeeds(classCode, nextNeeds);
-    }
+    const next = toggleStudentFeature(recordRef.current, featureId, enabled);
     announce(
       `${t(ACCOMMODATION_FEATURES[featureId].labelKey)} ${enabled ? t('acc_on') : t('acc_off')}`
     );
+    commit(next);
   };
 
-  const activeExplain = useMemo(() => {
-    if (selectedNeeds.length === 0) return t('acc_pick_help');
-    return selectedNeeds
-      .map((need) => t(ACCOMMODATION_MATRIX[need].explainKey))
-      .join(' ');
-  }, [selectedNeeds, t]);
+  const activeExplain =
+    record.needs.length === 0
+      ? t('acc_pick_help')
+      : record.needs.map((need) => t(ACCOMMODATION_MATRIX[need].explainKey)).join(' ');
 
   return (
-    <section
-      className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4"
-      data-testid="accommodation-panel"
-      aria-labelledby="acc-panel-heading"
-    >
-      <div>
-        <h2 id="acc-panel-heading" className="text-xl font-semibold">
-          {t('acc_title')}
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t('acc_lead')}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{t('acc_no_lock')}</p>
-      </div>
-
+    <div className="space-y-4" data-testid="acc-student-editor">
+      <h3 className="font-medium text-foreground">{t('acc_for_student', { name: nickname })}</h3>
       <div className="flex flex-wrap gap-2">
         {ACCOMMODATION_NEEDS.map((need) => {
-          const selected = selectedNeeds.includes(need);
+          const selected = record.needs.includes(need);
+          const label = t(ACCOMMODATION_MATRIX[need].labelKey);
           return (
             <div key={need} className="flex items-center gap-1">
               <Button
@@ -134,9 +133,10 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
                 variant={selected ? 'default' : 'outline'}
                 className="min-h-10"
                 data-testid={`acc-need-${need}`}
+                aria-pressed={selected}
                 onClick={() => applyNeed(need)}
               >
-                {t(ACCOMMODATION_MATRIX[need].labelKey)}
+                {label}
               </Button>
               {selected ? (
                 <Button
@@ -144,8 +144,8 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
                   size="sm"
                   variant="ghost"
                   className="min-h-10"
-                  onClick={() => removeNeed(need)}
-                  aria-label={t('acc_remove_need', { need: t(ACCOMMODATION_MATRIX[need].labelKey) })}
+                  onClick={() => applyNeed(need)}
+                  aria-label={t('acc_remove_need', { need: label })}
                 >
                   {t('acc_off')}
                 </Button>
@@ -161,10 +161,10 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
 
       <div className="space-y-2">
         <h3 className="font-medium text-foreground">{t('acc_features')}</h3>
-        <ul className="space-y-2 list-none p-0 m-0">
+        <ul className="m-0 list-none space-y-2 p-0">
           {FEATURE_ORDER.map((featureId) => {
             const meta = ACCOMMODATION_FEATURES[featureId];
-            const enabled = isFeatureEnabled(prefs, featureId);
+            const enabled = isFeatureEnabled(record.prefs, featureId);
             return (
               <li
                 key={featureId}
@@ -191,6 +191,72 @@ const AccommodationPanel: React.FC<AccommodationPanelProps> = ({
           {note}
         </p>
       ) : null}
+      {error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+};
+
+const AccommodationPanel: React.FC<AccommodationPanelProps> = ({ classCode, students, onSaved }) => {
+  const { t } = useTranslation('teacher');
+  const [preferredKey, setPreferredKey] = useState('');
+  const selectedKey = students.some((student) => student.key === preferredKey)
+    ? preferredKey
+    : (students[0]?.key ?? '');
+  const selected = students.find((student) => student.key === selectedKey) ?? null;
+
+  return (
+    <section
+      className="space-y-4 rounded-2xl border border-border bg-card p-5 sm:p-6"
+      data-testid="accommodation-panel"
+      aria-labelledby="acc-panel-heading"
+    >
+      <div>
+        <h2 id="acc-panel-heading" className="text-xl font-semibold">
+          {t('acc_title')}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t('acc_lead')}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t('acc_no_lock')}</p>
+      </div>
+
+      {students.length === 0 ? (
+        <p className="text-sm text-muted-foreground" data-testid="acc-no-students">
+          {t('acc_no_students')}
+        </p>
+      ) : (
+        <>
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium">{t('acc_student')}</span>
+            <select
+              value={selectedKey}
+              onChange={(event) => setPreferredKey(event.target.value)}
+              className="min-h-[48px] w-full max-w-md rounded-xl border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={t('acc_student')}
+              data-testid="acc-student-select"
+            >
+              {students.map((student) => (
+                <option key={student.key} value={student.key}>
+                  {student.nickname}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {selected ? (
+            <StudentAccommodationEditor
+              key={selected.key}
+              classCode={classCode}
+              studentKey={selected.key}
+              nickname={selected.nickname}
+              initial={accommodationsForStudent(classCode, selected.key, selected.accommodations)}
+              onSaved={onSaved}
+            />
+          ) : null}
+        </>
+      )}
     </section>
   );
 };
