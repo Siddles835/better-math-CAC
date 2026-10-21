@@ -3,7 +3,7 @@
  * Keeps OPENAI_API_KEY on the server — never ship it to the browser.
  *
  * POST { text, ratePref? }
- * → audio/wav (OpenAI gpt-4o-mini-tts, Ash — male General American)
+ * → audio/wav (OpenAI gpt-4o-mini-tts, Onyx — traditional masculine)
  *
  * GET → { available: boolean } so the client can probe without speaking.
  *
@@ -16,18 +16,18 @@ const OpenAI = require('openai');
 const MAX_CHARS = 600;
 
 /**
- * Ash is a distinctly male OpenAI voice. Instructions force General American
- * and explicitly forbid female / Chinese / East-Asian delivery.
+ * Onyx is the traditional deep masculine OpenAI voice. Instructions keep a
+ * General American classroom accent.
  */
 const DEFAULT_INSTRUCTIONS =
-  'Speak as an adult American man from the Midwest. ' +
-  'Deep male voice only — never sound like a woman or a girl. ' +
-  'Pure General American English accent (rhotic R, American vowels, “zee” for Z). ' +
+  'Speak as a traditional adult American man with a deep masculine voice. ' +
+  'Classic General American accent: rhotic R, American vowels, “zee” for Z. ' +
+  'Never sound like a woman, a girl, or a light young voice. ' +
   'Do not sound Chinese, East Asian, British, Australian, or Irish. ' +
   'Calm classroom pace. Crisp consonants. Enunciate every number.';
 
-/** Fixed product voice: OpenAI Ash (male US). Never Alloy / Nova / female voices. */
-const DEFAULT_VOICE = 'ash';
+/** Fixed product voice: OpenAI Onyx (traditional masculine). Never Ash / Alloy. */
+const DEFAULT_VOICE = 'onyx';
 const TTS_MODEL = 'gpt-4o-mini-tts';
 
 const cors = (res) => {
@@ -87,7 +87,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Ignore client voice — always Ash (male US). Alloy/onyx/etc. cannot drift in.
+    // Ignore client voice — always Onyx (traditional masculine). Ash cannot drift in.
     const voice = DEFAULT_VOICE;
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
     const speed = ratePref === 'slow' ? 0.78 : 0.88;

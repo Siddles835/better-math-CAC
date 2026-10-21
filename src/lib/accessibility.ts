@@ -45,7 +45,7 @@ export interface AccessibilityPrefs {
   /** Device-only preferred SpeechSynthesis voiceURI for the current language. */
   voiceURI: string | null;
   /**
-   * OpenAI gpt-4o-mini-tts voice id. MathLift always uses Ash (male US) when
+   * OpenAI gpt-4o-mini-tts voice id. MathLift always uses Onyx (traditional masculine) when
    * cloud TTS is available; other values are normalized away on load.
    */
   cloudVoice: string;
@@ -53,7 +53,7 @@ export interface AccessibilityPrefs {
   speechRate: SpeechRatePref;
   /**
    * Warm on-device Kokoro / OS neural fallback for English.
-   * Default OFF — cloud OpenAI Ash is preferred when configured.
+   * Default OFF — cloud OpenAI Onyx is preferred when configured.
    */
   naturalVoice: boolean;
   biggerButtons: boolean;
@@ -84,7 +84,7 @@ export const DEFAULT_PREFS: AccessibilityPrefs = {
   muteSounds: false,
   voiceEnabled: true,
   voiceURI: null,
-  cloudVoice: 'ash',
+  cloudVoice: 'onyx',
   speechRate: 'normal',
   naturalVoice: false,
   biggerButtons: false,
@@ -235,11 +235,11 @@ export const loadPrefs = (): AccessibilityPrefs => {
     if (merged.voiceURI != null && typeof merged.voiceURI !== 'string') {
       merged.voiceURI = null;
     }
-    // Always Ash (male US) for cloud TTS — discard alloy/onyx/coral/etc. from older sessions.
-    merged.cloudVoice = 'ash';
-    // Always keep Natural voice (Kokoro) off for users; OpenAI Ash is the path.
+    // Always Onyx (traditional masculine) — discard ash/alloy/etc. from older sessions.
+    merged.cloudVoice = 'onyx';
+    // Always keep Natural voice (Kokoro) off for users; OpenAI Onyx is the path.
     merged.naturalVoice = false;
-    // Default selection in Settings is OpenAI Ash (shown when voiceURI is null).
+    // Default selection in Settings is OpenAI Onyx (shown when voiceURI is null).
     merged.voiceURI = null;
     if (migratedSystemToDark) {
       try {

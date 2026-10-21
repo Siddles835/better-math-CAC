@@ -14,7 +14,7 @@ import {
 } from '@/lib/speechOpenAI';
 
 /**
- * Voice settings: OpenAI Onyx (male US) for all read-aloud.
+ * Voice settings: OpenAI Onyx (traditional masculine) for all read-aloud.
  * Play sample uses live cloud TTS with the quick-brown-fox line.
  */
 const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => {

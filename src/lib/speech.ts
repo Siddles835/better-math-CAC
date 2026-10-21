@@ -17,7 +17,7 @@ let unavailableHandler: (() => void) | null = null;
 let speechToken = 0;
 let naturalVoicePref = true;
 /**
- * When true (default), every speak() uses OpenAI Onyx only —
+ * When true (default), every speak() uses OpenAI Onyx (traditional masculine) only —
  * no Kokoro, no device SpeechSynthesis, no pre-rendered clips.
  */
 let alloyOnlyPref = true;
@@ -76,7 +76,7 @@ export const setAlloyOnlyPref = (enabled: boolean) => {
   if (enabled) {
     preferredVoiceURI = null;
     void import('./speechOpenAI').then(({ ensureCloudTtsAvailable, setPreferredCloudVoice }) => {
-      setPreferredCloudVoice('ash');
+      setPreferredCloudVoice('onyx');
       void ensureCloudTtsAvailable();
     });
   }
