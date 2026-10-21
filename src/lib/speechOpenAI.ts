@@ -154,6 +154,8 @@ export interface SpeakWithOpenAIOptions {
   voice?: string;
   onEnd?: () => void;
   bindAudio?: (audio: HTMLAudioElement | null) => void;
+  /** Audio element already started in the tap, so the Onyx mp3 is allowed to play. */
+  playbackElement?: HTMLAudioElement | null;
 }
 
 /**
@@ -272,8 +274,9 @@ export const speakWithOpenAI = async (
   if (!options.isCurrent(options.token) || !objectUrl) return false;
 
   return await new Promise<boolean>((resolve) => {
-    const audio = new Audio(objectUrl);
+    const audio = options.playbackElement ?? new Audio();
     audio.preload = 'auto';
+    audio.src = objectUrl;
     options.bindAudio?.(audio);
     let settled = false;
     const finish = (ok: boolean) => {
