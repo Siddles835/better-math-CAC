@@ -23,11 +23,13 @@ const ALLOWED_VOICES = new Set([
 ]);
 
 const DEFAULT_INSTRUCTIONS =
-  'Speak in a clear, unmistakably General American English accent — ' +
-  'like a typical US classroom teacher (Midwest / California). ' +
-  'Use American pronunciations only: rhotic R, “zee” for Z, American vowels. ' +
-  'Never sound British, Australian, Irish, or otherwise non-American. ' +
-  'Calm, steady pace. Crisp consonants. Enunciate every number.';
+  'Speak as a clear adult American man — a typical US classroom teacher ' +
+  '(Midwest / California). Deep, natural male voice. Unmistakably General American: ' +
+  'rhotic R, “zee” for Z, American vowels. ' +
+  'Do not sound female. Do not use a Chinese, East Asian, British, Australian, ' +
+  'or Irish accent. Calm pace. Crisp consonants. Enunciate every number.';
+
+const DEFAULT_VOICE = 'onyx';
 
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>
   new Promise((resolve, reject) => {
@@ -81,7 +83,7 @@ export function openaiTtsDevPlugin(): Plugin {
             JSON.stringify({
               available: true,
               model: 'gpt-4o-mini-tts',
-              defaultVoice: 'alloy',
+              defaultVoice: DEFAULT_VOICE,
               disclosure: 'AI-generated voice',
             })
           );
@@ -104,8 +106,8 @@ export function openaiTtsDevPlugin(): Plugin {
             response.end(JSON.stringify({ error: 'Invalid text' }));
             return;
           }
-          // MathLift always uses Alloy for classroom read-aloud.
-          const voice = 'alloy';
+          // MathLift always uses Onyx (male US) for classroom read-aloud.
+          const voice = DEFAULT_VOICE;
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
           const speed = ratePref === 'slow' ? 0.78 : 0.88;
 

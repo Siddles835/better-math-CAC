@@ -14,6 +14,7 @@ const pluralForms = {
 const suffixes = ['zero', 'one', 'two', 'few', 'many', 'other'];
 const allowValues = new Set([
   'MathLift',
+  'OpenAI Onyx',
   'Devanagari',
   'Macro-F1',
   'mathlift1234@gmail.com',
@@ -118,6 +119,7 @@ for (const file of files) {
 const srcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src');
 const allowExact = new Set([
   'MathLift',
+  'OpenAI Onyx',
   'Chrome',
   'Firefox',
   'Safari',

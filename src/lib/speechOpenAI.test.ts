@@ -34,15 +34,37 @@ describe('speechOpenAI', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/tts', { method: 'GET' });
   });
 
-  it('keeps playing Alloy sample when a late stop from another call is stale', async () => {
+  it('keeps playing Onyx sample when a late stop from another call is stale', async () => {
     const { playAlloyReferenceSample, stopAlloyReferenceSample } = await import('./speechOpenAI');
+    const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/wav' });
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
+      if (!init || init.method === 'GET') {
+        return {
+          ok: true,
+          headers: { get: () => 'application/json' },
+          json: async () => ({ available: true }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => 'audio/wav' },
+        blob: async () => blob,
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('URL', {
+      createObjectURL: () => 'blob:onyx-sample',
+      revokeObjectURL: vi.fn(),
+    });
     const audioInstances: Array<{
       pause: ReturnType<typeof vi.fn>;
       play: ReturnType<typeof vi.fn>;
       onended: (() => void) | null;
       onerror: (() => void) | null;
+      volume: number;
     }> = [];
     class FakeAudio {
+      volume = 0.5;
       preload = '';
       onended: (() => void) | null = null;
       onerror: (() => void) | null = null;
@@ -57,8 +79,6 @@ describe('speechOpenAI', () => {
     stopAlloyReferenceSample();
     const pending = playAlloyReferenceSample();
     await vi.waitFor(() => expect(audioInstances.length).toBe(1));
-    // Simulate a stale async stopSpeaking callback that ran after play started
-    // but was scheduled before — token bump would kill old plays only.
     const first = audioInstances[0];
     expect(first?.play).toHaveBeenCalled();
     first?.onended?.();
@@ -105,10 +125,10 @@ describe('speechOpenAI', () => {
     vi.useRealTimers();
   });
 
-  it('always sends OpenAI alloy in the POST body', async () => {
+  it('always sends OpenAI onyx in the POST body', async () => {
     const { setPreferredCloudVoice, DEFAULT_CLOUD_VOICE } = await import('./speechOpenAI');
     setPreferredCloudVoice('sage');
-    expect(DEFAULT_CLOUD_VOICE).toBe('alloy');
+    expect(DEFAULT_CLOUD_VOICE).toBe('onyx');
 
     const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/wav' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
@@ -140,11 +160,11 @@ describe('speechOpenAI', () => {
     }
     vi.stubGlobal('Audio', FakeAudio);
     vi.stubGlobal('URL', {
-      createObjectURL: () => 'blob:alloy',
+      createObjectURL: () => 'blob:onyx',
       revokeObjectURL: vi.fn(),
     });
 
-    const pending = speakWithOpenAI('Try alloy.', {
+    const pending = speakWithOpenAI('Try onyx.', {
       token: 1,
       isCurrent: () => true,
       ratePref: 'normal',
@@ -157,7 +177,7 @@ describe('speechOpenAI', () => {
     const postCall = fetchMock.mock.calls.find((call) => call[1]?.method === 'POST');
     expect(postCall).toBeTruthy();
     const body = JSON.parse(String(postCall?.[1]?.body ?? '{}')) as { voice?: string };
-    expect(body.voice).toBe('alloy');
+    expect(body.voice).toBe('onyx');
   });
 
   it('plays wav audio from the proxy when current', async () => {

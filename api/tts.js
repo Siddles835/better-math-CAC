@@ -3,7 +3,7 @@
  * Keeps OPENAI_API_KEY on the server — never ship it to the browser.
  *
  * POST { text, voice?, lang?, ratePref?, instructions? }
- * → audio/mpeg (OpenAI gpt-4o-mini-tts, Alloy)
+ * → audio/wav (OpenAI gpt-4o-mini-tts, Onyx male US)
  *
  * GET → { available: boolean } so the client can probe without speaking.
  *
@@ -16,15 +16,18 @@ const OpenAI = require('openai');
 const MAX_CHARS = 600;
 
 /**
- * Strong General American accent + classroom clarity.
+ * Male General American accent + classroom clarity.
  * gpt-4o-mini-tts follows these instructions closely — keep them specific.
  */
 const DEFAULT_INSTRUCTIONS =
-  'Speak in a clear, unmistakably General American English accent — ' +
-  'like a typical US classroom teacher (Midwest / California). ' +
-  'Use American pronunciations only: rhotic R, “zee” for Z, American vowels. ' +
-  'Never sound British, Australian, Irish, or otherwise non-American. ' +
-  'Calm, steady pace. Crisp consonants. Enunciate every number.';
+  'Speak as a clear adult American man — a typical US classroom teacher ' +
+  '(Midwest / California). Deep, natural male voice. Unmistakably General American: ' +
+  'rhotic R, “zee” for Z, American vowels. ' +
+  'Do not sound female. Do not use a Chinese, East Asian, British, Australian, ' +
+  'or Irish accent. Calm pace. Crisp consonants. Enunciate every number.';
+
+/** Fixed product voice: OpenAI Onyx (male). */
+const DEFAULT_VOICE = 'onyx';
 
 const cors = (res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -58,7 +61,7 @@ module.exports = async function handler(req, res) {
     res.status(200).json({
       available: true,
       model: 'gpt-4o-mini-tts',
-      defaultVoice: 'alloy',
+      defaultVoice: DEFAULT_VOICE,
       disclosure: 'AI-generated voice',
     });
     return;
@@ -81,8 +84,8 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Always Alloy — matches Settings and OpenAI’s reference sample.
-    const voice = 'alloy';
+    // Always Onyx — male US classroom voice (not Alloy).
+    const voice = DEFAULT_VOICE;
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
     // Slightly slower than 1.0 so numbers and short lesson lines stay intelligible.
     const speed = ratePref === 'slow' ? 0.78 : 0.88;

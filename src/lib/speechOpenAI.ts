@@ -4,7 +4,6 @@
  */
 
 import type { SpeechRatePref } from '@/lib/speech';
-import { ALLOY_SAMPLE_DATA_URI } from '@/assets/audio/openaiAlloySampleData';
 import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
 
 export type CloudTtsStatus = 'unknown' | 'available' | 'unavailable';
@@ -52,65 +51,37 @@ const endpoint = (): string => {
 };
 
 /**
- * Settings Play sample: only the OpenAI Alloy line
- * “The quick brown fox jumps over the lazy dog.”
+ * Settings Play sample line (live Onyx TTS — not a baked female Alloy clip).
  */
-export const ALLOY_SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog.';
-
-/**
- * Inlined OpenAI Alloy “quick brown fox” clip (Settings Play sample).
- * Data URI so playback does not depend on a separate /assets/*.mp3 fetch.
- */
-export const ALLOY_REFERENCE_SAMPLE_URL = ALLOY_SAMPLE_DATA_URI;
+export const CLOUD_SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog.';
+/** @deprecated Use CLOUD_SAMPLE_TEXT */
+export const ALLOY_SAMPLE_TEXT = CLOUD_SAMPLE_TEXT;
 
 let referenceAudio: HTMLAudioElement | null = null;
 /** Bumps on every play/stop so a stale stopSpeaking() cannot kill a new sample. */
 let referenceToken = 0;
 
-/** Play the real OpenAI Alloy sample the product ships with. */
-export const playAlloyReferenceSample = (): Promise<boolean> => {
+/**
+ * Play the product cloud voice sample (Onyx) via /api/tts.
+ * Kept name for callers; no longer uses the old Alloy data-URI clip.
+ */
+export const playAlloyReferenceSample = async (): Promise<boolean> => {
   const token = ++referenceToken;
-  return new Promise((resolve) => {
+  if (referenceAudio) {
     try {
-      if (referenceAudio) {
-        try {
-          referenceAudio.pause();
-        } catch {
-          /* ignore */
-        }
-        referenceAudio = null;
-      }
-      const audio = new Audio(ALLOY_REFERENCE_SAMPLE_URL);
-      audio.preload = 'auto';
-      unlockSpeechClarity();
-      prepareClearPlayback(audio);
-      referenceAudio = audio;
-      let settled = false;
-      const finish = (ok: boolean) => {
-        if (settled) return;
-        settled = true;
-        if (referenceToken === token && referenceAudio === audio) {
-          referenceAudio = null;
-        }
-        resolve(ok);
-      };
-      audio.onended = () => {
-        if (referenceToken !== token) {
-          resolve(false);
-          return;
-        }
-        finish(true);
-      };
-      audio.onerror = () => finish(false);
-      void audio.play().then(
-        () => {
-          /* playing — keep referenceAudio so stop can pause it */
-        },
-        () => finish(false)
-      );
+      referenceAudio.pause();
     } catch {
-      resolve(false);
+      /* ignore */
     }
+    referenceAudio = null;
+  }
+  return speakWithOpenAI(CLOUD_SAMPLE_TEXT, {
+    token,
+    isCurrent: (value) => value === referenceToken,
+    ratePref: 'normal',
+    bindAudio: (audio) => {
+      referenceAudio = audio;
+    },
   });
 };
 
@@ -166,7 +137,7 @@ export const ensureCloudTtsAvailable = async (
 };
 
 /** Bump when TTS format/instructions change so old muddy clips are not reused. */
-const CACHE_VERSION = 'american-accent-wav-v1';
+const CACHE_VERSION = 'onyx-male-us-wav-v1';
 
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
   `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;
@@ -181,11 +152,11 @@ export interface SpeakWithOpenAIOptions {
 }
 
 /**
- * MathLift uses OpenAI Alloy for all cloud read-aloud.
- * Other gpt-4o-mini-tts ids remain accepted by the proxy for compatibility,
- * but the client always requests alloy.
+ * MathLift uses OpenAI Onyx (male US) for all cloud read-aloud.
+ * Other gpt-4o-mini-tts ids remain listed for compatibility,
+ * but the client always requests onyx.
  */
-export const DEFAULT_CLOUD_VOICE = 'alloy';
+export const DEFAULT_CLOUD_VOICE = 'onyx';
 
 /** Voices the /api/tts proxy accepts (gpt-4o-mini-tts). */
 export const CLOUD_VOICE_IDS = [
@@ -209,15 +180,15 @@ export type CloudVoiceId = (typeof CLOUD_VOICE_IDS)[number];
 export const isCloudVoiceId = (value: string | null | undefined): value is CloudVoiceId =>
   !!value && (CLOUD_VOICE_IDS as readonly string[]).includes(value);
 
-/** @deprecated Cloud voice picker removed — Alloy is fixed. Kept for type imports. */
+/** @deprecated Cloud voice picker removed — Onyx is fixed. Kept for type imports. */
 export const CLOUD_VOICE_OPTIONS: ReadonlyArray<{ id: CloudVoiceId; label: string }> = [
-  { id: 'alloy', label: 'Alloy' },
+  { id: 'onyx', label: 'Onyx' },
 ];
 
 let preferredCloudVoice: CloudVoiceId = DEFAULT_CLOUD_VOICE;
 
 export const setPreferredCloudVoice = (_voice?: string | null) => {
-  // Always Alloy — ignore other selections so Settings cannot drift.
+  // Always Onyx — ignore other selections so Settings cannot drift.
   preferredCloudVoice = DEFAULT_CLOUD_VOICE;
 };
 
@@ -236,7 +207,7 @@ export const speakWithOpenAI = async (
   const available = await ensureCloudTtsAvailable();
   if (!available || !options.isCurrent(options.token)) return false;
 
-  // Product decision: always Alloy for classroom clarity.
+  // Product decision: always Onyx (male US) for classroom clarity.
   const voice = DEFAULT_CLOUD_VOICE;
   void options.voice;
   void preferredCloudVoice;
