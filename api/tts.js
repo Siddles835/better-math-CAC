@@ -7,11 +7,11 @@
  *
  * GET → { available: boolean } so the client can probe without speaking.
  *
- * Uses CommonJS so Vercel always registers this as a Node serverless
- * function even when the app package.json has "type": "module".
+ * ESM default export: package.json is `"type": "module"`, so a CommonJS
+ * `require` / `module.exports` crashes on load and the browser never gets audio.
  */
 
-const OpenAI = require('openai');
+import OpenAI from 'openai';
 
 const MAX_CHARS = 600;
 
@@ -43,7 +43,7 @@ const readJson = async (req) => {
   return JSON.parse(raw);
 };
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') {
     res.status(204).end();
@@ -116,4 +116,4 @@ module.exports = async function handler(req, res) {
       error: 'Speech generation failed',
     });
   }
-};
+}

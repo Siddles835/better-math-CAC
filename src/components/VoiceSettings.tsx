@@ -10,6 +10,7 @@ import {
   ensureCloudTtsAvailable,
   getCloudTtsStatus,
   onCloudTtsStatus,
+  primeCloudPlayback,
   type CloudTtsStatus,
 } from '@/lib/speechOpenAI';
 
@@ -120,7 +121,10 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
             type="button"
             variant="default"
             className="min-h-[64px] shrink-0"
-            onPointerDown={() => unlockAudio()}
+            onPointerDown={() => {
+              unlockAudio();
+              primeCloudPlayback();
+            }}
             onClick={() => {
               playCloudSample();
             }}
