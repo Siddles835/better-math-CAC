@@ -31,6 +31,12 @@ import { SAMPLE_CLASS_CODE, SAMPLE_STUDENTS } from '@/lib/cognition/demoClass';
 import { isTopicStartPlanet } from '@/content/solarSystems';
 import PilotOverview from '@/components/PilotOverview';
 import AccommodationPanel from '@/components/AccommodationPanel';
+import { ACCOMMODATION_MATRIX } from '@/lib/accommodations/matrix';
+import {
+  accommodationsForStudent,
+  normalizeStudentAccommodations,
+  type StudentAccommodationRecord,
+} from '@/lib/accommodations/studentAccommodations';
 import { isDemoMode } from '@/lib/demo/mode';
 import { cn } from '@/lib/utils';
 
@@ -54,6 +60,9 @@ const TeacherDashboard: React.FC = () => {
   const [allowStudentPhotos, setAllowStudentPhotos] = useState(false);
   const [savingPlacement, setSavingPlacement] = useState(false);
   const [savingPhotos, setSavingPhotos] = useState(false);
+  const [savedAccommodations, setSavedAccommodations] = useState<
+    Record<string, StudentAccommodationRecord>
+  >({});
 
   const sample = classCode.toUpperCase() === SAMPLE_CLASS_CODE;
 
@@ -376,7 +385,17 @@ const TeacherDashboard: React.FC = () => {
           <p className="text-sm text-muted-foreground">{tx('paths:demoPin')}</p>
         )}
 
-        <AccommodationPanel classCode={classCode} persistClassDefaults={!sample} />
+        <AccommodationPanel
+          classCode={classCode}
+          students={students.map(([key, student]) => ({
+            key,
+            nickname: student.nickname,
+            accommodations: savedAccommodations[key] ?? student.accommodations,
+          }))}
+          onSaved={(studentKey, record) => {
+            setSavedAccommodations((prev) => ({ ...prev, [studentKey]: record }));
+          }}
+        />
 
         <ClassTrends students={roster} sample={sample} />
 
@@ -420,6 +439,16 @@ const TeacherDashboard: React.FC = () => {
                 const currentPlanet = getTeacherVisiblePlanet(s, classUnlock);
                 const lesson = getLessonForPlanet(currentPlanet, 'foundations');
                 const level = getPlanetLevel(currentPlanet, 'foundations');
+                const accommodations = sample
+                  ? accommodationsForStudent(
+                      classCode,
+                      key,
+                      savedAccommodations[key] ?? s.accommodations
+                    )
+                  : normalizeStudentAccommodations(savedAccommodations[key] ?? s.accommodations);
+                const needLabels = (accommodations?.needs ?? [])
+                  .filter((need) => need in ACCOMMODATION_MATRIX)
+                  .map((need) => tx(`teacher:${ACCOMMODATION_MATRIX[need].labelKey}`));
                 return (
                   <article
                     key={key}
@@ -437,6 +466,11 @@ const TeacherDashboard: React.FC = () => {
                       {' · '}
                       {tx(`ui:${level.rangeKey}`)}
                     </p>
+                    {needLabels.length > 0 && (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {tx('teacher:acc_roster', { list: needLabels.join(', ') })}
+                      </p>
+                    )}
                     {s.lastDiagnosis && (
                       <div className="mt-3 text-sm text-muted-foreground">
                         <p className="font-medium text-foreground">

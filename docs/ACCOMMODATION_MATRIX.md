@@ -1,6 +1,8 @@
 # Disability accommodation matrix
 
-Teacher-facing presets live in `src/lib/accommodations/matrix.ts`. Class defaults are stored on-device at `mathlift.classAccommodations.v1` (keyed by class code) via `src/lib/accommodations/classDefaults.ts`. Applying a preset **never locks** student settings — every preference stays editable in Learning preferences / the Accommodation panel.
+Teacher-facing presets live in `src/lib/accommodations/matrix.ts`. The dashboard student menu stores a separate snapshot per student (`students.{key}.accommodations` on the class document) via `src/lib/accommodations/studentAccommodations.ts`. The sample class keeps those snapshots in `mathlift.sampleStudentAccommodations.v1`. Applying a preset never locks the switches. A student can still change Learning preferences on their device until the teacher saves a newer snapshot for them.
+
+Older class-wide defaults (`mathlift.classAccommodations.v1`) are no longer written by the dashboard.
 
 ## Need → prefs → features
 
@@ -30,5 +32,6 @@ Teacher-facing presets live in `src/lib/accommodations/matrix.ts`. Class default
 
 ## UI entry points
 
-- Teacher Dashboard → Accommodation panel (`AccommodationPanel`)
-- Student / device Learning preferences remain the authority for individual overrides
+- Teacher Dashboard → Disability accommodations (`AccommodationPanel`): pick a student, then toggle needs and features for that student only
+- On the student's device, `StudentAccommodationSync` applies the saved snapshot at login and when the teacher saves a newer one
+- Student / device Learning preferences stay editable between teacher saves

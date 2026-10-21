@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GameProvider } from "./context/GameContext";
 import { AccessibilityProvider } from "./context/AccessibilityContext";
+import StudentAccommodationSync from "./components/StudentAccommodationSync";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import RequireStudentSession from "./components/RequireStudentSession";
 import NativeShellBridge from "./components/NativeShellBridge";
@@ -76,6 +77,7 @@ const App = () => {
           <BrowserRouter>
             {/* Inside the router so announce captions clear on navigation. */}
             <AccessibilityProvider>
+            <StudentAccommodationSync />
             <RocketTransition />
             <DemoBadge />
             <NativeShellBridge />
