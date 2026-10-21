@@ -16,12 +16,15 @@ const OpenAI = require('openai');
 const MAX_CHARS = 600;
 
 /**
- * Match OpenAI’s public Alloy TTS sample tone (clear, natural, not cartoonish).
- * Keep instructions light so Alloy sounds like the playground sample.
+ * Classroom-first clarity: crisp consonants, steady pace, no theatrical delivery.
+ * gpt-4o-mini-tts follows these instructions closely — keep them specific.
  */
 const DEFAULT_INSTRUCTIONS =
-  'Speak naturally and clearly in a warm, friendly tone. ' +
-  'Sound like a helpful person, not a robot. Enunciate numbers carefully.';
+  'Speak with excellent clarity for young students learning math. ' +
+  'Use a calm, steady adult voice at an easy listening pace. ' +
+  'Enunciate every word and every number with crisp consonants. ' +
+  'Keep even volume. Pause briefly after commas and between sentences. ' +
+  'Do not whisper, rush, sing, sound breathy, cute, robotic, or theatrical.';
 
 const cors = (res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -81,7 +84,8 @@ module.exports = async function handler(req, res) {
     // Always Alloy — matches Settings and OpenAI’s reference sample.
     const voice = 'alloy';
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
-    const speed = ratePref === 'slow' ? 0.95 : 1.0;
+    // Slightly slower than 1.0 so numbers and short lesson lines stay intelligible.
+    const speed = ratePref === 'slow' ? 0.78 : 0.88;
     const instructions =
       typeof body.instructions === 'string' && body.instructions.trim()
         ? body.instructions.trim().slice(0, 400)
@@ -94,14 +98,16 @@ module.exports = async function handler(req, res) {
       input: text,
       instructions,
       speed,
-      response_format: 'mp3',
+      // WAV avoids MP3 smear on consonants (much clearer on phone speakers).
+      response_format: 'wav',
     });
 
     const buffer = Buffer.from(await response.arrayBuffer());
-    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Type', 'audio/wav');
     res.setHeader('Cache-Control', 'private, max-age=3600');
     res.setHeader('X-MathLift-TTS', 'openai-gpt-4o-mini-tts');
     res.setHeader('X-MathLift-Voice', voice);
+    res.setHeader('X-MathLift-Clarity', 'wav-classroom');
     res.status(200).send(buffer);
   } catch (error) {
     console.error('tts proxy failed', error?.message || error);

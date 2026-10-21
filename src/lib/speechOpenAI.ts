@@ -5,6 +5,7 @@
 
 import type { SpeechRatePref } from '@/lib/speech';
 import { ALLOY_SAMPLE_DATA_URI } from '@/assets/audio/openaiAlloySampleData';
+import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
 
 export type CloudTtsStatus = 'unknown' | 'available' | 'unavailable';
 
@@ -81,6 +82,8 @@ export const playAlloyReferenceSample = (): Promise<boolean> => {
       }
       const audio = new Audio(ALLOY_REFERENCE_SAMPLE_URL);
       audio.preload = 'auto';
+      unlockSpeechClarity();
+      prepareClearPlayback(audio);
       referenceAudio = audio;
       let settled = false;
       const finish = (ok: boolean) => {
@@ -162,8 +165,11 @@ export const ensureCloudTtsAvailable = async (
   return probePromise;
 };
 
+/** Bump when TTS format/instructions change so old muddy clips are not reused. */
+const CACHE_VERSION = 'clarity-wav-v1';
+
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
-  `${voice}|${ratePref}|${text}`;
+  `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;
 
 export interface SpeakWithOpenAIOptions {
   token: number;
@@ -250,6 +256,12 @@ export const speakWithOpenAI = async (
         }),
       });
       if (!response.ok || !options.isCurrent(options.token)) return false;
+      const contentType = response.headers?.get?.('content-type') || '';
+      // Reject SPA HTML / JSON errors so we never try to "play" a document.
+      if (contentType.includes('text/html') || contentType.includes('application/json')) {
+        setStatus('unavailable');
+        return false;
+      }
       const blob = await response.blob();
       if (!blob.size || !options.isCurrent(options.token)) return false;
       objectUrl = URL.createObjectURL(blob);
@@ -273,6 +285,8 @@ export const speakWithOpenAI = async (
 
   return await new Promise<boolean>((resolve) => {
     const audio = new Audio(objectUrl);
+    unlockSpeechClarity();
+    prepareClearPlayback(audio);
     options.bindAudio?.(audio);
     let settled = false;
     const finish = (ok: boolean) => {

@@ -1,5 +1,6 @@
 import type { AppLang } from '@/lib/cognition/readingTime';
 import { loadLanguage } from '@/lib/i18n/language';
+import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
 
 const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
 /** Strip leftover symbols that should not be spoken (keep / until fractions are handled). */
@@ -24,11 +25,11 @@ let alloyOnlyPref = true;
 export type SpeechRatePref = 'slow' | 'normal';
 
 /**
- * Everyday pace. Slowing below ~0.9 makes device voices sound slurred;
- * pitch above 1.0 can sound cartoonish.
+ * Everyday classroom pace — a hair under 1.0 so device voices stay clear.
+ * Pitch stays at 1.0 (higher sounds cartoonish).
  */
-export const K2_SPEECH_RATE = 1;
-export const K2_SPEECH_RATE_SLOW = 0.88;
+export const K2_SPEECH_RATE = 0.92;
+export const K2_SPEECH_RATE_SLOW = 0.8;
 export const K2_SPEECH_PITCH = 1;
 /** Tiny gap only when a long passage must be split. */
 export const SENTENCE_GAP_MS = 110;
@@ -608,6 +609,7 @@ export const unlockAudio = () => {
   if (audioUnlocked || typeof window === 'undefined') return;
   audioUnlocked = true;
   try {
+    unlockSpeechClarity();
     const silent = new Audio();
     silent.src =
       'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4OjE2LjEwMAAAAAAAAAAAAAAAAC1FWERTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+1DEAAADAAAhHgAADUQAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
@@ -702,8 +704,11 @@ const playPreRendered = async (
       }
       const audio = new Audio(entry.file.startsWith('/') ? entry.file : `/audio/${entry.file}`);
       activeAudio = audio;
+      unlockSpeechClarity();
+      prepareClearPlayback(audio);
       audio.preservesPitch = true;
-      audio.playbackRate = ratePref === 'slow' ? 0.9 : 1;
+      // Prefer server-side rate when possible; keep a gentle slowdown only for clips.
+      audio.playbackRate = ratePref === 'slow' ? 0.85 : 1;
       const finish = (ok: boolean) => {
         if (token !== speechToken) {
           resolve(false);

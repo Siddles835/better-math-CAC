@@ -3,6 +3,8 @@
  * Lazy-loaded. Never calls a cloud TTS API with children's text.
  */
 
+import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
+
 export type NeuralStatus = 'idle' | 'loading' | 'ready' | 'error' | 'unsupported';
 
 const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
@@ -11,9 +13,9 @@ const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
  * Sounds closer to a normal person reading a lesson.
  */
 const VOICE = 'af_bella';
-/** Everyday speaking pace (slightly brisk reads as more natural). */
-const SPEED_NORMAL = 1.05;
-const SPEED_SLOW = 0.92;
+/** Classroom pace — a bit under “brisk” so consonants stay clear. */
+const SPEED_NORMAL = 0.95;
+const SPEED_SLOW = 0.82;
 /** Short breath between sentences, like a person pausing. */
 const BREATH_MS = 140;
 
@@ -147,6 +149,8 @@ const playBlob = (
     const audio = new Audio(url);
     options.bindAudio?.(audio);
     // Do not change playbackRate: it makes neural voices sound metallic.
+    unlockSpeechClarity();
+    prepareClearPlayback(audio);
     audio.onended = () => {
       URL.revokeObjectURL(url);
       options.bindAudio?.(null);
