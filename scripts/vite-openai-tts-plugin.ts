@@ -8,8 +8,8 @@ import type { Plugin } from 'vite';
 const MAX_CHARS = 600;
 
 const DEFAULT_INSTRUCTIONS =
-  'Low baritone only. Middle-aged American man, deep chest voice, pitched down. ' +
-  'Slow and plain. Do not sound young, bright, medium-pitched, or like the previous lighter voice.';
+  'Speak naturally and clearly as a traditional masculine American man. ' +
+  'Sound like a helpful person, not a robot. Enunciate numbers carefully.';
 
 const DEFAULT_VOICE = 'onyx';
 const TTS_MODEL = 'gpt-4o-mini-tts';
@@ -93,7 +93,7 @@ export function openaiTtsDevPlugin(): Plugin {
           }
           const voice = DEFAULT_VOICE;
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
-          const speed = ratePref === 'slow' ? 0.78 : 0.88;
+          const speed = ratePref === 'slow' ? 0.95 : 1.0;
 
           const { default: OpenAI } = await import('openai');
           const client = new OpenAI({ apiKey });
@@ -103,16 +103,15 @@ export function openaiTtsDevPlugin(): Plugin {
             input: text,
             instructions: DEFAULT_INSTRUCTIONS,
             speed,
-            response_format: 'wav',
+            response_format: 'mp3',
           });
           const buffer = Buffer.from(await speech.arrayBuffer());
           response.statusCode = 200;
-          response.setHeader('Content-Type', 'audio/wav');
-          response.setHeader('Cache-Control', 'no-store');
-          response.setHeader('Access-Control-Expose-Headers', 'X-MathLift-Voice, X-MathLift-Gender');
+          response.setHeader('Content-Type', 'audio/mpeg');
+          response.setHeader('Cache-Control', 'private, max-age=3600');
+          response.setHeader('Access-Control-Expose-Headers', 'X-MathLift-Voice');
+          response.setHeader('X-MathLift-TTS', 'openai-gpt-4o-mini-tts');
           response.setHeader('X-MathLift-Voice', voice);
-          response.setHeader('X-MathLift-Gender', 'male');
-          response.setHeader('X-MathLift-Accent', 'general-american');
           response.end(buffer);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);

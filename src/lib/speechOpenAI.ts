@@ -4,7 +4,6 @@
  */
 
 import type { SpeechRatePref } from '@/lib/speech';
-import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
 
 export type CloudTtsStatus = 'unknown' | 'available' | 'unavailable';
 
@@ -27,7 +26,6 @@ export const resetCloudTtsForTests = () => {
     }
   }
   cache.clear();
-  heldAudio = null;
   setStatus('unknown');
 };
 
@@ -61,50 +59,6 @@ export const ALLOY_SAMPLE_TEXT = CLOUD_SAMPLE_TEXT;
 let referenceAudio: HTMLAudioElement | null = null;
 /** Bumps on every play/stop so a stale stopSpeaking() cannot kill a new sample. */
 let referenceToken = 0;
-
-/**
- * Same HTMLAudioElement from the tap through the TTS fetch.
- * A brand-new Audio() after `await fetch` loses the user gesture and play() rejects,
- * which Settings shows as “Could not play the voice sample.”
- */
-let heldAudio: HTMLAudioElement | null = null;
-const SILENT_WAV =
-  'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-
-export const primeCloudPlayback = (): void => {
-  if (typeof Audio === 'undefined') return;
-  try {
-    if (!heldAudio) heldAudio = new Audio();
-    const audio = heldAudio;
-    unlockSpeechClarity();
-    prepareClearPlayback(audio);
-    if (!audio.src) audio.src = SILENT_WAV;
-    const pending = audio.play();
-    if (pending && typeof pending.catch === 'function') {
-      void pending.catch(() => undefined);
-    }
-  } catch {
-    heldAudio = null;
-  }
-};
-
-const claimHeldAudio = (src: string): HTMLAudioElement => {
-  const audio = heldAudio ?? new Audio();
-  heldAudio = null;
-  audio.src = src;
-  return audio;
-};
-
-/** Drop a primed element so Stop does not leave a silent clip running. */
-export const releaseCloudPlayback = (): void => {
-  if (!heldAudio) return;
-  try {
-    heldAudio.pause();
-  } catch {
-    /* ignore */
-  }
-  heldAudio = null;
-};
 
 /**
  * Play the product cloud voice sample (Onyx) via /api/tts.
@@ -187,8 +141,8 @@ export const ensureCloudTtsAvailable = async (
   return probePromise;
 };
 
-/** Bump when TTS format/instructions change so old muddy clips are not reused. */
-const CACHE_VERSION = 'onyx-baritone-v2';
+/** Bump when TTS format changes so an old wav clip is not reused. */
+const CACHE_VERSION = 'onyx-mp3-v1';
 
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
   `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;
@@ -245,6 +199,61 @@ export const setPreferredCloudVoice = (_voice?: string | null) => {
 
 export const getPreferredCloudVoice = (): CloudVoiceId => DEFAULT_CLOUD_VOICE;
 
+/** Fetch the Onyx clip as an mp3 object URL, using the same file type the old sample played. */
+export const loadCloudMp3Url = async (
+  text: string,
+  ratePref: SpeechRatePref = 'normal'
+): Promise<string | null> => {
+  const cleaned = text.trim();
+  if (!cleaned) return null;
+  if (!(await ensureCloudTtsAvailable({ force: true }))) return null;
+
+  const voice = DEFAULT_CLOUD_VOICE;
+  const key = cacheKey(cleaned, voice, ratePref);
+  const cached = cache.get(key);
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(endpoint(), {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: cleaned.slice(0, 600),
+        voice,
+        ratePref,
+      }),
+    });
+    const contentType = response.headers?.get?.('content-type') || '';
+    if (!response.ok || contentType.includes('text/html') || contentType.includes('application/json')) {
+      setStatus('unavailable');
+      return null;
+    }
+    const spokenVoice = (response.headers?.get?.('x-mathlift-voice') || '').toLowerCase();
+    if (spokenVoice && spokenVoice !== DEFAULT_CLOUD_VOICE) {
+      setStatus('unavailable');
+      return null;
+    }
+    const raw = await response.blob();
+    if (!raw.size) return null;
+    const blob = raw.type.includes('audio/mpeg') ? raw : new Blob([raw], { type: 'audio/mpeg' });
+    const objectUrl = URL.createObjectURL(blob);
+    cache.set(key, objectUrl);
+    if (cache.size > 48) {
+      const first = cache.keys().next().value;
+      if (first) {
+        const old = cache.get(first);
+        cache.delete(first);
+        if (old) URL.revokeObjectURL(old);
+      }
+    }
+    return objectUrl;
+  } catch {
+    setStatus('unavailable');
+    return null;
+  }
+};
+
 export const speakWithOpenAI = async (
   text: string,
   options: SpeakWithOpenAIOptions
@@ -255,67 +264,16 @@ export const speakWithOpenAI = async (
     return false;
   }
 
-  const available = await ensureCloudTtsAvailable();
-  if (!available || !options.isCurrent(options.token)) return false;
-
-  // Product decision: always Onyx (traditional masculine) for classroom clarity.
-  const voice = DEFAULT_CLOUD_VOICE;
+  if (!options.isCurrent(options.token)) return false;
+  const ratePref = options.ratePref === 'slow' ? 'slow' : 'normal';
   void options.voice;
   void preferredCloudVoice;
-  const ratePref = options.ratePref === 'slow' ? 'slow' : 'normal';
-  const key = cacheKey(cleaned, voice, ratePref);
-
-  let objectUrl = cache.get(key);
-  if (!objectUrl) {
-    try {
-      const response = await fetch(endpoint(), {
-        method: 'POST',
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: cleaned.slice(0, 600),
-          voice,
-          ratePref,
-        }),
-      });
-      if (!response.ok || !options.isCurrent(options.token)) return false;
-      const contentType = response.headers?.get?.('content-type') || '';
-      // Reject SPA HTML / JSON errors so we never try to "play" a document.
-      if (contentType.includes('text/html') || contentType.includes('application/json')) {
-        setStatus('unavailable');
-        return false;
-      }
-      // Server must mint Onyx. Refuse drifted Ash or other clips.
-      const spokenVoice = (response.headers?.get?.('x-mathlift-voice') || '').toLowerCase();
-      if (spokenVoice && spokenVoice !== DEFAULT_CLOUD_VOICE) {
-        setStatus('unavailable');
-        return false;
-      }
-      const blob = await response.blob();
-      if (!blob.size || !options.isCurrent(options.token)) return false;
-      objectUrl = URL.createObjectURL(blob);
-      cache.set(key, objectUrl);
-      // Cap cache size so long sessions do not retain every clip forever.
-      if (cache.size > 48) {
-        const first = cache.keys().next().value;
-        if (first) {
-          const old = cache.get(first);
-          cache.delete(first);
-          if (old) URL.revokeObjectURL(old);
-        }
-      }
-    } catch {
-      setStatus('unavailable');
-      return false;
-    }
-  }
-
+  const objectUrl = await loadCloudMp3Url(cleaned, ratePref);
   if (!options.isCurrent(options.token) || !objectUrl) return false;
 
   return await new Promise<boolean>((resolve) => {
-    const audio = claimHeldAudio(objectUrl);
-    unlockSpeechClarity();
-    prepareClearPlayback(audio);
+    const audio = new Audio(objectUrl);
+    audio.preload = 'auto';
     options.bindAudio?.(audio);
     let settled = false;
     const finish = (ok: boolean) => {
