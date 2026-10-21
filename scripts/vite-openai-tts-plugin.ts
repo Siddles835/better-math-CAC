@@ -8,13 +8,13 @@ import type { Plugin } from 'vite';
 const MAX_CHARS = 600;
 
 const DEFAULT_INSTRUCTIONS =
-  'Speak as an adult American man from the Midwest. ' +
-  'Deep male voice only — never sound like a woman or a girl. ' +
-  'Pure General American English accent (rhotic R, American vowels, “zee” for Z). ' +
+  'Speak as a traditional adult American man with a deep masculine voice. ' +
+  'Classic General American accent: rhotic R, American vowels, “zee” for Z. ' +
+  'Never sound like a woman, a girl, or a light young voice. ' +
   'Do not sound Chinese, East Asian, British, Australian, or Irish. ' +
   'Calm classroom pace. Crisp consonants. Enunciate every number.';
 
-const DEFAULT_VOICE = 'ash';
+const DEFAULT_VOICE = 'onyx';
 const TTS_MODEL = 'gpt-4o-mini-tts';
 
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>

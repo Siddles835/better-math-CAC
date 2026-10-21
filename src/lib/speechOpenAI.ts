@@ -137,7 +137,7 @@ export const ensureCloudTtsAvailable = async (
 };
 
 /** Bump when TTS format/instructions change so old muddy clips are not reused. */
-const CACHE_VERSION = 'ash-male-us-wav-v2';
+const CACHE_VERSION = 'onyx-masculine-wav-v1';
 
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
   `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;
@@ -152,11 +152,11 @@ export interface SpeakWithOpenAIOptions {
 }
 
 /**
- * MathLift uses OpenAI Ash (male US) for all cloud read-aloud.
+ * MathLift uses OpenAI Onyx (traditional masculine) for all cloud read-aloud.
  * Other gpt-4o-mini-tts ids remain listed for compatibility,
- * but the client always requests ash.
+ * but the client always requests onyx.
  */
-export const DEFAULT_CLOUD_VOICE = 'ash';
+export const DEFAULT_CLOUD_VOICE = 'onyx';
 
 /** Voices the /api/tts proxy accepts (gpt-4o-mini-tts). */
 export const CLOUD_VOICE_IDS = [
@@ -180,15 +180,15 @@ export type CloudVoiceId = (typeof CLOUD_VOICE_IDS)[number];
 export const isCloudVoiceId = (value: string | null | undefined): value is CloudVoiceId =>
   !!value && (CLOUD_VOICE_IDS as readonly string[]).includes(value);
 
-/** @deprecated Cloud voice picker removed — Ash is fixed. Kept for type imports. */
+/** @deprecated Cloud voice picker removed — Onyx is fixed. Kept for type imports. */
 export const CLOUD_VOICE_OPTIONS: ReadonlyArray<{ id: CloudVoiceId; label: string }> = [
-  { id: 'ash', label: 'Ash' },
+  { id: 'onyx', label: 'Onyx' },
 ];
 
 let preferredCloudVoice: CloudVoiceId = DEFAULT_CLOUD_VOICE;
 
 export const setPreferredCloudVoice = (_voice?: string | null) => {
-  // Always Ash (male US) — ignore other selections so Settings cannot drift.
+  // Always Onyx (traditional masculine) — ignore other selections so Settings cannot drift.
   preferredCloudVoice = DEFAULT_CLOUD_VOICE;
 };
 
@@ -207,7 +207,7 @@ export const speakWithOpenAI = async (
   const available = await ensureCloudTtsAvailable();
   if (!available || !options.isCurrent(options.token)) return false;
 
-  // Product decision: always Ash (male US) for classroom clarity.
+  // Product decision: always Onyx (traditional masculine) for classroom clarity.
   const voice = DEFAULT_CLOUD_VOICE;
   void options.voice;
   void preferredCloudVoice;
@@ -233,7 +233,7 @@ export const speakWithOpenAI = async (
         setStatus('unavailable');
         return false;
       }
-      // Server must mint Ash (male US). Refuse drifted Alloy/female clips.
+      // Server must mint Onyx. Refuse drifted Ash or other clips.
       const spokenVoice = (response.headers?.get?.('x-mathlift-voice') || '').toLowerCase();
       if (spokenVoice && spokenVoice !== DEFAULT_CLOUD_VOICE) {
         setStatus('unavailable');
