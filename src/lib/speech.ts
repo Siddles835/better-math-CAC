@@ -1,6 +1,7 @@
 import type { AppLang } from '@/lib/cognition/readingTime';
 import { loadLanguage } from '@/lib/i18n/language';
 import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
+import { primeCloudPlayback, releaseCloudPlayback } from '@/lib/speechOpenAI';
 
 const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
 /** Strip leftover symbols that should not be spoken (keep / until fractions are handled). */
@@ -909,6 +910,9 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
   const ratePref = options?.ratePref ?? speechRatePref;
 
+  // Inside the click, before the TTS fetch. Reused when the wav arrives.
+  primeCloudPlayback();
+
   const startDevice = () => {
     if (token !== speechToken) return;
     if (!isSpeechSupported()) {
@@ -935,7 +939,12 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
         ensureCloudTtsAvailable,
         DEFAULT_CLOUD_VOICE,
       } = await import('./speechOpenAI');
-      if (await ensureCloudTtsAvailable({ retry: true })) {
+      if (
+        await ensureCloudTtsAvailable({
+          retry: true,
+          force: options?.cloudOnly === true,
+        })
+      ) {
         const playedCloud = await speakWithOpenAI(cleaned, {
           token,
           isCurrent: (value) => value === speechToken,
@@ -1010,6 +1019,7 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
 
 export const stopSpeaking = (options?: { skipAlloySample?: boolean }) => {
   speechToken += 1;
+  releaseCloudPlayback();
   if (speakTimer) {
     clearTimeout(speakTimer);
     speakTimer = null;
