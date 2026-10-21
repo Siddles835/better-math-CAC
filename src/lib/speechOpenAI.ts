@@ -142,7 +142,7 @@ export const ensureCloudTtsAvailable = async (
 };
 
 /** Bump when TTS format changes so an old wav clip is not reused. */
-const CACHE_VERSION = 'onyx-mp3-v1';
+const CACHE_VERSION = 'onyx-raw-v1';
 
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
   `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;

@@ -1,7 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import path from 'node:path';
-import { runInNewContext } from 'node:vm';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const speechCreate = vi.fn(
@@ -16,69 +12,15 @@ const speechCreate = vi.fn(
   })
 );
 
-const loadHandler = () => {
-  const filename = path.resolve('api/tts.js');
-  const source = readFileSync(filename, 'utf8');
-  const module = { exports: {} as (req: unknown, res: unknown) => Promise<void> };
-  const localRequire = createRequire(filename);
-  const sandboxRequire = (id: string) => {
-    if (id === 'openai') {
-      class OpenAI {
-        audio = { speech: { create: speechCreate } };
-        constructor(_opts: { apiKey?: string }) {}
-      }
-      return OpenAI;
-    }
-    return localRequire(id);
-  };
-  runInNewContext(source, {
-    module,
-    exports: module.exports,
-    require: sandboxRequire,
-    process,
-    Buffer,
-    console,
-  }, { filename });
-  return module.exports;
-};
+vi.mock('openai', () => {
+  class OpenAI {
+    audio = { speech: { create: speechCreate } };
+    constructor(_opts: { apiKey?: string }) {}
+  }
+  return { default: OpenAI };
+});
 
-type MockRes = {
-  statusCode: number;
-  headers: Record<string, string>;
-  body: unknown;
-  setHeader: (key: string, value: string) => void;
-  status: (code: number) => MockRes;
-  json: (payload: unknown) => MockRes;
-  send: (payload: unknown) => MockRes;
-  end: () => MockRes;
-};
-
-const mockRes = (): MockRes => {
-  const res: MockRes = {
-    statusCode: 0,
-    headers: {},
-    body: undefined,
-    setHeader(key, value) {
-      this.headers[key] = value;
-    },
-    status(code) {
-      this.statusCode = code;
-      return this;
-    },
-    json(payload) {
-      this.body = payload;
-      return this;
-    },
-    send(payload) {
-      this.body = payload;
-      return this;
-    },
-    end() {
-      return this;
-    },
-  };
-  return res;
-};
+import tts, { GET, POST } from '../../api/tts.js';
 
 describe('api/tts handler', () => {
   const previousKey = process.env.OPENAI_API_KEY;
@@ -91,51 +33,42 @@ describe('api/tts handler', () => {
 
   it('answers GET when the key is missing', async () => {
     delete process.env.OPENAI_API_KEY;
-    const handler = loadHandler();
-    const res = mockRes();
-    await handler({ method: 'GET' }, res);
-    expect(res.statusCode).toBe(503);
-    expect(res.body).toMatchObject({ available: false });
+    const response = await GET(new Request('http://localhost/api/tts'));
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ available: false });
   });
 
   it('reports Onyx available on GET when the key is set', async () => {
     process.env.OPENAI_API_KEY = 'test-key';
-    const handler = loadHandler();
-    const res = mockRes();
-    await handler({ method: 'GET' }, res);
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toMatchObject({
+    const response = await tts.fetch(new Request('http://localhost/api/tts'));
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
       available: true,
       defaultVoice: 'onyx',
     });
   });
 
-  it('posts Onyx as an mp3 in the earlier sample format', async () => {
+  it('posts raw Onyx mp3 with no teacher script', async () => {
     process.env.OPENAI_API_KEY = 'test-key';
     speechCreate.mockClear();
-    const handler = loadHandler();
-    const res = mockRes();
-    await handler(
-      {
+    const response = await POST(
+      new Request('http://localhost/api/tts', {
         method: 'POST',
-        body: {
-          text: 'The quick brown fox jumps over the lazy dog.',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: 'one',
           voice: 'ash',
           ratePref: 'normal',
-        },
-      },
-      res
+        }),
+      })
     );
-
-    expect(res.statusCode).toBe(200);
-    expect(res.headers['Content-Type']).toBe('audio/mpeg');
-    expect(res.headers['X-MathLift-Voice']).toBe('onyx');
-    expect(Buffer.isBuffer(res.body)).toBe(true);
-
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Content-Type')).toBe('audio/mpeg');
+    expect(response.headers.get('X-MathLift-Voice')).toBe('onyx');
     const sent = speechCreate.mock.calls[0]?.[0];
     expect(sent?.voice).toBe('onyx');
     expect(sent?.response_format).toBe('mp3');
-    expect(sent?.input).toBe('The quick brown fox jumps over the lazy dog.');
-    expect(sent?.speed).toBe(1);
+    expect(sent?.input).toBe('one');
+    expect(sent?.instructions).toBeUndefined();
   });
 });

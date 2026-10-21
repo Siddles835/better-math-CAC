@@ -7,10 +7,6 @@ import type { Plugin } from 'vite';
 
 const MAX_CHARS = 600;
 
-const DEFAULT_INSTRUCTIONS =
-  'Speak naturally and clearly as a traditional masculine American man. ' +
-  'Sound like a helpful person, not a robot. Enunciate numbers carefully.';
-
 const DEFAULT_VOICE = 'onyx';
 const TTS_MODEL = 'gpt-4o-mini-tts';
 
@@ -101,14 +97,13 @@ export function openaiTtsDevPlugin(): Plugin {
             model: TTS_MODEL,
             voice,
             input: text,
-            instructions: DEFAULT_INSTRUCTIONS,
             speed,
             response_format: 'mp3',
           });
           const buffer = Buffer.from(await speech.arrayBuffer());
           response.statusCode = 200;
           response.setHeader('Content-Type', 'audio/mpeg');
-          response.setHeader('Cache-Control', 'private, max-age=3600');
+          response.setHeader('Cache-Control', 'no-store');
           response.setHeader('Access-Control-Expose-Headers', 'X-MathLift-Voice');
           response.setHeader('X-MathLift-TTS', 'openai-gpt-4o-mini-tts');
           response.setHeader('X-MathLift-Voice', voice);
