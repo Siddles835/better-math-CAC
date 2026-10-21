@@ -9,10 +9,9 @@ export type NeuralStatus = 'idle' | 'loading' | 'ready' | 'error' | 'unsupported
 
 const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
 /**
- * Bella: clear American English, less "AI-cute" than Heart.
- * Sounds closer to a normal person reading a lesson.
+ * Adam: clear American English male (matches cloud Onyx gender).
  */
-const VOICE = 'af_bella';
+const VOICE = 'am_adam';
 /** Classroom pace — a bit under “brisk” so consonants stay clear. */
 const SPEED_NORMAL = 0.95;
 const SPEED_SLOW = 0.82;

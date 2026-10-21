@@ -17,7 +17,7 @@ let unavailableHandler: (() => void) | null = null;
 let speechToken = 0;
 let naturalVoicePref = true;
 /**
- * When true (default), every speak() uses OpenAI Alloy only —
+ * When true (default), every speak() uses OpenAI Onyx only —
  * no Kokoro, no device SpeechSynthesis, no pre-rendered clips.
  */
 let alloyOnlyPref = true;
@@ -70,13 +70,13 @@ export const setNaturalVoicePref = (enabled: boolean) => {
 
 export const getNaturalVoicePref = (): boolean => naturalVoicePref;
 
-/** Product default: OpenAI Alloy for all read-aloud. */
+/** Product default: OpenAI Onyx (male US) for all read-aloud. */
 export const setAlloyOnlyPref = (enabled: boolean) => {
   alloyOnlyPref = enabled;
   if (enabled) {
     preferredVoiceURI = null;
     void import('./speechOpenAI').then(({ ensureCloudTtsAvailable, setPreferredCloudVoice }) => {
-      setPreferredCloudVoice('alloy');
+      setPreferredCloudVoice('onyx');
       void ensureCloudTtsAvailable();
     });
   }
@@ -492,10 +492,16 @@ export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number =
   if (prefixIndex < 0) return -1000;
   score += (prefixes.length - prefixIndex) * 14;
 
-  // English lessons: strongly prefer US voices when Alloy cloud is unavailable.
+  // English lessons: strongly prefer male US voices when cloud TTS is unavailable.
   if (lang === 'en') {
     if (langLower.startsWith('en-us')) score += 40;
     else if (NON_US_ENGLISH_VOICE.test(`${name} ${langLower}`)) score -= 50;
+    if (/\b(david|guy|aaron|alex|bruce|tom|mark|james|google us english male)\b/i.test(name)) {
+      score += 28;
+    }
+    if (/\bfemale\b|\bwoman\b|samantha|zira|susan|karen|moira|jenny|aria/i.test(name)) {
+      score -= 20;
+    }
   }
 
   const quality = voiceQuality(voice);
@@ -506,10 +512,11 @@ export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number =
   else if (voice.localService && quality === 'natural') score += 8;
   else if (voice.localService) score += 2;
   if (voice.default) score += 2;
-  if (FRIENDLY_VOICE.test(name)) score += 18;
+  if (FRIENDLY_VOICE.test(name) && lang !== 'en') score += 18;
   if (AVOID_VOICE.test(name)) score -= 100;
-  if (/\bfemale\b|\bwoman\b/i.test(name)) score += 6;
-  if (/\bmale\b|\bman\b/i.test(name) && !FRIENDLY_VOICE.test(name)) score -= 4;
+  if (lang !== 'en' && /\bfemale\b|\bwoman\b/i.test(name)) score += 6;
+  if (lang === 'en' && /\bmale\b|\bman\b/i.test(name)) score += 10;
+  if (lang !== 'en' && /\bmale\b|\bman\b/i.test(name) && !FRIENDLY_VOICE.test(name)) score -= 4;
 
   return score;
 };

@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAccessibility } from '@/context/AccessibilityContext';
-import { stopSpeaking, unlockAudio } from '@/lib/speech';
+import { speak, stopSpeaking, unlockAudio } from '@/lib/speech';
 import {
-  ALLOY_REFERENCE_SAMPLE_URL,
+  CLOUD_SAMPLE_TEXT,
   DEFAULT_CLOUD_VOICE,
   ensureCloudTtsAvailable,
   getCloudTtsStatus,
@@ -14,8 +14,8 @@ import {
 } from '@/lib/speechOpenAI';
 
 /**
- * Voice settings: OpenAI Alloy only for all read-aloud.
- * Play sample uses the Alloy “quick brown fox” clip.
+ * Voice settings: OpenAI Onyx (male US) for all read-aloud.
+ * Play sample uses live cloud TTS with the quick-brown-fox line.
  */
 const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { t } = useTranslation(['settings']);
@@ -23,7 +23,6 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
   const [cloudStatus, setCloudStatus] = useState<CloudTtsStatus>(() => getCloudTtsStatus());
   const [sampleBusy, setSampleBusy] = useState(false);
   const [sampleError, setSampleError] = useState(false);
-  const alloyAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => onCloudTtsStatus(setCloudStatus), []);
   useEffect(() => {
@@ -36,65 +35,32 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
     if (prefs.voiceURI) setPref('voiceURI', null);
   }, [prefs.naturalVoice, prefs.cloudVoice, prefs.voiceURI, setPref]);
 
-  useEffect(() => {
-    const audio = alloyAudioRef.current;
-    if (!audio) return;
-    audio.setAttribute('playsinline', 'true');
-    audio.setAttribute('webkit-playsinline', 'true');
-    audio.preload = 'auto';
-    try {
-      audio.load();
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
   const cloudReady = cloudStatus === 'available';
 
-  const playAlloySample = async () => {
+  const playCloudSample = () => {
     unlockAudio();
     setSampleError(false);
     setSampleBusy(true);
     stopSpeaking({ skipAlloySample: true });
-
-    const audio = alloyAudioRef.current;
-    if (!audio) {
+    const result = speak(CLOUD_SAMPLE_TEXT, {
+      lang: 'en',
+      onEnd: () => setSampleBusy(false),
+      onUnavailable: () => {
+        setSampleBusy(false);
+        setSampleError(true);
+        announce(t('settings:voiceSampleFailed'));
+      },
+    });
+    if (result === 'unavailable' || result === 'muted' || result === 'empty') {
       setSampleBusy(false);
-      setSampleError(true);
-      announce(t('settings:voiceSampleFailed'));
-      return;
-    }
-
-    try {
-      audio.pause();
-      audio.currentTime = 0;
-      if (!audio.src || audio.error) {
-        audio.src = ALLOY_REFERENCE_SAMPLE_URL;
-        audio.load();
+      if (result === 'unavailable') {
+        setSampleError(true);
+        announce(t('settings:voiceSampleFailed'));
       }
-      try {
-        await audio.play();
-      } catch {
-        audio.load();
-        await new Promise<void>((resolve) => {
-          const done = () => {
-            audio.removeEventListener('canplaythrough', done);
-            resolve();
-          };
-          audio.addEventListener('canplaythrough', done, { once: true });
-          window.setTimeout(resolve, 400);
-        });
-        await audio.play();
-      }
-      setSampleBusy(false);
-    } catch {
-      setSampleBusy(false);
-      setSampleError(true);
-      announce(t('settings:voiceSampleFailed'));
     }
   };
 
-  const alloyHint =
+  const voiceHint =
     cloudStatus === 'unknown'
       ? t('settings:voiceAlloyChecking')
       : cloudReady
@@ -103,17 +69,6 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
 
   return (
     <div className={`space-y-4 ${className}`}>
-      <audio
-        ref={alloyAudioRef}
-        src={ALLOY_REFERENCE_SAMPLE_URL}
-        preload="auto"
-        playsInline
-        data-testid="alloy-sample-audio"
-        className="sr-only"
-        onEnded={() => setSampleBusy(false)}
-        onPause={() => setSampleBusy(false)}
-      />
-
       <div
         className="rounded-2xl border-2 border-primary/60 bg-primary/10 p-4"
         data-testid="openai-alloy-voice-card"
@@ -127,7 +82,7 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
               setPref('voiceURI', null);
               setPref('cloudVoice', DEFAULT_CLOUD_VOICE);
               announce(t('settings:voiceAlloyName'));
-              void playAlloySample();
+              playCloudSample();
             }}
             className="flex min-h-[64px] flex-1 items-start gap-3 rounded-xl text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
@@ -142,7 +97,7 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
                 {cloudStatus === 'unknown' ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
                 ) : null}
-                <span>{alloyHint}</span>
+                <span>{voiceHint}</span>
               </span>
               {cloudReady ? (
                 <span
@@ -166,7 +121,7 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
             className="min-h-[64px] shrink-0"
             onPointerDown={() => unlockAudio()}
             onClick={() => {
-              void playAlloySample();
+              playCloudSample();
             }}
             data-testid="alloy-voice-sample"
             aria-busy={sampleBusy}
