@@ -23,8 +23,11 @@ const ALLOWED_VOICES = new Set([
 ]);
 
 const DEFAULT_INSTRUCTIONS =
-  'Speak naturally and clearly in a warm, friendly tone. ' +
-  'Sound like a helpful person, not a robot. Enunciate numbers carefully.';
+  'Speak with excellent clarity for young students learning math. ' +
+  'Use a calm, steady adult voice at an easy listening pace. ' +
+  'Enunciate every word and every number with crisp consonants. ' +
+  'Keep even volume. Pause briefly after commas and between sentences. ' +
+  'Do not whisper, rush, sing, sound breathy, cute, robotic, or theatrical.';
 
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>
   new Promise((resolve, reject) => {
@@ -104,7 +107,7 @@ export function openaiTtsDevPlugin(): Plugin {
           // MathLift always uses Alloy for classroom read-aloud.
           const voice = 'alloy';
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
-          const speed = ratePref === 'slow' ? 0.95 : 1.0;
+          const speed = ratePref === 'slow' ? 0.78 : 0.88;
 
           const { default: OpenAI } = await import('openai');
           const client = new OpenAI({ apiKey });
@@ -114,12 +117,13 @@ export function openaiTtsDevPlugin(): Plugin {
             input: text,
             instructions: DEFAULT_INSTRUCTIONS,
             speed,
-            response_format: 'mp3',
+            response_format: 'wav',
           });
           const buffer = Buffer.from(await speech.arrayBuffer());
           response.statusCode = 200;
-          response.setHeader('Content-Type', 'audio/mpeg');
+          response.setHeader('Content-Type', 'audio/wav');
           response.setHeader('Cache-Control', 'private, max-age=3600');
+          response.setHeader('X-MathLift-Clarity', 'wav-classroom');
           response.end(buffer);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);

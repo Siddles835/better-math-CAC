@@ -110,7 +110,7 @@ describe('speechOpenAI', () => {
     setPreferredCloudVoice('sage');
     expect(DEFAULT_CLOUD_VOICE).toBe('alloy');
 
-    const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/mpeg' });
+    const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/wav' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
       if (!init || init.method === 'GET') {
         return {
@@ -119,13 +119,18 @@ describe('speechOpenAI', () => {
           json: async () => ({ available: true }),
         };
       }
-      return { ok: true, blob: async () => blob };
+      return {
+        ok: true,
+        headers: { get: () => 'audio/wav' },
+        blob: async () => blob,
+      };
     });
     vi.stubGlobal('fetch', fetchMock);
 
     const play = vi.fn().mockResolvedValue(undefined);
-    const audioInstances: Array<{ onended: (() => void) | null }> = [];
+    const audioInstances: Array<{ onended: (() => void) | null; volume: number }> = [];
     class FakeAudio {
+      volume = 0.5;
       onended: (() => void) | null = null;
       onerror: (() => void) | null = null;
       play = play;
@@ -155,8 +160,8 @@ describe('speechOpenAI', () => {
     expect(body.voice).toBe('alloy');
   });
 
-  it('plays mp3 audio from the proxy when current', async () => {
-    const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/mpeg' });
+  it('plays wav audio from the proxy when current', async () => {
+    const blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/wav' });
     const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
       if (!init || init.method === 'GET') {
         return {
@@ -165,13 +170,18 @@ describe('speechOpenAI', () => {
           json: async () => ({ available: true }),
         };
       }
-      return { ok: true, blob: async () => blob };
+      return {
+        ok: true,
+        headers: { get: () => 'audio/wav' },
+        blob: async () => blob,
+      };
     });
     vi.stubGlobal('fetch', fetchMock);
 
     const play = vi.fn().mockResolvedValue(undefined);
-    const audioInstances: Array<{ onended: (() => void) | null }> = [];
+    const audioInstances: Array<{ onended: (() => void) | null; volume: number }> = [];
     class FakeAudio {
+      volume = 0.5;
       onended: (() => void) | null = null;
       onerror: (() => void) | null = null;
       play = play;
