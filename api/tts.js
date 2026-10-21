@@ -2,8 +2,8 @@
  * Vercel serverless TTS proxy.
  * Keeps OPENAI_API_KEY on the server — never ship it to the browser.
  *
- * POST { text, voice?, lang?, ratePref?, instructions? }
- * → audio/wav (OpenAI gpt-4o-mini-tts, Onyx male US)
+ * POST { text, ratePref? }
+ * → audio/wav (OpenAI gpt-4o-mini-tts, Ash — male General American)
  *
  * GET → { available: boolean } so the client can probe without speaking.
  *
@@ -16,18 +16,19 @@ const OpenAI = require('openai');
 const MAX_CHARS = 600;
 
 /**
- * Male General American accent + classroom clarity.
- * gpt-4o-mini-tts follows these instructions closely — keep them specific.
+ * Ash is a distinctly male OpenAI voice. Instructions force General American
+ * and explicitly forbid female / Chinese / East-Asian delivery.
  */
 const DEFAULT_INSTRUCTIONS =
-  'Speak as a clear adult American man — a typical US classroom teacher ' +
-  '(Midwest / California). Deep, natural male voice. Unmistakably General American: ' +
-  'rhotic R, “zee” for Z, American vowels. ' +
-  'Do not sound female. Do not use a Chinese, East Asian, British, Australian, ' +
-  'or Irish accent. Calm pace. Crisp consonants. Enunciate every number.';
+  'Speak as an adult American man from the Midwest. ' +
+  'Deep male voice only — never sound like a woman or a girl. ' +
+  'Pure General American English accent (rhotic R, American vowels, “zee” for Z). ' +
+  'Do not sound Chinese, East Asian, British, Australian, or Irish. ' +
+  'Calm classroom pace. Crisp consonants. Enunciate every number.';
 
-/** Fixed product voice: OpenAI Onyx (male). */
-const DEFAULT_VOICE = 'onyx';
+/** Fixed product voice: OpenAI Ash (male US). Never Alloy / Nova / female voices. */
+const DEFAULT_VOICE = 'ash';
+const TTS_MODEL = 'gpt-4o-mini-tts';
 
 const cors = (res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -60,8 +61,10 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     res.status(200).json({
       available: true,
-      model: 'gpt-4o-mini-tts',
+      model: TTS_MODEL,
       defaultVoice: DEFAULT_VOICE,
+      gender: 'male',
+      accent: 'general-american',
       disclosure: 'AI-generated voice',
     });
     return;
@@ -84,33 +87,28 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Always Onyx — male US classroom voice (not Alloy).
+    // Ignore client voice — always Ash (male US). Alloy/onyx/etc. cannot drift in.
     const voice = DEFAULT_VOICE;
     const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
-    // Slightly slower than 1.0 so numbers and short lesson lines stay intelligible.
     const speed = ratePref === 'slow' ? 0.78 : 0.88;
-    const instructions =
-      typeof body.instructions === 'string' && body.instructions.trim()
-        ? body.instructions.trim().slice(0, 400)
-        : DEFAULT_INSTRUCTIONS;
 
     const client = new OpenAI({ apiKey });
     const response = await client.audio.speech.create({
-      model: 'gpt-4o-mini-tts',
+      model: TTS_MODEL,
       voice,
       input: text,
-      instructions,
+      instructions: DEFAULT_INSTRUCTIONS,
       speed,
-      // WAV avoids MP3 smear on consonants (much clearer on phone speakers).
       response_format: 'wav',
     });
 
     const buffer = Buffer.from(await response.arrayBuffer());
     res.setHeader('Content-Type', 'audio/wav');
     res.setHeader('Cache-Control', 'private, max-age=3600');
-    res.setHeader('X-MathLift-TTS', 'openai-gpt-4o-mini-tts');
+    res.setHeader('X-MathLift-TTS', TTS_MODEL);
     res.setHeader('X-MathLift-Voice', voice);
-    res.setHeader('X-MathLift-Clarity', 'wav-classroom');
+    res.setHeader('X-MathLift-Gender', 'male');
+    res.setHeader('X-MathLift-Accent', 'general-american');
     res.status(200).send(buffer);
   } catch (error) {
     console.error('tts proxy failed', error?.message || error);
