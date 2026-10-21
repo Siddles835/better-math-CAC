@@ -461,6 +461,34 @@ const VOICE_PREFIX: Record<AppLang, string[]> = {
 const FRIENDLY_VOICE =
   /samantha|susan|zira|jenny|aria|google us english|microsoft aria|microsoft jenny|microsoft zira|siri|veena|lekha|monica|paulina|meijia|mei-jia|ting-ting|sin-ji|microsoft sabina|xiao.?xiao|yunxia|child|kid|girl/i;
 
+/**
+ * The lesson speaks with the laptop voice whenever cloud Onyx is unavailable.
+ * These are the deeper male US voices on that same path (Alex, David, Guy, …).
+ */
+const DEEP_MALE_ENGLISH_VOICE =
+  /\b(david|guy|aaron|alex|bruce|tom|mark|james|andrew|christopher|eric|ryan|brandon|davis|brian|matthew|george|male|man)\b/i;
+
+/** Higher laptop voices. This is the squeaky voice Step 3 was playing. */
+const SQUEAKY_ENGLISH_VOICE =
+  /\bfemale\b|\bwoman\b|samantha|zira|susan|karen|moira|jenny|aria|victoria|allison|ava|serena|fiona|tessa|hazel|joanna|ivy|salli|child|kid|girl|princess/i;
+
+/** Drop pitch only for those high voices so a one-voice laptop is not squeaky. */
+export const DEEP_FALLBACK_PITCH = 0.75;
+
+export const isDeepMaleEnglishVoice = (voice: SpeechSynthesisVoice): boolean => {
+  if (!voice.lang.toLowerCase().startsWith('en')) return false;
+  const name = voice.name.toLowerCase();
+  if (SQUEAKY_ENGLISH_VOICE.test(name)) return false;
+  return DEEP_MALE_ENGLISH_VOICE.test(name);
+};
+
+export const pitchForVoice = (voice: SpeechSynthesisVoice): number => {
+  if (voice.lang.toLowerCase().startsWith('en') && !isDeepMaleEnglishVoice(voice)) {
+    return DEEP_FALLBACK_PITCH;
+  }
+  return K2_SPEECH_PITCH;
+};
+
 /** British / Commonwealth voices — deprioritize when English fallback is used. */
 const NON_US_ENGLISH_VOICE =
   /en-gb|en-au|en-ie|en-in|en-za|british|uk english|daniel|serena|martha|kate|moira|tessa|fiona|karen|hazel|google uk|microsoft helena|australian|irish|scottish/i;
@@ -492,16 +520,14 @@ export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number =
   if (prefixIndex < 0) return -1000;
   score += (prefixes.length - prefixIndex) * 14;
 
-  // English lessons: strongly prefer male US voices when cloud TTS is unavailable.
+  // English lessons speak with the laptop voice when cloud Onyx is down.
+  // A deep male voice has to outrank a "Natural" female voice (Aria, Samantha),
+  // which is the higher voice this page was using.
   if (lang === 'en') {
     if (langLower.startsWith('en-us')) score += 40;
     else if (NON_US_ENGLISH_VOICE.test(`${name} ${langLower}`)) score -= 50;
-    if (/\b(david|guy|aaron|alex|bruce|tom|mark|james|google us english male)\b/i.test(name)) {
-      score += 28;
-    }
-    if (/\bfemale\b|\bwoman\b|samantha|zira|susan|karen|moira|jenny|aria/i.test(name)) {
-      score -= 20;
-    }
+    if (DEEP_MALE_ENGLISH_VOICE.test(name) && !SQUEAKY_ENGLISH_VOICE.test(name)) score += 160;
+    if (SQUEAKY_ENGLISH_VOICE.test(name)) score -= 80;
   }
 
   const quality = voiceQuality(voice);
@@ -538,6 +564,10 @@ export const pickHumanVoice = (
     if (preferred && isOsNaturalVoice(preferred)) {
       return preferred;
     }
+  }
+  if (lang === 'en') {
+    const male = ranked.find((voice) => isDeepMaleEnglishVoice(voice));
+    if (male) return male;
   }
   const human = ranked.find((voice) => isOsNaturalVoice(voice));
   return human ?? ranked[0];
@@ -579,6 +609,10 @@ export const pickVoice = (
   if (preferredURI) {
     const preferred = ranked.find((voice) => voice.voiceURI === preferredURI);
     if (preferred) return preferred;
+  }
+  if (lang === 'en') {
+    const male = ranked.find((voice) => isDeepMaleEnglishVoice(voice));
+    if (male) return male;
   }
   return ranked[0];
 };
@@ -789,7 +823,7 @@ const speakChunk = (
   utterance.lang = voice.lang;
   utterance.voice = voice;
   utterance.rate = rate;
-  utterance.pitch = K2_SPEECH_PITCH;
+  utterance.pitch = pitchForVoice(voice);
   const finish = (event?: SpeechSynthesisErrorEvent) => {
     if (token !== speechToken) return;
     if (event && (event.error === 'interrupted' || event.error === 'canceled')) return;

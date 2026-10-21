@@ -6,7 +6,9 @@ import {
   normalizeSpeechText,
   numberWord,
   packSpeechChunks,
+  pickHumanVoice,
   pickVoice,
+  pitchForVoice,
   scoreVoice,
   setAlloyOnlyPref,
   setNaturalVoicePref,
@@ -104,6 +106,20 @@ describe('pickVoice ranking', () => {
     ]);
     expect(chosen?.name).toMatch(/David/i);
     expect(chosen?.lang.toLowerCase().startsWith('zh')).toBe(false);
+  });
+
+  it('replaces the high Natural voice with a deep male laptop voice', () => {
+    const voices = [
+      voice('Samantha (Enhanced)', 'en-US'),
+      voice('Microsoft Aria Online (Natural) - English (United States)', 'en-US', {
+        localService: false,
+      }),
+      voice('Alex', 'en-US'),
+    ];
+    expect(pickVoice('en', voices)?.name).toBe('Alex');
+    expect(pickHumanVoice('en', voices)?.name).toBe('Alex');
+    expect(pitchForVoice(voice('Alex', 'en-US'))).toBeCloseTo(1);
+    expect(pitchForVoice(voice('Samantha', 'en-US'))).toBeCloseTo(0.75);
   });
 });
 
