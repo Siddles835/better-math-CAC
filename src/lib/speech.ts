@@ -614,6 +614,11 @@ export interface SpeakOptions {
    * Used when the user samples a specific installed voice in Settings.
    */
   preferDevice?: boolean;
+  /**
+   * Settings sample only. Never fall through to the laptop voice, or the
+   * sample sounds identical no matter which cloud voice the label names.
+   */
+  cloudOnly?: boolean;
 }
 
 const clearQueueTimers = () => {
@@ -945,6 +950,13 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
       }
     } catch {
       // fall through to device so read-aloud never bricks
+    }
+
+    if (token !== speechToken) return;
+    if (options?.cloudOnly) {
+      options.onUnavailable?.();
+      options.onEnd?.();
+      return;
     }
 
     // Alloy preferred: if cloud TTS is down, still speak with the best device voice

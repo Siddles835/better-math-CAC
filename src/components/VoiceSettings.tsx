@@ -44,6 +44,7 @@ const VoiceSettings: React.FC<{ className?: string }> = ({ className = '' }) => 
     stopSpeaking({ skipAlloySample: true });
     const result = speak(CLOUD_SAMPLE_TEXT, {
       lang: 'en',
+      cloudOnly: true,
       onEnd: () => setSampleBusy(false),
       onUnavailable: () => {
         setSampleBusy(false);
