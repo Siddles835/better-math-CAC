@@ -17,7 +17,7 @@ let unavailableHandler: (() => void) | null = null;
 let speechToken = 0;
 let naturalVoicePref = true;
 /**
- * When true (default), every speak() uses OpenAI Onyx (traditional masculine) only —
+ * When true (default), every speak() uses OpenAI Onyx only —
  * no Kokoro, no device SpeechSynthesis, no pre-rendered clips.
  */
 let alloyOnlyPref = true;
@@ -76,7 +76,7 @@ export const setAlloyOnlyPref = (enabled: boolean) => {
   if (enabled) {
     preferredVoiceURI = null;
     void import('./speechOpenAI').then(({ ensureCloudTtsAvailable, setPreferredCloudVoice }) => {
-      setPreferredCloudVoice('onyx');
+      setPreferredCloudVoice('ash');
       void ensureCloudTtsAvailable();
     });
   }
@@ -461,34 +461,6 @@ const VOICE_PREFIX: Record<AppLang, string[]> = {
 const FRIENDLY_VOICE =
   /samantha|susan|zira|jenny|aria|google us english|microsoft aria|microsoft jenny|microsoft zira|siri|veena|lekha|monica|paulina|meijia|mei-jia|ting-ting|sin-ji|microsoft sabina|xiao.?xiao|yunxia|child|kid|girl/i;
 
-/**
- * The lesson speaks with the laptop voice whenever cloud Onyx is unavailable.
- * These are the deeper male US voices on that same path (Alex, David, Guy, …).
- */
-const DEEP_MALE_ENGLISH_VOICE =
-  /\b(david|guy|aaron|alex|bruce|tom|mark|james|andrew|christopher|eric|ryan|brandon|davis|brian|matthew|george|male|man)\b/i;
-
-/** Higher laptop voices. This is the squeaky voice Step 3 was playing. */
-const SQUEAKY_ENGLISH_VOICE =
-  /\bfemale\b|\bwoman\b|samantha|zira|susan|karen|moira|jenny|aria|victoria|allison|ava|serena|fiona|tessa|hazel|joanna|ivy|salli|child|kid|girl|princess/i;
-
-/** Drop pitch only for those high voices so a one-voice laptop is not squeaky. */
-export const DEEP_FALLBACK_PITCH = 0.75;
-
-export const isDeepMaleEnglishVoice = (voice: SpeechSynthesisVoice): boolean => {
-  if (!voice.lang.toLowerCase().startsWith('en')) return false;
-  const name = voice.name.toLowerCase();
-  if (SQUEAKY_ENGLISH_VOICE.test(name)) return false;
-  return DEEP_MALE_ENGLISH_VOICE.test(name);
-};
-
-export const pitchForVoice = (voice: SpeechSynthesisVoice): number => {
-  if (voice.lang.toLowerCase().startsWith('en') && !isDeepMaleEnglishVoice(voice)) {
-    return DEEP_FALLBACK_PITCH;
-  }
-  return K2_SPEECH_PITCH;
-};
-
 /** British / Commonwealth voices — deprioritize when English fallback is used. */
 const NON_US_ENGLISH_VOICE =
   /en-gb|en-au|en-ie|en-in|en-za|british|uk english|daniel|serena|martha|kate|moira|tessa|fiona|karen|hazel|google uk|microsoft helena|australian|irish|scottish/i;
@@ -520,14 +492,16 @@ export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number =
   if (prefixIndex < 0) return -1000;
   score += (prefixes.length - prefixIndex) * 14;
 
-  // English lessons speak with the laptop voice when cloud Onyx is down.
-  // A deep male voice has to outrank a "Natural" female voice (Aria, Samantha),
-  // which is the higher voice this page was using.
+  // English lessons: strongly prefer male US voices when cloud TTS is unavailable.
   if (lang === 'en') {
     if (langLower.startsWith('en-us')) score += 40;
     else if (NON_US_ENGLISH_VOICE.test(`${name} ${langLower}`)) score -= 50;
-    if (DEEP_MALE_ENGLISH_VOICE.test(name) && !SQUEAKY_ENGLISH_VOICE.test(name)) score += 160;
-    if (SQUEAKY_ENGLISH_VOICE.test(name)) score -= 80;
+    if (/\b(david|guy|aaron|alex|bruce|tom|mark|james|google us english male)\b/i.test(name)) {
+      score += 28;
+    }
+    if (/\bfemale\b|\bwoman\b|samantha|zira|susan|karen|moira|jenny|aria/i.test(name)) {
+      score -= 20;
+    }
   }
 
   const quality = voiceQuality(voice);
@@ -564,10 +538,6 @@ export const pickHumanVoice = (
     if (preferred && isOsNaturalVoice(preferred)) {
       return preferred;
     }
-  }
-  if (lang === 'en') {
-    const male = ranked.find((voice) => isDeepMaleEnglishVoice(voice));
-    if (male) return male;
   }
   const human = ranked.find((voice) => isOsNaturalVoice(voice));
   return human ?? ranked[0];
@@ -610,10 +580,6 @@ export const pickVoice = (
     const preferred = ranked.find((voice) => voice.voiceURI === preferredURI);
     if (preferred) return preferred;
   }
-  if (lang === 'en') {
-    const male = ranked.find((voice) => isDeepMaleEnglishVoice(voice));
-    if (male) return male;
-  }
   return ranked[0];
 };
 
@@ -648,11 +614,6 @@ export interface SpeakOptions {
    * Used when the user samples a specific installed voice in Settings.
    */
   preferDevice?: boolean;
-  /**
-   * Settings sample only. Never fall through to the laptop voice, or the
-   * sample sounds identical no matter which cloud voice the label names.
-   */
-  cloudOnly?: boolean;
 }
 
 const clearQueueTimers = () => {
@@ -662,27 +623,6 @@ const clearQueueTimers = () => {
 
 let activeAudio: HTMLAudioElement | null = null;
 let audioUnlocked = false;
-/** Element played inside the tap, then reused for the Onyx mp3. */
-let gestureAudio: HTMLAudioElement | null = null;
-const SILENT_MP3 =
-  'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4OjE2LjEwMAAAAAAAAAAAAAAAAC1FWERTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+1DEAAADAAAhHgAADUQAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
-
-/** Start playback during the click so the Onyx file can play when it arrives. */
-const armGestureAudio = (): HTMLAudioElement | null => {
-  if (typeof Audio === 'undefined') return null;
-  try {
-    if (!gestureAudio) gestureAudio = new Audio();
-    const audio = gestureAudio;
-    gestureAudio = null;
-    audio.src = SILENT_MP3;
-    const pending = audio.play();
-    if (pending && typeof pending.catch === 'function') void pending.catch(() => undefined);
-    return audio;
-  } catch {
-    gestureAudio = null;
-    return null;
-  }
-};
 let manifestPromise: Promise<Record<string, { file: string; duration?: number }> | null> | null = null;
 let manifestCache: Record<string, { file: string; duration?: number }> | null | undefined;
 
@@ -823,7 +763,7 @@ const speakChunk = (
   utterance.lang = voice.lang;
   utterance.voice = voice;
   utterance.rate = rate;
-  utterance.pitch = pitchForVoice(voice);
+  utterance.pitch = K2_SPEECH_PITCH;
   const finish = (event?: SpeechSynthesisErrorEvent) => {
     if (token !== speechToken) return;
     if (event && (event.error === 'interrupted' || event.error === 'canceled')) return;
@@ -963,7 +903,6 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
   }
 
   const ratePref = options?.ratePref ?? speechRatePref;
-  const playbackElement = options?.preferDevice ? null : armGestureAudio();
 
   const startDevice = () => {
     if (token !== speechToken) return;
@@ -991,13 +930,12 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
         ensureCloudTtsAvailable,
         DEFAULT_CLOUD_VOICE,
       } = await import('./speechOpenAI');
-      if (await ensureCloudTtsAvailable({ retry: true, force: true })) {
+      if (await ensureCloudTtsAvailable({ retry: true })) {
         const playedCloud = await speakWithOpenAI(cleaned, {
           token,
           isCurrent: (value) => value === speechToken,
           ratePref,
           voice: DEFAULT_CLOUD_VOICE,
-          playbackElement,
           onEnd: options?.onEnd,
           bindAudio: (audio) => {
             activeAudio = audio;
@@ -1007,13 +945,6 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
       }
     } catch {
       // fall through to device so read-aloud never bricks
-    }
-
-    if (token !== speechToken) return;
-    if (options?.cloudOnly) {
-      options.onUnavailable?.();
-      options.onEnd?.();
-      return;
     }
 
     // Alloy preferred: if cloud TTS is down, still speak with the best device voice
@@ -1051,7 +982,7 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
     startDevice();
   };
 
-  // Pre-rendered clips are a different voice — skip them when Onyx is selected.
+  // Pre-rendered clips are a different voice — skip them when Alloy is selected.
   if (!alloyOnlyPref && manifestHasClips()) {
     void playPreRendered(lang, cleaned, ratePref, token, options?.onEnd).then((played) => {
       if (played || token !== speechToken) return;

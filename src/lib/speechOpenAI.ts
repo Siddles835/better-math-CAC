@@ -4,6 +4,7 @@
  */
 
 import type { SpeechRatePref } from '@/lib/speech';
+import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
 
 export type CloudTtsStatus = 'unknown' | 'available' | 'unavailable';
 
@@ -98,20 +99,14 @@ export const stopAlloyReferenceSample = () => {
 let lastProbeAt = 0;
 const PROBE_RETRY_MS = 15_000;
 
-/**
- * Probe /api/tts so Settings and speak() know if cloud Onyx is ready.
- * `force` skips the cooldown — Play sample must re-check immediately,
- * otherwise the first failed page-load probe blocks the button for 15s.
- */
+/** Probe /api/tts so Settings and speak() know if Alloy cloud is ready. */
 export const ensureCloudTtsAvailable = async (
-  options?: { retry?: boolean; force?: boolean }
+  options?: { retry?: boolean }
 ): Promise<boolean> => {
   if (status === 'available') return true;
   const now = Date.now();
-  const bypassCooldown =
-    options?.force === true ||
-    (options?.retry === true && now - lastProbeAt >= PROBE_RETRY_MS);
-  if (status === 'unavailable' && !bypassCooldown) {
+  // Allow a re-probe after a short cooldown (host may have gained an API key).
+  if (status === 'unavailable' && !(options?.retry && now - lastProbeAt >= PROBE_RETRY_MS)) {
     return false;
   }
   if (probePromise) return probePromise;
@@ -141,8 +136,8 @@ export const ensureCloudTtsAvailable = async (
   return probePromise;
 };
 
-/** Bump when TTS format changes so an old wav clip is not reused. */
-const CACHE_VERSION = 'onyx-raw-v1';
+/** Bump when TTS format/instructions change so old muddy clips are not reused. */
+const CACHE_VERSION = 'ash-male-us-wav-v2';
 
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
   `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;
@@ -154,16 +149,14 @@ export interface SpeakWithOpenAIOptions {
   voice?: string;
   onEnd?: () => void;
   bindAudio?: (audio: HTMLAudioElement | null) => void;
-  /** Audio element already started in the tap, so the Onyx mp3 is allowed to play. */
-  playbackElement?: HTMLAudioElement | null;
 }
 
 /**
- * MathLift uses OpenAI Onyx (traditional masculine) for all cloud read-aloud.
+ * MathLift uses OpenAI Ash (male US) for all cloud read-aloud.
  * Other gpt-4o-mini-tts ids remain listed for compatibility,
- * but the client always requests onyx.
+ * but the client always requests ash.
  */
-export const DEFAULT_CLOUD_VOICE = 'onyx';
+export const DEFAULT_CLOUD_VOICE = 'ash';
 
 /** Voices the /api/tts proxy accepts (gpt-4o-mini-tts). */
 export const CLOUD_VOICE_IDS = [
@@ -187,74 +180,19 @@ export type CloudVoiceId = (typeof CLOUD_VOICE_IDS)[number];
 export const isCloudVoiceId = (value: string | null | undefined): value is CloudVoiceId =>
   !!value && (CLOUD_VOICE_IDS as readonly string[]).includes(value);
 
-/** @deprecated Cloud voice picker removed — Onyx is fixed. Kept for type imports. */
+/** @deprecated Cloud voice picker removed — Ash is fixed. Kept for type imports. */
 export const CLOUD_VOICE_OPTIONS: ReadonlyArray<{ id: CloudVoiceId; label: string }> = [
-  { id: 'onyx', label: 'Onyx' },
+  { id: 'ash', label: 'Ash' },
 ];
 
 let preferredCloudVoice: CloudVoiceId = DEFAULT_CLOUD_VOICE;
 
 export const setPreferredCloudVoice = (_voice?: string | null) => {
-  // Always Onyx (traditional masculine) — ignore other selections so Settings cannot drift.
+  // Always Ash (male US) — ignore other selections so Settings cannot drift.
   preferredCloudVoice = DEFAULT_CLOUD_VOICE;
 };
 
 export const getPreferredCloudVoice = (): CloudVoiceId => DEFAULT_CLOUD_VOICE;
-
-/** Fetch the Onyx clip as an mp3 object URL, using the same file type the old sample played. */
-export const loadCloudMp3Url = async (
-  text: string,
-  ratePref: SpeechRatePref = 'normal'
-): Promise<string | null> => {
-  const cleaned = text.trim();
-  if (!cleaned) return null;
-  if (!(await ensureCloudTtsAvailable({ force: true }))) return null;
-
-  const voice = DEFAULT_CLOUD_VOICE;
-  const key = cacheKey(cleaned, voice, ratePref);
-  const cached = cache.get(key);
-  if (cached) return cached;
-
-  try {
-    const response = await fetch(endpoint(), {
-      method: 'POST',
-      cache: 'no-store',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: cleaned.slice(0, 600),
-        voice,
-        ratePref,
-      }),
-    });
-    const contentType = response.headers?.get?.('content-type') || '';
-    if (!response.ok || contentType.includes('text/html') || contentType.includes('application/json')) {
-      setStatus('unavailable');
-      return null;
-    }
-    const spokenVoice = (response.headers?.get?.('x-mathlift-voice') || '').toLowerCase();
-    if (spokenVoice && spokenVoice !== DEFAULT_CLOUD_VOICE) {
-      setStatus('unavailable');
-      return null;
-    }
-    const raw = await response.blob();
-    if (!raw.size) return null;
-    const blob = raw.type.includes('audio/mpeg') ? raw : new Blob([raw], { type: 'audio/mpeg' });
-    const objectUrl = URL.createObjectURL(blob);
-    cache.set(key, objectUrl);
-    if (cache.size > 48) {
-      const first = cache.keys().next().value;
-      if (first) {
-        const old = cache.get(first);
-        cache.delete(first);
-        if (old) URL.revokeObjectURL(old);
-      }
-    }
-    return objectUrl;
-  } catch {
-    setStatus('unavailable');
-    return null;
-  }
-};
 
 export const speakWithOpenAI = async (
   text: string,
@@ -266,17 +204,66 @@ export const speakWithOpenAI = async (
     return false;
   }
 
-  if (!options.isCurrent(options.token)) return false;
-  const ratePref = options.ratePref === 'slow' ? 'slow' : 'normal';
+  const available = await ensureCloudTtsAvailable();
+  if (!available || !options.isCurrent(options.token)) return false;
+
+  // Product decision: always Ash (male US) for classroom clarity.
+  const voice = DEFAULT_CLOUD_VOICE;
   void options.voice;
   void preferredCloudVoice;
-  const objectUrl = await loadCloudMp3Url(cleaned, ratePref);
+  const ratePref = options.ratePref === 'slow' ? 'slow' : 'normal';
+  const key = cacheKey(cleaned, voice, ratePref);
+
+  let objectUrl = cache.get(key);
+  if (!objectUrl) {
+    try {
+      const response = await fetch(endpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleaned.slice(0, 600),
+          voice,
+          ratePref,
+        }),
+      });
+      if (!response.ok || !options.isCurrent(options.token)) return false;
+      const contentType = response.headers?.get?.('content-type') || '';
+      // Reject SPA HTML / JSON errors so we never try to "play" a document.
+      if (contentType.includes('text/html') || contentType.includes('application/json')) {
+        setStatus('unavailable');
+        return false;
+      }
+      // Server must mint Ash (male US). Refuse drifted Alloy/female clips.
+      const spokenVoice = (response.headers?.get?.('x-mathlift-voice') || '').toLowerCase();
+      if (spokenVoice && spokenVoice !== DEFAULT_CLOUD_VOICE) {
+        setStatus('unavailable');
+        return false;
+      }
+      const blob = await response.blob();
+      if (!blob.size || !options.isCurrent(options.token)) return false;
+      objectUrl = URL.createObjectURL(blob);
+      cache.set(key, objectUrl);
+      // Cap cache size so long sessions do not retain every clip forever.
+      if (cache.size > 48) {
+        const first = cache.keys().next().value;
+        if (first) {
+          const old = cache.get(first);
+          cache.delete(first);
+          if (old) URL.revokeObjectURL(old);
+        }
+      }
+    } catch {
+      setStatus('unavailable');
+      return false;
+    }
+  }
+
   if (!options.isCurrent(options.token) || !objectUrl) return false;
 
   return await new Promise<boolean>((resolve) => {
-    const audio = options.playbackElement ?? new Audio();
-    audio.preload = 'auto';
-    audio.src = objectUrl;
+    const audio = new Audio(objectUrl);
+    unlockSpeechClarity();
+    prepareClearPlayback(audio);
     options.bindAudio?.(audio);
     let settled = false;
     const finish = (ok: boolean) => {

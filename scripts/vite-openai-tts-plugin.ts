@@ -7,7 +7,14 @@ import type { Plugin } from 'vite';
 
 const MAX_CHARS = 600;
 
-const DEFAULT_VOICE = 'onyx';
+const DEFAULT_INSTRUCTIONS =
+  'Speak as an adult American man from the Midwest. ' +
+  'Deep male voice only — never sound like a woman or a girl. ' +
+  'Pure General American English accent (rhotic R, American vowels, “zee” for Z). ' +
+  'Do not sound Chinese, East Asian, British, Australian, or Irish. ' +
+  'Calm classroom pace. Crisp consonants. Enunciate every number.';
+
+const DEFAULT_VOICE = 'ash';
 const TTS_MODEL = 'gpt-4o-mini-tts';
 
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>
@@ -89,7 +96,7 @@ export function openaiTtsDevPlugin(): Plugin {
           }
           const voice = DEFAULT_VOICE;
           const ratePref = body.ratePref === 'slow' ? 'slow' : 'normal';
-          const speed = ratePref === 'slow' ? 0.95 : 1.0;
+          const speed = ratePref === 'slow' ? 0.78 : 0.88;
 
           const { default: OpenAI } = await import('openai');
           const client = new OpenAI({ apiKey });
@@ -97,16 +104,17 @@ export function openaiTtsDevPlugin(): Plugin {
             model: TTS_MODEL,
             voice,
             input: text,
+            instructions: DEFAULT_INSTRUCTIONS,
             speed,
-            response_format: 'mp3',
+            response_format: 'wav',
           });
           const buffer = Buffer.from(await speech.arrayBuffer());
           response.statusCode = 200;
-          response.setHeader('Content-Type', 'audio/mpeg');
-          response.setHeader('Cache-Control', 'no-store');
-          response.setHeader('Access-Control-Expose-Headers', 'X-MathLift-Voice');
-          response.setHeader('X-MathLift-TTS', 'openai-gpt-4o-mini-tts');
+          response.setHeader('Content-Type', 'audio/wav');
+          response.setHeader('Cache-Control', 'private, max-age=3600');
           response.setHeader('X-MathLift-Voice', voice);
+          response.setHeader('X-MathLift-Gender', 'male');
+          response.setHeader('X-MathLift-Accent', 'general-american');
           response.end(buffer);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
