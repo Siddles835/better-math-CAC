@@ -1,7 +1,6 @@
 import type { AppLang } from '@/lib/cognition/readingTime';
 import { loadLanguage } from '@/lib/i18n/language';
 import { prepareClearPlayback, unlockSpeechClarity } from '@/lib/speechClarity';
-import { getCloudTtsStatus } from '@/lib/speechOpenAI';
 
 const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
 /** Strip leftover symbols that should not be spoken (keep / until fractions are handled). */
@@ -629,6 +628,27 @@ const clearQueueTimers = () => {
 
 let activeAudio: HTMLAudioElement | null = null;
 let audioUnlocked = false;
+/** Element played inside the tap, then reused for the Onyx mp3. */
+let gestureAudio: HTMLAudioElement | null = null;
+const SILENT_MP3 =
+  'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4OjE2LjEwMAAAAAAAAAAAAAAAAC1FWERTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+1DEAAADAAAhHgAADUQAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+
+/** Start playback during the click so the Onyx file can play when it arrives. */
+const armGestureAudio = (): HTMLAudioElement | null => {
+  if (typeof Audio === 'undefined') return null;
+  try {
+    if (!gestureAudio) gestureAudio = new Audio();
+    const audio = gestureAudio;
+    gestureAudio = null;
+    audio.src = SILENT_MP3;
+    const pending = audio.play();
+    if (pending && typeof pending.catch === 'function') void pending.catch(() => undefined);
+    return audio;
+  } catch {
+    gestureAudio = null;
+    return null;
+  }
+};
 let manifestPromise: Promise<Record<string, { file: string; duration?: number }> | null> | null = null;
 let manifestCache: Record<string, { file: string; duration?: number }> | null | undefined;
 
@@ -909,6 +929,7 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
   }
 
   const ratePref = options?.ratePref ?? speechRatePref;
+  const playbackElement = options?.preferDevice ? null : armGestureAudio();
 
   const startDevice = () => {
     if (token !== speechToken) return;
@@ -936,17 +957,13 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
         ensureCloudTtsAvailable,
         DEFAULT_CLOUD_VOICE,
       } = await import('./speechOpenAI');
-      if (
-        await ensureCloudTtsAvailable({
-          retry: true,
-          force: options?.cloudOnly === true,
-        })
-      ) {
+      if (await ensureCloudTtsAvailable({ retry: true, force: true })) {
         const playedCloud = await speakWithOpenAI(cleaned, {
           token,
           isCurrent: (value) => value === speechToken,
           ratePref,
           voice: DEFAULT_CLOUD_VOICE,
+          playbackElement,
           onEnd: options?.onEnd,
           bindAudio: (audio) => {
             activeAudio = audio;
@@ -1000,18 +1017,7 @@ export const speak = (text: string, options?: SpeakOptions): SpeakResult => {
     startDevice();
   };
 
-  // Cloud Onyx is already up: fetch the clip. Otherwise speak in this tap.
-  // Waiting on /api/tts spends the click, and the device voice is then blocked.
-  const cloudReady = getCloudTtsStatus() === 'available';
-  if (!cloudReady && !options?.cloudOnly) {
-    startDevice();
-    void import('./speechOpenAI').then(({ ensureCloudTtsAvailable }) => {
-      void ensureCloudTtsAvailable();
-    });
-    return 'spoken';
-  }
-
-  // Pre-rendered clips are a different voice — skip them when Alloy is selected.
+  // Pre-rendered clips are a different voice — skip them when Onyx is selected.
   if (!alloyOnlyPref && manifestHasClips()) {
     void playPreRendered(lang, cleaned, ratePref, token, options?.onEnd).then((played) => {
       if (played || token !== speechToken) return;
