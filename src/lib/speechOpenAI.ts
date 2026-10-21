@@ -166,7 +166,7 @@ export const ensureCloudTtsAvailable = async (
 };
 
 /** Bump when TTS format/instructions change so old muddy clips are not reused. */
-const CACHE_VERSION = 'clarity-wav-v1';
+const CACHE_VERSION = 'american-accent-wav-v1';
 
 const cacheKey = (text: string, voice: string, ratePref: SpeechRatePref): string =>
   `${CACHE_VERSION}|${voice}|${ratePref}|${text}`;

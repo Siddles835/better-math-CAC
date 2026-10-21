@@ -16,15 +16,15 @@ const OpenAI = require('openai');
 const MAX_CHARS = 600;
 
 /**
- * Classroom-first clarity: crisp consonants, steady pace, no theatrical delivery.
+ * Strong General American accent + classroom clarity.
  * gpt-4o-mini-tts follows these instructions closely — keep them specific.
  */
 const DEFAULT_INSTRUCTIONS =
-  'Speak with excellent clarity for young students learning math. ' +
-  'Use a calm, steady adult voice at an easy listening pace. ' +
-  'Enunciate every word and every number with crisp consonants. ' +
-  'Keep even volume. Pause briefly after commas and between sentences. ' +
-  'Do not whisper, rush, sing, sound breathy, cute, robotic, or theatrical.';
+  'Speak in a clear, unmistakably General American English accent — ' +
+  'like a typical US classroom teacher (Midwest / California). ' +
+  'Use American pronunciations only: rhotic R, “zee” for Z, American vowels. ' +
+  'Never sound British, Australian, Irish, or otherwise non-American. ' +
+  'Calm, steady pace. Crisp consonants. Enunciate every number.';
 
 const cors = (res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

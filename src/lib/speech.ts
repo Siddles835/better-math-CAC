@@ -457,9 +457,13 @@ const VOICE_PREFIX: Record<AppLang, string[]> = {
   ar: ['ar-sa', 'ar-eg', 'ar'],
 };
 
-/** Voices that tend to sound warm and clear for early readers (K–2). */
+/** Voices that tend to sound warm and clear for early readers (K–2). Prefer US names. */
 const FRIENDLY_VOICE =
-  /samantha|karen|moira|tessa|fiona|victoria|veena|lekha|monica|paulina|meijia|mei-jia|ting-ting|sin-ji|aria|jenny|zira|susan|hazel|google us english|google uk english female|google español|microsoft aria|microsoft jenny|microsoft zira|microsoft sabina|microsoft helena|microsoft naayf|xiao.?xiao|yunxia|siri|child|kid|girl/i;
+  /samantha|susan|zira|jenny|aria|google us english|microsoft aria|microsoft jenny|microsoft zira|siri|veena|lekha|monica|paulina|meijia|mei-jia|ting-ting|sin-ji|microsoft sabina|xiao.?xiao|yunxia|child|kid|girl/i;
+
+/** British / Commonwealth voices — deprioritize when English fallback is used. */
+const NON_US_ENGLISH_VOICE =
+  /en-gb|en-au|en-ie|en-in|en-za|british|uk english|daniel|serena|martha|kate|moira|tessa|fiona|karen|hazel|google uk|microsoft helena|australian|irish|scottish/i;
 
 /** High-quality neural / enhanced labels only (not every Google/Microsoft voice). */
 const QUALITY_VOICE =
@@ -487,6 +491,12 @@ export const scoreVoice = (voice: SpeechSynthesisVoice, lang: AppLang): number =
   const prefixIndex = prefixes.findIndex((prefix) => langLower.startsWith(prefix));
   if (prefixIndex < 0) return -1000;
   score += (prefixes.length - prefixIndex) * 14;
+
+  // English lessons: strongly prefer US voices when Alloy cloud is unavailable.
+  if (lang === 'en') {
+    if (langLower.startsWith('en-us')) score += 40;
+    else if (NON_US_ENGLISH_VOICE.test(`${name} ${langLower}`)) score -= 50;
+  }
 
   const quality = voiceQuality(voice);
   if (HUMAN_VOICE.test(name)) score += 80;
