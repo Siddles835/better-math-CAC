@@ -27,6 +27,7 @@ export const resetCloudTtsForTests = () => {
     }
   }
   cache.clear();
+  heldAudio = null;
   setStatus('unknown');
 };
 
@@ -60,6 +61,50 @@ export const ALLOY_SAMPLE_TEXT = CLOUD_SAMPLE_TEXT;
 let referenceAudio: HTMLAudioElement | null = null;
 /** Bumps on every play/stop so a stale stopSpeaking() cannot kill a new sample. */
 let referenceToken = 0;
+
+/**
+ * Same HTMLAudioElement from the tap through the TTS fetch.
+ * A brand-new Audio() after `await fetch` loses the user gesture and play() rejects,
+ * which Settings shows as “Could not play the voice sample.”
+ */
+let heldAudio: HTMLAudioElement | null = null;
+const SILENT_WAV =
+  'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+
+export const primeCloudPlayback = (): void => {
+  if (typeof Audio === 'undefined') return;
+  try {
+    if (!heldAudio) heldAudio = new Audio();
+    const audio = heldAudio;
+    unlockSpeechClarity();
+    prepareClearPlayback(audio);
+    if (!audio.src) audio.src = SILENT_WAV;
+    const pending = audio.play();
+    if (pending && typeof pending.catch === 'function') {
+      void pending.catch(() => undefined);
+    }
+  } catch {
+    heldAudio = null;
+  }
+};
+
+const claimHeldAudio = (src: string): HTMLAudioElement => {
+  const audio = heldAudio ?? new Audio();
+  heldAudio = null;
+  audio.src = src;
+  return audio;
+};
+
+/** Drop a primed element so Stop does not leave a silent clip running. */
+export const releaseCloudPlayback = (): void => {
+  if (!heldAudio) return;
+  try {
+    heldAudio.pause();
+  } catch {
+    /* ignore */
+  }
+  heldAudio = null;
+};
 
 /**
  * Play the product cloud voice sample (Onyx) via /api/tts.
@@ -99,14 +144,20 @@ export const stopAlloyReferenceSample = () => {
 let lastProbeAt = 0;
 const PROBE_RETRY_MS = 15_000;
 
-/** Probe /api/tts so Settings and speak() know if Alloy cloud is ready. */
+/**
+ * Probe /api/tts so Settings and speak() know if cloud Onyx is ready.
+ * `force` skips the cooldown — Play sample must re-check immediately,
+ * otherwise the first failed page-load probe blocks the button for 15s.
+ */
 export const ensureCloudTtsAvailable = async (
-  options?: { retry?: boolean }
+  options?: { retry?: boolean; force?: boolean }
 ): Promise<boolean> => {
   if (status === 'available') return true;
   const now = Date.now();
-  // Allow a re-probe after a short cooldown (host may have gained an API key).
-  if (status === 'unavailable' && !(options?.retry && now - lastProbeAt >= PROBE_RETRY_MS)) {
+  const bypassCooldown =
+    options?.force === true ||
+    (options?.retry === true && now - lastProbeAt >= PROBE_RETRY_MS);
+  if (status === 'unavailable' && !bypassCooldown) {
     return false;
   }
   if (probePromise) return probePromise;
@@ -262,7 +313,7 @@ export const speakWithOpenAI = async (
   if (!options.isCurrent(options.token) || !objectUrl) return false;
 
   return await new Promise<boolean>((resolve) => {
-    const audio = new Audio(objectUrl);
+    const audio = claimHeldAudio(objectUrl);
     unlockSpeechClarity();
     prepareClearPlayback(audio);
     options.bindAudio?.(audio);

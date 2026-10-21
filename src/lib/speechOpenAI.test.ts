@@ -132,6 +132,28 @@ describe('speechOpenAI', () => {
     vi.useRealTimers();
   });
 
+  it('force re-probes immediately when Play sample is tapped', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'text/html' },
+        json: async () => ({}),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ available: true }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    expect(await ensureCloudTtsAvailable()).toBe(false);
+    expect(await ensureCloudTtsAvailable({ retry: true })).toBe(false);
+    expect(await ensureCloudTtsAvailable({ force: true })).toBe(true);
+    expect(getCloudTtsStatus()).toBe('available');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('always sends OpenAI onyx in the POST body', async () => {
     const { setPreferredCloudVoice, DEFAULT_CLOUD_VOICE } = await import('./speechOpenAI');
     setPreferredCloudVoice('sage');
