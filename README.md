@@ -29,3 +29,4 @@ firebase deploy --only firestore:rules
 ```
 
 Requires the Firebase CLI, project `mathlift-63f6e` (see `.firebaserc`), and an account that can deploy to that project. The local `firestore.rules` file is what gets deployed.
+Add more to this when we publish.
